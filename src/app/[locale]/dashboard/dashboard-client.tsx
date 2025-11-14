@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { AppShell } from '@/presentation/components/layout/AppShell'
 import { Header } from '@/presentation/components/layout/Header'
 import { BottomNav, type TabType } from '@/presentation/components/layout/BottomNav'
-import { BilleterasScreen } from '@/presentation/components/screens/BilleterasScreen'
 import { SobresScreen } from '@/presentation/components/screens/SobresScreen'
 import { MetricasScreen } from '@/presentation/components/screens/MetricasScreen'
 import { ConfigScreen } from '@/presentation/components/screens/ConfigScreen'
@@ -23,7 +22,7 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ locale, user }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('billeteras')
+  const [activeTab, setActiveTab] = useState<TabType>('listas')
   const [contextualOpen, setContextualOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
@@ -33,7 +32,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   useEffect(() => {
     setMounted(true)
     const savedTab = localStorage.getItem('dashboard-active-tab') as TabType | null
-    if (savedTab && ['billeteras', 'sobres', 'metricas', 'config'].includes(savedTab)) {
+    if (savedTab && ['listas', 'sobres', 'metricas', 'config'].includes(savedTab)) {
       setActiveTab(savedTab)
     }
 
@@ -70,24 +69,23 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
 
   // Acción contextual del botón central (+)
   const handleContextualAction = () => {
-    if (activeTab === 'billeteras') {
-      setContextualOpen(true)
-    }
     if (activeTab === 'sobres') {
       // TODO: Abrir menú contextual para SOBRES (Crear Sobre, Crear Gasto)
       setContextualOpen(true)
     }
+    // Cuando está en 'listas', no hace nada (placeholder para futuro)
   }
 
   // Renderizar screen según tab activo
   const renderActiveScreen = () => {
     switch (activeTab) {
-      case 'billeteras':
+      case 'listas':
         return (
-          <BilleterasScreen
-            contextualOpen={contextualOpen}
-            onContextualOpenChange={setContextualOpen}
-          />
+          <div className="p-4 flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <p className="text-muted-foreground">Listas próximamente</p>
+            </div>
+          </div>
         )
       case 'sobres':
         return <SobresScreen userId={user.id} />
@@ -97,10 +95,11 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
         return <ConfigScreen />
       default:
         return (
-          <BilleterasScreen
-            contextualOpen={false}
-            onContextualOpenChange={() => {}}
-          />
+          <div className="p-4 flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <p className="text-muted-foreground">Listas próximamente</p>
+            </div>
+          </div>
         )
     }
   }

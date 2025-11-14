@@ -5,10 +5,10 @@
  * - 4 tabs principales + 1 botón contextual central
  */
 
-import { Wallet, MailOpen, Plus, ChartColumn, Settings } from 'lucide-react'
+import { BookMarked, MailOpen, Plus, ChartColumn, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export type TabType = 'billeteras' | 'sobres' | 'metricas' | 'config'
+export type TabType = 'listas' | 'sobres' | 'metricas' | 'config'
 
 interface BottomNavProps {
   activeTab: TabType
@@ -19,12 +19,12 @@ interface BottomNavProps {
 export function BottomNav({ activeTab, onTabChange, onContextualAction }: BottomNavProps) {
   return (
     <div className="h-full flex items-center justify-around border-t bg-card px-2">
-      {/* BILLETERAS */}
+      {/* LISTAS */}
       <NavButton
-        icon={Wallet}
-        label="BILLETERAS"
-        active={activeTab === 'billeteras'}
-        onClick={() => onTabChange('billeteras')}
+        icon={BookMarked}
+        label="LISTAS"
+        active={activeTab === 'listas'}
+        onClick={() => onTabChange('listas')}
       />
 
       {/* SOBRES */}
