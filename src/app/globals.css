@@ -1,0 +1,162 @@
+/**
+ * Estilos globales - Sistema minimalista
+ *
+ * REGLAS:
+ * - NO usar estilos inline (style={})
+ * - Componentes shadcn/ui sin modificaciones
+ * - Solo lucide-react para iconos
+ * - Colores solo vía CSS variables
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * THEME SYSTEM - Variables esenciales únicamente
+ */
+
+@layer base {
+  /**
+   * DEFAULT THEME: Blanco
+   */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --wallet-card: 0 0% 97%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --radius: 0.5rem;
+  }
+
+  /**
+   * THEME: NEON
+   */
+  [data-theme="neon"] {
+    --background: 250 35% 8%;
+    --foreground: 180 100% 85%;
+    --card: 250 30% 11%;
+    --card-foreground: 180 100% 85%;
+    --wallet-card: 250 30% 13%;
+    --primary: 174 100% 51%;
+    --primary-foreground: 250 35% 8%;
+    --muted: 250 20% 18%;
+    --muted-foreground: 180 30% 70%;
+    --border: 174 100% 51%;
+    --input: 250 20% 18%;
+    --radius: 0.5rem;
+  }
+
+  /**
+   * THEME: BLANCO
+   */
+  [data-theme="blanco"] {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --wallet-card: 0 0% 97%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --border: 0 0% 89%;
+    --input: 0 0% 89%;
+    --radius: 0.5rem;
+  }
+
+  /**
+   * THEME: NEGRO
+   */
+  [data-theme="negro"] {
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 98%;
+    --wallet-card: 0 0% 14%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
+    --border: 0 0% 20%;
+    --input: 0 0% 18%;
+    --radius: 0.5rem;
+  }
+
+  /**
+   * THEME: ROSADO
+   */
+  [data-theme="rosado"] {
+    --background: 28 40% 97%;
+    --foreground: 330 45% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 330 45% 12%;
+    --wallet-card: 28 35% 95%;
+    --primary: 350 85% 60%;
+    --primary-foreground: 0 0% 100%;
+    --muted: 28 35% 93%;
+    --muted-foreground: 330 25% 42%;
+    --border: 28 30% 85%;
+    --input: 28 35% 88%;
+    --radius: 0.75rem;
+  }
+}
+
+/**
+ * Estilos base
+ */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/**
+ * SelectContent styling for non-transparent dropdowns
+ */
+@layer base {
+  :root {
+    --popover: 0 0% 100%;
+  }
+
+  [data-theme="neon"] {
+    --popover: 250 30% 11%;
+  }
+
+  [data-theme="blanco"] {
+    --popover: 0 0% 100%;
+  }
+
+  [data-theme="negro"] {
+    --popover: 0 0% 12%;
+  }
+
+  [data-theme="rosado"] {
+    --popover: 0 0% 100%;
+  }
+}
+
+/**
+ * Utilities - Solo esenciales
+ */
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

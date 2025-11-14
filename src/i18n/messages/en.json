@@ -1,0 +1,456 @@
+{
+  "auth": {
+    "login": {
+      "title": "Sign In",
+      "description": "Enter your credentials to access your account",
+      "identifier": "Email or Phone",
+      "identifierPlaceholder": "you@email.com or +52 1234567890",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Sign In",
+      "selectMethod": "Select your login method",
+      "submitting": "Signing in...",
+      "forgotPassword": "Forgot your password?",
+      "noAccount": "Don't have an account?",
+      "register": "Sign up",
+      "orContinueWith": "Or continue with",
+      "continueWithEmail": "Sign in with Email or Phone",
+      "backToOptions": "Back to sign in options",
+      "error": {
+        "title": "Sign In Error",
+        "invalidCredentials": "Invalid credentials. Please check your data.",
+        "generic": "An error occurred while signing in. Please try again."
+      },
+      "success": {
+        "title": "Welcome",
+        "description": "Sign in successful"
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "description": "Complete the form to register",
+      "selectMethod": "Select your registration method",
+      "name": "Full Name",
+      "namePlaceholder": "Your full name",
+      "email": "Email",
+      "emailPlaceholder": "you@email.com",
+      "phone": "Phone",
+      "phonePlaceholder": "+52 1234567890",
+      "password": "Password",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "submitting": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "login": "Sign in",
+      "orRegisterWith": "Or register with",
+      "createWithEmail": "Create account with Email or Phone",
+      "backToOptions": "Back to registration options",
+      "accountType": {
+        "email": "Email",
+        "phone": "Phone"
+      },
+      "error": {
+        "title": "Registration Error",
+        "description": "An error occurred while creating the account",
+        "generic": "An error occurred while registering. Please try again."
+      },
+      "success": {
+        "title": "Account Created",
+        "verify": "Verify your account to continue",
+        "created": "Your account has been created successfully"
+      }
+    },
+    "oauth": {
+      "google": "Continue with Google",
+      "facebook": "Continue with Facebook",
+      "googleRegister": "Register with Google",
+      "facebookRegister": "Register with Facebook"
+    },
+    "error": {
+      "title": "Authentication Error",
+      "description": "An error occurred during authentication",
+      "backToLogin": "Back to Login",
+      "errors": {
+        "Configuration": "There is a problem with the server configuration.",
+        "AccessDenied": "Access denied. You do not have permission to access this resource.",
+        "Verification": "The verification token has expired or has already been used.",
+        "OAuthSignin": "Error starting OAuth sign in.",
+        "OAuthCallback": "Error during OAuth authentication.",
+        "OAuthCreateAccount": "Could not create OAuth account.",
+        "EmailCreateAccount": "Could not create email account.",
+        "Callback": "Error during authentication callback.",
+        "OAuthAccountNotLinked": "To confirm your identity, sign in with the same account you used originally.",
+        "EmailSignin": "Could not send authentication email.",
+        "CredentialsSignin": "Invalid credentials. Check your email and password.",
+        "SessionRequired": "Please sign in to access this page.",
+        "Default": "An unexpected authentication error occurred."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {name}",
+    "signOut": "Sign Out",
+    "userInfo": {
+      "title": "User Information",
+      "description": "Your account data",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "accountType": "Account Type"
+    },
+    "stats": {
+      "title": "Statistics",
+      "description": "Your activity",
+      "comingSoon": "Statistics panel coming soon..."
+    },
+    "actions": {
+      "title": "Quick Actions",
+      "description": "Common tasks",
+      "showcase": "View Components Showcase",
+      "settings": "Settings",
+      "help": "Help"
+    },
+    "config": {
+      "title": "Project Configuration",
+      "description": "Technical information",
+      "framework": "Framework",
+      "database": "Database",
+      "auth": "Authentication",
+      "ui": "UI",
+      "validation": "Validation",
+      "mobile": "Mobile"
+    },
+    "subscription": {
+      "title": "Your Subscription",
+      "description": "Manage your plan and billing",
+      "currentPlan": "Current Plan",
+      "linkedAccount": "Linked Account",
+      "linkedToOwner": "Shared by another user",
+      "trialEnds": "Trial Ends",
+      "expiresAt": "Expires At",
+      "upgradeToPremium": "Upgrade to Premium",
+      "upgradeToFamiliar": "Upgrade to Familiar",
+      "downgrade": "Downgrade Plan",
+      "reactivate": "Reactivate Subscription",
+      "status": {
+        "free": "Free",
+        "trial": "Trial",
+        "active": "Active",
+        "expired": "Expired",
+        "cancelled": "Cancelled",
+        "payment_failed": "Payment Failed"
+      },
+      "capabilities": {
+        "title": "Plan Features",
+        "description": "What's included in your current plan",
+        "view_dashboard": "View Dashboard",
+        "create_basic_items": "Create Basic Items",
+        "export_data": "Export Data",
+        "advanced_reports": "Advanced Reports",
+        "invite_users": "Invite Users",
+        "shared_resources": "Shared Resources",
+        "priority_support": "Priority Support",
+        "api_access": "API Access",
+        "admin_controls": "Admin Controls",
+        "bulk_operations": "Bulk Operations"
+      },
+      "limits": {
+        "title": "Usage Limits",
+        "projects": "Projects",
+        "storage_mb": "Storage (MB)",
+        "items_per_project": "Items per Project",
+        "api_calls_per_month": "API Calls per Month"
+      }
+    },
+    "linkedUsers": {
+      "title": "Linked Users",
+      "description": "Share your subscription with family or team",
+      "empty": "No linked users yet. Generate an invitation code to share your plan.",
+      "generateCode": "Generate Code",
+      "viewCodes": "View Codes"
+    },
+    "upgrade": {
+      "title": "Upgrade Your Plan",
+      "description": "Choose the plan that fits your needs",
+      "selectPlan": "Select Plan",
+      "selectPlanDescription": "Choose between Premium or Familiar",
+      "selectPeriod": "Select Billing Period",
+      "selectPeriodDescription": "Save more with annual billing",
+      "plans": {
+        "premium": {
+          "description": "Perfect for individuals"
+        },
+        "familiar": {
+          "description": "Share with up to 3 users"
+        }
+      },
+      "period": {
+        "monthly": "Monthly",
+        "yearly": "Annual",
+        "month": "mo",
+        "year": "yr",
+        "save": "Save"
+      },
+      "features": {
+        "title": "What's Included",
+        "description": "All features in your selected plan",
+        "view_dashboard": "Access to Dashboard",
+        "create_basic_items": "Create Basic Items",
+        "export_data": "Export Data",
+        "advanced_reports": "Advanced Reports",
+        "invite_users": "Invite Users",
+        "shared_resources": "Shared Resources",
+        "priority_support": "Priority Support",
+        "api_access": "API Access",
+        "admin_controls": "Admin Controls",
+        "bulk_operations": "Bulk Operations",
+        "shareWith": "Share with up to {count} users"
+      },
+      "confirmUpgrade": "Upgrade for ${price}",
+      "cancel": "Cancel",
+      "processing": {
+        "title": "Processing...",
+        "description": "Setting up your subscription",
+        "button": "Processing..."
+      },
+      "success": {
+        "title": "Upgrade Successful!",
+        "description": "Your plan has been upgraded"
+      },
+      "error": {
+        "title": "Upgrade Failed",
+        "description": "There was an error upgrading your plan"
+      }
+    },
+    "downgrade": {
+      "title": "Downgrade to FREE",
+      "description": "Are you sure you want to downgrade?",
+      "warning": {
+        "title": "Warning",
+        "description": "This action will immediately cancel your paid subscription"
+      },
+      "willLose": {
+        "title": "What You'll Lose",
+        "description": "By downgrading to FREE, you will lose access to:",
+        "features": "Premium Features",
+        "featuresDescription": "Advanced reports, API access, priority support",
+        "linkedUsers": "User Linking",
+        "linkedUsersDescription": "All linked users will be automatically unlinked",
+        "limits": "Higher Limits",
+        "limitsDescription": "You'll have reduced project and storage limits",
+        "support": "Priority Support",
+        "supportDescription": "You'll return to community support only"
+      },
+      "confirm": {
+        "title": "Confirm Downgrade",
+        "description": "You are about to downgrade from {planName} to FREE",
+        "currentPlan": "Current Plan",
+        "newPlan": "New Plan"
+      },
+      "confirmButton": "Confirm Downgrade to FREE",
+      "processing": "Processing...",
+      "cancel": "Cancel",
+      "help": {
+        "title": "Need Help?",
+        "description": "If you're having issues with your plan, we're here to help",
+        "contact": "Contact support before downgrading to see if we can resolve your concerns"
+      },
+      "success": {
+        "title": "Downgraded Successfully",
+        "description": "Your plan has been changed to FREE"
+      },
+      "error": {
+        "title": "Downgrade Failed",
+        "description": "There was an error downgrading your plan"
+      }
+    }
+  },
+  "showcase": {
+    "title": "Components Showcase",
+    "description": "Demo of modern UI/UX libraries",
+    "phosphor": {
+      "title": "Phosphor Icons",
+      "description": "6,000+ modern icons with 6 different styles (thin, light, regular, bold, fill, duotone)",
+      "regular": "Regular Weight",
+      "bold": "Bold Weight",
+      "duotone": "Duotone Weight",
+      "allWeights": "All Available Weights",
+      "thin": "Thin",
+      "light": "Light",
+      "fill": "Fill"
+    },
+    "tabler": {
+      "title": "Tabler Icons",
+      "description": "5,000+ outline style icons, perfect for dashboards and complement to Phosphor",
+      "icons": "Tabler Icons"
+    },
+    "carousel": {
+      "title": "Embla Carousel (Swipe)",
+      "description": "Ultra-lightweight carousel (3kb) with native touch gestures",
+      "swipeTitle": "Horizontal Swipe",
+      "swipeDescription": "Swipe left or right (touch or mouse)",
+      "slide": "Slide {number}",
+      "swipeMore": "Swipe to see more"
+    },
+    "charts": {
+      "title": "Recharts - Charts",
+      "description": "Modern D3-based charts with native React components",
+      "line": "Line Chart",
+      "bar": "Bar Chart",
+      "pie": "Pie Chart",
+      "radar": "Radar Chart"
+    },
+    "motion": {
+      "title": "Framer Motion",
+      "description": "Fluid animations and touch gestures",
+      "hoverScale": "Hover Scale",
+      "rotate": "Rotate Animation",
+      "drag": "Drag",
+      "hoverMe": "Hover me!"
+    },
+    "drawer": {
+      "title": "Vaul - Bottom Sheet",
+      "description": "Bottom drawer with native gestures (iOS/Android style)",
+      "open": "Open Bottom Sheet",
+      "demoTitle": "Bottom Sheet Demo",
+      "demoDescription": "You can swipe down to close or use touch gestures",
+      "content": "Drawer Content",
+      "contentDescription": "This component works perfectly on iOS and Android with native gestures. Includes snap points, momentum scrolling and haptic feedback.",
+      "close": "Close"
+    },
+    "spinners": {
+      "title": "React Spinners",
+      "description": "Modern and lightweight loaders",
+      "clip": "Clip Loader",
+      "pulse": "Pulse Loader",
+      "beat": "Beat Loader"
+    },
+    "footer": {
+      "title": "Modern and Optimized Stack",
+      "description": "All these libraries are optimized for mobile, Capacitor and desktop"
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "or": "Or"
+  },
+  "billeteras": {
+    "title": "Wallets",
+    "loading": "Loading wallets...",
+    "empty": "No wallets yet",
+    "emptyDescription": "Create your first wallet to get started",
+    "actions": {
+      "addCard": "Add Wallet",
+      "transfer": "Transfer",
+      "deposit": "Deposit",
+      "delete": "Delete",
+      "edit": "Edit",
+      "info": "Information"
+    },
+    "fields": {
+      "name": "Name",
+      "namePlaceholder": "My Wallet",
+      "type": "Card Type",
+      "shared": "Shared",
+      "sharedDescription": "Allow other users to access",
+      "interest": "Has Interest",
+      "interestDescription": "This wallet generates interest",
+      "interestRate": "Interest Rate (Optional)",
+      "interestRatePlaceholder": "5.5",
+      "initialBalance": "Initial Balance",
+      "initialBalancePlaceholder": "0.00",
+      "adjustBalance": "Adjust Balance",
+      "adjustPlaceholder": "+500 or -250",
+      "adjustHint": "Use + to add or - to subtract"
+    },
+    "types": {
+      "DEBITO": "Debit",
+      "CREDITO": "Credit",
+      "EFECTIVO": "Cash",
+      "AHORRO": "Savings",
+      "INVERSION": "Investment"
+    },
+    "balance": {
+      "real": "Real Balance",
+      "projected": "Projected Balance"
+    },
+    "create": {
+      "title": "New Wallet",
+      "submit": "Create Wallet",
+      "submitting": "Creating..."
+    },
+    "edit": {
+      "title": "Edit Wallet",
+      "submit": "Save Changes",
+      "submitting": "Saving..."
+    },
+    "transfer": {
+      "title": "Transfer Between Wallets",
+      "from": "From",
+      "to": "To",
+      "amount": "Amount",
+      "amountPlaceholder": "100.00",
+      "submit": "Transfer",
+      "submitting": "Transferring...",
+      "selectOrigin": "Select origin wallet",
+      "selectDestination": "Select destination wallet",
+      "noWallets": "You need at least 2 wallets to transfer",
+      "invalidAmount": "Invalid amount"
+    },
+    "deposit": {
+      "title": "Deposit",
+      "tabLabel": "Deposit",
+      "description": "Record incoming or outgoing money",
+      "submit": "Record",
+      "submitting": "Recording...",
+      "wallet": "Wallet"
+    },
+    "withdraw": {
+      "title": "Withdraw",
+      "tabLabel": "Withdraw",
+      "description": "Record a money withdrawal"
+    },
+    "fields": {
+      "amount": "Amount",
+      "amountPlaceholder": "100.00",
+      "description": "Description",
+      "descriptionPlaceholder": "Eg: Cash deposit, ATM withdrawal",
+      "wallet": "Wallet"
+    },
+    "delete": {
+      "title": "Delete Wallet",
+      "confirm": "Are you sure?",
+      "warning": "This action cannot be undone",
+      "linkedEnvelopes": "Linked envelopes",
+      "linkedEnvelopesDescription": "This wallet is being used by {count} envelope(s)",
+      "impactWarning": "Deleting this wallet will affect your envelopes",
+      "submit": "Delete Wallet",
+      "submitting": "Deleting...",
+      "cancel": "Cancel"
+    },
+    "contextual": {
+      "title": "Quick Actions",
+      "transferDescription": "Between your wallets",
+      "depositoLabel": "New DEPOSIT/WITHDRAWAL",
+      "depositoDescription": "Record external income or expenses"
+    },
+    "notifications": {
+      "created": "Wallet created successfully",
+      "updated": "Wallet updated successfully",
+      "deleted": "Wallet deleted successfully",
+      "transferred": "Transfer completed successfully",
+      "error": "An error occurred",
+      "sameWallet": "Cannot transfer to the same wallet",
+      "insufficientBalance": "Insufficient balance"
+    }
+  }
+}

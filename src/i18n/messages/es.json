@@ -1,0 +1,455 @@
+{
+  "auth": {
+    "login": {
+      "title": "Iniciar Sesión",
+      "description": "Ingresa tus credenciales para acceder a tu cuenta",
+      "identifier": "Email o Teléfono",
+      "identifierPlaceholder": "tu@email.com o +52 1234567890",
+      "password": "Contraseña",
+      "passwordPlaceholder": "••••••••",
+      "submit": "Iniciar Sesión",
+      "submitting": "Iniciando sesión...",
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "noAccount": "¿No tienes cuenta?",
+      "register": "Regístrate",
+      "orContinueWith": "O continúa con",
+      "continueWithEmail": "Iniciar sesión con Email o Teléfono",
+      "selectMethod": "Selecciona tu método de inicio de sesión",
+      "backToOptions": "Volver a opciones de inicio de sesión",
+      "error": {
+        "title": "Error al iniciar sesión",
+        "invalidCredentials": "Credenciales inválidas. Por favor verifica tus datos.",
+        "generic": "Ocurrió un error al iniciar sesión. Intenta de nuevo."
+      },
+      "success": {
+        "title": "Bienvenido",
+        "description": "Inicio de sesión exitoso"
+      }
+    },
+    "register": {
+      "title": "Crear Cuenta",
+      "description": "Completa el formulario para registrarte",
+      "selectMethod": "Selecciona tu método de registro",
+      "name": "Nombre Completo",
+      "namePlaceholder": "Tu nombre completo",
+      "email": "Email",
+      "emailPlaceholder": "tu@email.com",
+      "phone": "Teléfono",
+      "phonePlaceholder": "+52 1234567890",
+      "password": "Contraseña",
+      "selectMethod": "Selecciona tu método de inicio de sesión",
+      "passwordPlaceholder": "••••••••",
+      "confirmPassword": "Confirmar Contraseña",
+      "submit": "Crear Cuenta",
+      "submitting": "Creando cuenta...",
+      "hasAccount": "¿Ya tienes cuenta?",
+      "login": "Inicia sesión",
+      "orRegisterWith": "O regístrate con",
+      "createWithEmail": "Crear cuenta con Email o Teléfono",
+      "backToOptions": "Volver a opciones de registro",
+      "accountType": {
+        "email": "Email",
+        "phone": "Teléfono"
+      },
+      "error": {
+        "title": "Error al registrarse",
+        "description": "Ocurrió un error al crear la cuenta",
+        "generic": "Ocurrió un error al registrarse. Intenta de nuevo."
+      },
+      "success": {
+        "title": "Cuenta creada",
+        "verify": "Verifica tu cuenta para continuar",
+        "created": "Tu cuenta ha sido creada exitosamente"
+      }
+    },
+    "oauth": {
+      "google": "Continuar con Google",
+      "facebook": "Continuar con Facebook",
+      "googleRegister": "Registrarse con Google",
+      "facebookRegister": "Registrarse con Facebook"
+    },
+    "error": {
+      "title": "Error de Autenticación",
+      "description": "Ocurrió un error durante la autenticación",
+      "backToLogin": "Volver al Login",
+      "errors": {
+        "Configuration": "Hay un problema con la configuración del servidor.",
+        "AccessDenied": "Acceso denegado. No tienes permiso para acceder a este recurso.",
+        "Verification": "El token de verificación ha expirado o ya fue usado.",
+        "OAuthSignin": "Error al iniciar sesión con OAuth.",
+        "OAuthCallback": "Error durante la autenticación OAuth.",
+        "OAuthCreateAccount": "No se pudo crear la cuenta OAuth.",
+        "EmailCreateAccount": "No se pudo crear la cuenta de email.",
+        "Callback": "Error durante el callback de autenticación.",
+        "OAuthAccountNotLinked": "Para confirmar tu identidad, inicia sesión con la misma cuenta que usaste originalmente.",
+        "EmailSignin": "No se pudo enviar el email de autenticación.",
+        "CredentialsSignin": "Credenciales inválidas. Verifica tu email y contraseña.",
+        "SessionRequired": "Por favor inicia sesión para acceder a esta página.",
+        "Default": "Ocurrió un error inesperado de autenticación."
+      }
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bienvenido, {name}",
+    "signOut": "Cerrar Sesión",
+    "userInfo": {
+      "title": "Información del Usuario",
+      "description": "Datos de tu cuenta",
+      "name": "Nombre",
+      "email": "Email",
+      "phone": "Teléfono",
+      "accountType": "Tipo de Cuenta"
+    },
+    "stats": {
+      "title": "Estadísticas",
+      "description": "Tu actividad",
+      "comingSoon": "Panel de estadísticas próximamente..."
+    },
+    "actions": {
+      "title": "Acciones Rápidas",
+      "description": "Tareas comunes",
+      "showcase": "Ver Showcase de Componentes",
+      "settings": "Configuración",
+      "help": "Ayuda"
+    },
+    "config": {
+      "title": "Configuración del Proyecto",
+      "description": "Información técnica",
+      "framework": "Framework",
+      "database": "Base de Datos",
+      "auth": "Autenticación",
+      "ui": "UI",
+      "validation": "Validación",
+      "mobile": "Mobile"
+    },
+    "subscription": {
+      "title": "Tu Suscripción",
+      "description": "Gestiona tu plan y facturación",
+      "currentPlan": "Plan Actual",
+      "linkedAccount": "Cuenta Vinculada",
+      "linkedToOwner": "Compartido por otro usuario",
+      "trialEnds": "Prueba Termina",
+      "expiresAt": "Expira el",
+      "upgradeToPremium": "Subir a Premium",
+      "upgradeToFamiliar": "Subir a Familiar",
+      "downgrade": "Bajar de Plan",
+      "reactivate": "Reactivar Suscripción",
+      "status": {
+        "free": "Gratis",
+        "trial": "Prueba",
+        "active": "Activo",
+        "expired": "Expirado",
+        "cancelled": "Cancelado",
+        "payment_failed": "Pago Fallido"
+      },
+      "capabilities": {
+        "title": "Funcionalidades del Plan",
+        "description": "Qué incluye tu plan actual",
+        "view_dashboard": "Ver Dashboard",
+        "create_basic_items": "Crear Items Básicos",
+        "export_data": "Exportar Datos",
+        "advanced_reports": "Reportes Avanzados",
+        "invite_users": "Invitar Usuarios",
+        "shared_resources": "Recursos Compartidos",
+        "priority_support": "Soporte Prioritario",
+        "api_access": "Acceso API",
+        "admin_controls": "Controles de Administrador",
+        "bulk_operations": "Operaciones en Lote"
+      },
+      "limits": {
+        "title": "Límites de Uso",
+        "projects": "Proyectos",
+        "storage_mb": "Almacenamiento (MB)",
+        "items_per_project": "Items por Proyecto",
+        "api_calls_per_month": "Llamadas API por Mes"
+      }
+    },
+    "linkedUsers": {
+      "title": "Usuarios Vinculados",
+      "description": "Comparte tu suscripción con familia o equipo",
+      "empty": "Aún no hay usuarios vinculados. Genera un código de invitación para compartir tu plan.",
+      "generateCode": "Generar Código",
+      "viewCodes": "Ver Códigos"
+    },
+    "upgrade": {
+      "title": "Mejora Tu Plan",
+      "description": "Elige el plan que mejor se adapte a tus necesidades",
+      "selectPlan": "Seleccionar Plan",
+      "selectPlanDescription": "Elige entre Premium o Familiar",
+      "selectPeriod": "Seleccionar Período de Facturación",
+      "selectPeriodDescription": "Ahorra más con facturación anual",
+      "plans": {
+        "premium": {
+          "description": "Perfecto para individuos"
+        },
+        "familiar": {
+          "description": "Comparte con hasta 3 usuarios"
+        }
+      },
+      "period": {
+        "monthly": "Mensual",
+        "yearly": "Anual",
+        "month": "mes",
+        "year": "año",
+        "save": "Ahorra"
+      },
+      "features": {
+        "title": "Qué Incluye",
+        "description": "Todas las características de tu plan seleccionado",
+        "view_dashboard": "Acceso al Dashboard",
+        "create_basic_items": "Crear Items Básicos",
+        "export_data": "Exportar Datos",
+        "advanced_reports": "Reportes Avanzados",
+        "invite_users": "Invitar Usuarios",
+        "shared_resources": "Recursos Compartidos",
+        "priority_support": "Soporte Prioritario",
+        "api_access": "Acceso API",
+        "admin_controls": "Controles de Administrador",
+        "bulk_operations": "Operaciones en Lote",
+        "shareWith": "Comparte con hasta {count} usuarios"
+      },
+      "confirmUpgrade": "Mejorar por ${price}",
+      "cancel": "Cancelar",
+      "processing": {
+        "title": "Procesando...",
+        "description": "Configurando tu suscripción",
+        "button": "Procesando..."
+      },
+      "success": {
+        "title": "¡Mejora Exitosa!",
+        "description": "Tu plan ha sido mejorado"
+      },
+      "error": {
+        "title": "Error al Mejorar",
+        "description": "Hubo un error al mejorar tu plan"
+      }
+    },
+    "downgrade": {
+      "title": "Bajar a Plan FREE",
+      "description": "¿Estás seguro de que deseas bajar de plan?",
+      "warning": {
+        "title": "Advertencia",
+        "description": "Esta acción cancelará inmediatamente tu suscripción de pago"
+      },
+      "willLose": {
+        "title": "Lo Que Perderás",
+        "description": "Al bajar al plan FREE, perderás acceso a:",
+        "features": "Características Premium",
+        "featuresDescription": "Reportes avanzados, acceso API, soporte prioritario",
+        "linkedUsers": "Vinculación de Usuarios",
+        "linkedUsersDescription": "Todos los usuarios vinculados serán desvinculados automáticamente",
+        "limits": "Límites Superiores",
+        "limitsDescription": "Tendrás límites reducidos de proyectos y almacenamiento",
+        "support": "Soporte Prioritario",
+        "supportDescription": "Volverás solo al soporte de la comunidad"
+      },
+      "confirm": {
+        "title": "Confirmar Bajada de Plan",
+        "description": "Estás a punto de bajar de {planName} a FREE",
+        "currentPlan": "Plan Actual",
+        "newPlan": "Nuevo Plan"
+      },
+      "confirmButton": "Confirmar Bajada a FREE",
+      "processing": "Procesando...",
+      "cancel": "Cancelar",
+      "help": {
+        "title": "¿Necesitas Ayuda?",
+        "description": "Si tienes problemas con tu plan, estamos aquí para ayudar",
+        "contact": "Contacta con soporte antes de bajar de plan para ver si podemos resolver tus inquietudes"
+      },
+      "success": {
+        "title": "Bajada de Plan Exitosa",
+        "description": "Tu plan ha sido cambiado a FREE"
+      },
+      "error": {
+        "title": "Error al Bajar de Plan",
+        "description": "Hubo un error al bajar tu plan"
+      }
+    }
+  },
+  "showcase": {
+    "title": "Components Showcase",
+    "description": "Demo de librerías modernas UI/UX",
+    "phosphor": {
+      "title": "Phosphor Icons",
+      "description": "6,000+ iconos modernos con 6 estilos diferentes (thin, light, regular, bold, fill, duotone)",
+      "regular": "Regular Weight",
+      "bold": "Bold Weight",
+      "duotone": "Duotone Weight",
+      "allWeights": "Todos los Pesos Disponibles",
+      "thin": "Thin",
+      "light": "Light",
+      "fill": "Fill"
+    },
+    "tabler": {
+      "title": "Tabler Icons",
+      "description": "5,000+ iconos outline style, perfecto para dashboards y complemento de Phosphor",
+      "icons": "Iconos de Tabler"
+    },
+    "carousel": {
+      "title": "Embla Carousel (Swipe)",
+      "description": "Carousel ultra ligero (3kb) con gestos táctiles nativos",
+      "swipeTitle": "Swipe Horizontal",
+      "swipeDescription": "Desliza hacia los lados (touch o mouse)",
+      "slide": "Slide {number}",
+      "swipeMore": "Swipe para ver más"
+    },
+    "charts": {
+      "title": "Recharts - Gráficos",
+      "description": "Gráficos modernos basados en D3 con componentes React nativos",
+      "line": "Line Chart",
+      "bar": "Bar Chart",
+      "pie": "Pie Chart",
+      "radar": "Radar Chart"
+    },
+    "motion": {
+      "title": "Framer Motion",
+      "description": "Animaciones fluidas y gestos táctiles",
+      "hoverScale": "Hover Scale",
+      "rotate": "Rotate Animation",
+      "drag": "Drag",
+      "hoverMe": "Hover me!"
+    },
+    "drawer": {
+      "title": "Vaul - Bottom Sheet",
+      "description": "Drawer desde abajo con gestos nativos (iOS/Android style)",
+      "open": "Abrir Bottom Sheet",
+      "demoTitle": "Bottom Sheet Demo",
+      "demoDescription": "Puedes hacer swipe hacia abajo para cerrar o usar gestos táctiles",
+      "content": "Contenido del Drawer",
+      "contentDescription": "Este componente funciona perfecto en iOS y Android con gestos nativos. Incluye snap points, momentum scrolling y haptic feedback.",
+      "close": "Cerrar"
+    },
+    "spinners": {
+      "title": "React Spinners",
+      "description": "Loaders modernos y livianos",
+      "clip": "Clip Loader",
+      "pulse": "Pulse Loader",
+      "beat": "Beat Loader"
+    },
+    "footer": {
+      "title": "Stack Moderno y Optimizado",
+      "description": "Todas estas librerías están optimizadas para mobile, Capacitor y desktop"
+    }
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "or": "O"
+  },
+  "billeteras": {
+    "title": "Billeteras",
+    "loading": "Cargando billeteras...",
+    "empty": "Aún no tienes billeteras",
+    "emptyDescription": "Crea tu primera billetera para comenzar",
+    "actions": {
+      "addCard": "Agregar Billetera",
+      "transfer": "Transferir",
+      "deposit": "Depositar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "info": "Información"
+    },
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Mi Billetera",
+      "type": "Tipo de Tarjeta",
+      "shared": "Compartida",
+      "sharedDescription": "Permitir acceso a otros usuarios",
+      "interest": "Tiene Interés",
+      "interestDescription": "Esta billetera genera intereses",
+      "interestRate": "Tasa de Interés (Opcional)",
+      "interestRatePlaceholder": "5.5",
+      "initialBalance": "Saldo Inicial",
+      "initialBalancePlaceholder": "0.00",
+      "adjustBalance": "Ajustar Saldo",
+      "adjustPlaceholder": "+500 o -250",
+      "adjustHint": "Usa + para agregar o - para restar",
+      "amount": "Monto",
+      "amountPlaceholder": "100.00",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ej: Depósito en efectivo, Retiro cajero",
+      "wallet": "Billetera"
+    },
+    "types": {
+      "DEBITO": "Débito",
+      "CREDITO": "Crédito",
+      "EFECTIVO": "Efectivo",
+      "AHORRO": "Ahorro",
+      "INVERSION": "Inversión"
+    },
+    "balance": {
+      "real": "Saldo Real",
+      "projected": "Saldo Proyectado"
+    },
+    "create": {
+      "title": "Nueva Billetera",
+      "submit": "Crear Billetera",
+      "submitting": "Creando..."
+    },
+    "edit": {
+      "title": "Editar Billetera",
+      "submit": "Guardar Cambios",
+      "submitting": "Guardando..."
+    },
+    "transfer": {
+      "title": "Transferir Entre Billeteras",
+      "from": "Desde",
+      "to": "Hacia",
+      "amount": "Monto",
+      "amountPlaceholder": "100.00",
+      "submit": "Transferir",
+      "submitting": "Transfiriendo...",
+      "selectOrigin": "Selecciona billetera origen",
+      "selectDestination": "Selecciona billetera destino",
+      "noWallets": "Necesitas al menos 2 billeteras para transferir",
+      "invalidAmount": "Monto inválido"
+    },
+    "deposit": {
+      "title": "Depositar",
+      "tabLabel": "Depositar",
+      "description": "Registra ingresos o egresos de dinero",
+      "submit": "Registrar",
+      "submitting": "Registrando...",
+      "wallet": "Billetera"
+    },
+    "withdraw": {
+      "title": "Retirar",
+      "tabLabel": "Retirar",
+      "description": "Registra un retiro de dinero"
+    },
+    "delete": {
+      "title": "Eliminar Billetera",
+      "confirm": "¿Estás seguro?",
+      "warning": "Esta acción no se puede deshacer",
+      "linkedEnvelopes": "Sobres vinculados",
+      "linkedEnvelopesDescription": "Esta billetera está siendo usada por {count} sobre(s)",
+      "impactWarning": "Eliminar esta billetera afectará tus sobres",
+      "submit": "Eliminar Billetera",
+      "submitting": "Eliminando...",
+      "cancel": "Cancelar"
+    },
+    "contextual": {
+      "title": "Acciones Rápidas",
+      "transferDescription": "Entre tus billeteras",
+      "depositoLabel": "Nuevo DEPOSITO/RETIRO",
+      "depositoDescription": "Registra ingresos o egresos externos"
+    },
+    "notifications": {
+      "created": "Billetera creada exitosamente",
+      "updated": "Billetera actualizada exitosamente",
+      "deleted": "Billetera eliminada exitosamente",
+      "transferred": "Transferencia completada exitosamente",
+      "error": "Ocurrió un error",
+      "sameWallet": "No puedes transferir a la misma billetera",
+      "insufficientBalance": "Saldo insuficiente"
+    }
+  }
+}
