@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerFooter,
@@ -15,6 +15,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { getCountryOptions, getMonedaByCountry } from '@/infrastructure/utils/moneda'
+import { getUserCountry } from '@/infrastructure/utils/country'
 
 interface OnboardingDrawerProps {
   open: boolean
@@ -28,48 +30,44 @@ interface Moneda {
   simbolo: string
 }
 
-const TIMEZONES = [
-  { value: 'America/Santiago', label: 'Santiago (GMT-3)' },
-  { value: 'America/New_York', label: 'New York (GMT-5)' },
-  { value: 'America/Los_Angeles', label: 'Los Angeles (GMT-8)' },
-  { value: 'America/Mexico_City', label: 'Ciudad de México (GMT-6)' },
-  { value: 'America/Sao_Paulo', label: 'São Paulo (GMT-3)' },
-  { value: 'Europe/Madrid', label: 'Madrid (GMT+1)' },
-  { value: 'Europe/London', label: 'Londres (GMT+0)' },
-]
-
-const PRIMER_DIA_MES = Array.from({ length: 31 }, (_, i) => ({
+const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => ({
   value: String(i + 1),
-  label: `Día ${i + 1}`,
+  label: `${i + 1}`,
 }))
 
 export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) {
   const router = useRouter()
+  const t = useTranslations('onboarding')
+  const tSobres = useTranslations('sobres')
+
   const [monedas, setMonedas] = useState<Moneda[]>([])
   const [loading, setLoading] = useState(false)
   const [loadingMonedas, setLoadingMonedas] = useState(true)
+  const [loadingCountry, setLoadingCountry] = useState(true)
 
   // Formulario
+  const [paisSeleccionado, setPaisSeleccionado] = useState('')
   const [monedaSeleccionada, setMonedaSeleccionada] = useState('')
-  const [timezone, setTimezone] = useState('America/Santiago')
   const [diaInicioPeriodo, setDiaInicioPeriodo] = useState('1')
 
-  // Detectar locale del navegador
-  const [locale, setLocale] = useState('es-CL')
-
-  // Note: Select components don't need useInputFocus as they open as dropdowns
-  // and don't push content off screen like text inputs do on mobile
-
+  // Cargar país automáticamente
   useEffect(() => {
-    // Detectar locale automáticamente
-    const detectedLocale = navigator.language || 'es-CL'
-    setLocale(detectedLocale)
-
-    // Detectar timezone automáticamente
-    const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    if (detectedTimezone) {
-      setTimezone(detectedTimezone)
+    async function loadCountry() {
+      try {
+        const country = await getUserCountry()
+        setPaisSeleccionado(country)
+        // Preseleccionar moneda según país
+        const monedaConfig = getMonedaByCountry(country)
+        setMonedaSeleccionada(monedaConfig.monedaId)
+      } catch (error) {
+        console.error('Error detecting country:', error)
+        // Fallback
+        setPaisSeleccionado('CL')
+      } finally {
+        setLoadingCountry(false)
+      }
     }
+    loadCountry()
   }, [])
 
   // Cargar monedas
@@ -80,14 +78,9 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
         const data = await response.json()
         if (data.success) {
           setMonedas(data.monedas)
-          // Seleccionar CLP por defecto si existe
-          const clp = data.monedas.find((m: Moneda) => m.codigo === 'CLP')
-          if (clp) {
-            setMonedaSeleccionada(clp.id)
-          }
         }
       } catch (error) {
-        console.error('Error al cargar monedas:', error)
+        console.error('Error loading currencies:', error)
       } finally {
         setLoadingMonedas(false)
       }
@@ -95,63 +88,134 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
     loadMonedas()
   }, [])
 
+  const handleCountryChange = (country: string) => {
+    setPaisSeleccionado(country)
+    // Cambiar moneda automáticamente según país
+    const monedaConfig = getMonedaByCountry(country)
+    setMonedaSeleccionada(monedaConfig.monedaId)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      const response = await fetch('/api/user/config', {
+      // 1. Crear configuración de usuario
+      const configResponse = await fetch('/api/user/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           monedaPrincipalId: monedaSeleccionada,
-          timezone,
-          locale,
+          locale: navigator.language || 'es-CL',
           diaInicioPeriodo: parseInt(diaInicioPeriodo),
         }),
       })
 
-      const data = await response.json()
+      const configData = await configResponse.json()
 
-      if (data.success) {
-        // Cerrar drawer y refrescar la página
-        onOpenChange?.(false)
-        router.refresh()
-      } else {
-        alert(data.error || 'Error al guardar configuración')
+      if (!configData.success) {
+        throw new Error(configData.error || 'Error al guardar configuración')
       }
+
+      // 2. Crear billetera dummy
+      const billeteraResponse = await fetch('/api/billeteras', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: 'dummy',
+          tipo: 'EFECTIVO',
+          monedaPrincipalId: monedaSeleccionada,
+          saldoInicial: 0,
+          emoji: '💰',
+        }),
+      })
+
+      if (!billeteraResponse.ok) {
+        throw new Error('Error al crear billetera')
+      }
+
+      // 3. Crear dos sobres por defecto (HOGAR y PERSONAL)
+      const defaultEnvelopes = [
+        {
+          nombre: tSobres('defaultEnvelopes.hogar'),
+          tipo: 'GASTO',
+          presupuestoAsignado: 0,
+          monedaPrincipalId: monedaSeleccionada,
+        },
+        {
+          nombre: tSobres('defaultEnvelopes.personal'),
+          tipo: 'GASTO',
+          presupuestoAsignado: 0,
+          monedaPrincipalId: monedaSeleccionada,
+        },
+      ]
+
+      for (const envelope of defaultEnvelopes) {
+        const sobreResponse = await fetch('/api/sobres', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(envelope),
+        })
+
+        if (!sobreResponse.ok) {
+          console.warn(`Error creating envelope ${envelope.nombre}`)
+        }
+      }
+
+      // 4. Cerrar drawer y refrescar
+      onOpenChange?.(false)
+      router.refresh()
     } catch (error) {
-      console.error('Error al guardar configuración:', error)
-      alert('Error al guardar configuración')
+      console.error('Onboarding error:', error)
+      alert(error instanceof Error ? error.message : 'Error al completar onboarding')
     } finally {
       setLoading(false)
     }
   }
 
+  const countryOptions = getCountryOptions()
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} dismissible={false}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle className="text-2xl">¡Bienvenido! 👋</DrawerTitle>
-          <DrawerDescription>
-            Para comenzar, necesitamos configurar algunas preferencias básicas
-          </DrawerDescription>
+          <DrawerTitle className="text-2xl">{t('title')}</DrawerTitle>
+          <DrawerDescription>{t('description')}</DrawerDescription>
         </DrawerHeader>
 
         <DrawerBody>
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* País */}
+            <div className="space-y-2">
+              <Label htmlFor="country" className="text-base font-medium">
+                {t('fields.country')} <span className="text-red-500">*</span>
+              </Label>
+              <Select value={paisSeleccionado} onValueChange={handleCountryChange} disabled={loadingCountry}>
+                <SelectTrigger id="country">
+                  <SelectValue placeholder={t('fields.countryPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {countryOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Moneda Principal */}
             <div className="space-y-2">
-              <Label htmlFor="moneda" className="text-base font-medium">
-                Moneda Principal <span className="text-red-500">*</span>
+              <Label htmlFor="currency" className="text-base font-medium">
+                {t('fields.currency')} <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={monedaSeleccionada}
                 onValueChange={setMonedaSeleccionada}
                 disabled={loadingMonedas}
               >
-                <SelectTrigger id="moneda">
-                  <SelectValue placeholder="Selecciona tu moneda" />
+                <SelectTrigger id="currency">
+                  <SelectValue placeholder={t('fields.currencyPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {monedas.map((moneda) => (
@@ -161,50 +225,27 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">
-                Esta será la moneda que usarás para tus billeteras y sobres
-              </p>
+              <p className="text-sm text-muted-foreground">{t('fields.currencyDescription')}</p>
             </div>
 
-            {/* Timezone */}
+            {/* Día de inicio período */}
             <div className="space-y-2">
-              <Label htmlFor="timezone" className="text-base font-medium">
-                Zona Horaria
-              </Label>
-              <Select value={timezone} onValueChange={setTimezone}>
-                <SelectTrigger id="timezone">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMEZONES.map((tz) => (
-                    <SelectItem key={tz.value} value={tz.value}>
-                      {tz.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Primer Día del Mes para reiniciar presupuesto */}
-            <div className="space-y-2">
-              <Label htmlFor="dia-inicio" className="text-base font-medium">
-                Primer día del mes para ciclos de presupuesto
+              <Label htmlFor="day-of-month" className="text-base font-medium">
+                {t('fields.dayOfMonth')} <span className="text-red-500">*</span>
               </Label>
               <Select value={diaInicioPeriodo} onValueChange={setDiaInicioPeriodo}>
-                <SelectTrigger id="dia-inicio">
-                  <SelectValue />
+                <SelectTrigger id="day-of-month">
+                  <SelectValue placeholder={t('fields.dayPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {PRIMER_DIA_MES.map((dia) => (
+                  {DAYS_OF_MONTH.map((dia) => (
                     <SelectItem key={dia.value} value={dia.value}>
                       {dia.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">
-                Tus presupuestos se reiniciarán en este día cada mes
-              </p>
+              <p className="text-sm text-muted-foreground">{t('fields.dayOfMonthDescription')}</p>
             </div>
           </form>
         </DrawerBody>
@@ -213,13 +254,11 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
           <Button
             onClick={handleSubmit}
             className="w-full"
-            disabled={loading || !monedaSeleccionada}
+            disabled={loading || !paisSeleccionado || !monedaSeleccionada || loadingCountry || loadingMonedas}
           >
-            {loading ? 'Guardando...' : 'Comenzar'}
+            {loading ? t('buttons.submitting') : t('buttons.submit')}
           </Button>
-          <p className="text-xs text-center text-muted-foreground mt-2">
-            Podrás cambiar estas preferencias más adelante
-          </p>
+          <p className="text-xs text-center text-muted-foreground mt-2">{t('buttons.disclaimer')}</p>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

@@ -332,6 +332,30 @@
       "description": "All these libraries are optimized for mobile, Capacitor and desktop"
     }
   },
+  "onboarding": {
+    "title": "Welcome! 👋",
+    "description": "To get started, we need to configure a few basic preferences",
+    "fields": {
+      "country": "Country",
+      "countryPlaceholder": "Select your country",
+      "currency": "Main Currency",
+      "currencyPlaceholder": "Select your currency",
+      "currencyDescription": "This will be the currency you use for your envelopes",
+      "dayOfMonth": "What day of the month do you receive your money?",
+      "dayOfMonthDescription": "On this day, your expenses will start from zero each month. You can change it later",
+      "dayPlaceholder": "Select a day"
+    },
+    "buttons": {
+      "submit": "Get Started",
+      "submitting": "Saving...",
+      "disclaimer": "You can change these preferences later"
+    },
+    "errors": {
+      "countryRequired": "Please select your country",
+      "currencyRequired": "Please select your currency",
+      "dayRequired": "Please select a day"
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "Error",
@@ -342,6 +366,13 @@
     "back": "Back",
     "next": "Next",
     "or": "Or"
+  },
+  "sobres": {
+    "title": "Envelopes",
+    "defaultEnvelopes": {
+      "hogar": "Home",
+      "personal": "Personal"
+    }
   },
   "billeteras": {
     "title": "Wallets",
