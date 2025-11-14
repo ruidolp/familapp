@@ -333,6 +333,30 @@
       "description": "Todas estas librerías están optimizadas para mobile, Capacitor y desktop"
     }
   },
+  "onboarding": {
+    "title": "¡Bienvenido! 👋",
+    "description": "Para comenzar, necesitamos configurar algunas preferencias básicas",
+    "fields": {
+      "country": "País",
+      "countryPlaceholder": "Selecciona tu país",
+      "currency": "Moneda Principal",
+      "currencyPlaceholder": "Selecciona tu moneda",
+      "currencyDescription": "Esta será la moneda que usarás para tus sobres",
+      "dayOfMonth": "¿Qué día del mes recibes tu dinero?",
+      "dayOfMonthDescription": "Este día tus gastos empezarán de cero cada mes. Puedes modificarlo luego",
+      "dayPlaceholder": "Selecciona un día"
+    },
+    "buttons": {
+      "submit": "Comenzar",
+      "submitting": "Guardando...",
+      "disclaimer": "Podrás cambiar estas preferencias más adelante"
+    },
+    "errors": {
+      "countryRequired": "Por favor selecciona tu país",
+      "currencyRequired": "Por favor selecciona tu moneda",
+      "dayRequired": "Por favor selecciona un día"
+    }
+  },
   "common": {
     "loading": "Cargando...",
     "error": "Error",
@@ -343,6 +367,13 @@
     "back": "Atrás",
     "next": "Siguiente",
     "or": "O"
+  },
+  "sobres": {
+    "title": "Sobres",
+    "defaultEnvelopes": {
+      "hogar": "Hogar",
+      "personal": "Personal"
+    }
   },
   "billeteras": {
     "title": "Billeteras",
