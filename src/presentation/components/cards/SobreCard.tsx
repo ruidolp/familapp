@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useEffect, useState } from 'react'
+import { Plus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -215,10 +216,11 @@ export function SobreCard({
                 e.stopPropagation()
                 onAgregarPresupuesto?.()
               }}
-              className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+              className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 flex items-center justify-center gap-2"
               variant="outline"
             >
-              ➕ Agregar Presupuesto
+              <Plus size={18} />
+              Agregar Presupuesto
             </Button>
           </div>
         )}
@@ -275,10 +277,11 @@ export function SobreCard({
             e.stopPropagation()
             onAgregarCategoria?.()
           }}
-          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 flex items-center justify-center gap-2"
           variant="outline"
         >
-          ➕ Agregar Categoría
+          <Plus size={18} />
+          Agregar Categoría
         </Button>
 
         {/* Badge de overspend */}

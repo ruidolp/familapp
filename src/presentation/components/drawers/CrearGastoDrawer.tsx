@@ -437,7 +437,9 @@ export function CrearGastoDrawer({
             {/* Marca (en Card si categoría seleccionada) */}
             {categoriaSeleccionada && (
               <Card className="p-4 space-y-3 border-slate-200 bg-slate-50">
-                <Label className="text-base font-medium">Marca</Label>
+                <Label className="text-base font-medium">
+                  Marca <span className="text-xs text-muted-foreground font-normal">(opcional)</span>
+                </Label>
 
                 {/* Marca seleccionada */}
                 {marcaSeleccionada && marcaActual && (
