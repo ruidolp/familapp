@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { Plus } from 'lucide-react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { Button } from '@/components/ui/button'
 import { SobreCard } from '@/components/cards/SobreCard'
@@ -180,17 +181,21 @@ export function SobresScreen({ userId }: { userId: string }) {
     emblaApi.scrollTo(index)
   }
 
+  const sobreActual = sobres[selectedIndex]
+  const tituloDinamico = sobreActual ? `${sobreActual.emoji} ${sobreActual.nombre}` : 'Sobres'
+
   return (
-    <div className="p-4 space-y-4">
+    <div className="px-6 py-4 space-y-4">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">Sobres</h2>
+        <h2 className="text-2xl font-bold text-foreground">{tituloDinamico}</h2>
         <Button
           onClick={() => setCrearSobreOpen(true)}
-          className="shadow-lg"
+          className="shadow-lg flex items-center gap-2"
           size="lg"
         >
-          ➕ Nuevo Sobre
+          <Plus size={20} />
+          Nuevo Sobre
         </Button>
       </div>
 

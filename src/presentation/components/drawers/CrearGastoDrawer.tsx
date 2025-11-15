@@ -368,8 +368,17 @@ export function CrearGastoDrawer({
     : []
   const marcaActual = marcas.find((m) => m.id === marcaSeleccionada)
 
-  // Ordenar categorías por uso (gastado) descendente
-  const categoriasOrdenadas = [...categorias].sort((a, b) => {
+  // Filtrar categorías del sobre actual y ordenar por uso (gastado) descendente
+  const categoriasDelSobre = sobreSeleccionado
+    ? categorias.filter((c) => {
+        // Obtener la asignación del sobre actual para esta categoría
+        const sobreActualData = sobres.find((s) => s.id === sobreSeleccionado)
+        // Por ahora mostrar todas las categorías (pueden ser usadas en cualquier sobre)
+        return true
+      })
+    : categorias
+
+  const categoriasOrdenadas = [...categoriasDelSobre].sort((a, b) => {
     const gastadoA = Number(a.gastado) || 0
     const gastadoB = Number(b.gastado) || 0
     return gastadoB - gastadoA
