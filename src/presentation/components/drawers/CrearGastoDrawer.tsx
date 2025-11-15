@@ -250,8 +250,8 @@ export function CrearGastoDrawer({
       }
 
       // Obtener moneda del sobre (usando la moneda principal del usuario)
-      // Por ahora, haremos una llamada a la API para obtener la configuración del usuario
       let monedaId = ''
+      let billeteraId = ''
       try {
         const configRes = await fetch('/api/user/config')
         if (configRes.ok) {
@@ -262,10 +262,30 @@ export function CrearGastoDrawer({
         console.error('Error getting user currency:', error)
       }
 
+      // Obtener billetera dummy del usuario
+      try {
+        const billeterasRes = await fetch('/api/billeteras')
+        if (billeterasRes.ok) {
+          const billeterasData = await billeterasRes.json()
+          const dummy = billeterasData.billeteras?.find((b: any) => b.nombre === 'dummy')
+          if (dummy) {
+            billeteraId = dummy.id
+          }
+        }
+      } catch (error) {
+        console.error('Error getting billetera dummy:', error)
+      }
+
+      if (!billeteraId) {
+        notify.error('No se encontró billetera. Por favor completa el onboarding.')
+        setLoading(false)
+        return
+      }
+
       const result = await crearGasto({
         monto: parseFloat(monto),
         monedaId: monedaId,
-        billeteraId: '', // No se usa billetera, pero required por API
+        billeteraId: billeteraId,
         tipo: 'GASTO',
         descripcion: comentario || undefined,
         fecha: new Date().toISOString(),
@@ -394,7 +414,7 @@ export function CrearGastoDrawer({
 
             {/* Marca (en Card si categoría seleccionada) */}
             {categoriaSeleccionada && (
-              <Card className="p-4 space-y-3 border-blue-200 bg-blue-50">
+              <Card className="p-4 space-y-3 border-slate-200 bg-slate-50">
                 <Label className="text-base font-medium">Marca</Label>
 
                 {/* Marca seleccionada */}
@@ -423,7 +443,7 @@ export function CrearGastoDrawer({
                         <button
                           key={marca.id}
                           onClick={() => handleSelectMarca(marca)}
-                          className="flex-shrink-0 px-3 py-1 rounded-full border border-blue-300 hover:bg-blue-100 text-base transition"
+                          className="flex-shrink-0 px-3 py-1 rounded-full border border-slate-300 hover:bg-slate-100 text-base transition"
                           type="button"
                         >
                           {marca.emoji && <span className="mr-1">{marca.emoji}</span>}
@@ -452,6 +472,8 @@ export function CrearGastoDrawer({
                       setTimeout(() => setShowSuggestionsMarca(false), 200)
                     }}
                     disabled={marcaSeleccionada !== ''}
+                    enterKeyHint="go"
+                    className="text-base"
                   />
 
                   {showSuggestionsMarca && suggestionsMarca.length > 0 && (

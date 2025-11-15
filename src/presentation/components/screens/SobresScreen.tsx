@@ -334,7 +334,7 @@ export function SobresScreen({ userId }: { userId: string }) {
       {/* Botones flotantes para sobre */}
       {/* Botón abajo: Agregar Gasto a sobre existente */}
       {sobres.length > 0 && (
-        <div className="fixed right-4 bottom-[calc(6rem-2px)] z-40">
+        <div className="fixed right-3 bottom-[calc(6rem-2px)] z-40 px-2">
           <Button
             onClick={() => {
               const sobreActual = sobres[selectedIndex]
