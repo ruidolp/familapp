@@ -164,7 +164,11 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
 
       // 4. Cerrar drawer y refrescar
       onOpenChange?.(false)
-      router.refresh()
+
+      // Hacer un reload completo después de pequeño delay para asegurar que el servidor procesó las creaciones
+      setTimeout(() => {
+        window.location.reload()
+      }, 500)
     } catch (error) {
       console.error('Onboarding error:', error)
       alert(error instanceof Error ? error.message : 'Error al completar onboarding')

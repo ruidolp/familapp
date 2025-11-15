@@ -152,6 +152,12 @@ export function SobresScreen({ userId }: { userId: string }) {
     setCrearGastoOpen(true)
   }
 
+  const handleFlashGasto = (sobreId: string, categoriaId: string) => {
+    setSobreSeleccionadoParaGasto(sobreId)
+    setCategoriaPreseleccionada(categoriaId)
+    setCrearGastoOpen(true)
+  }
+
   const handleAgregarCategoria = (sobre: Sobre) => {
     setSobreSeleccionado(sobre)
     setAgregarCategoriaOpen(true)
@@ -229,6 +235,7 @@ export function SobresScreen({ userId }: { userId: string }) {
                       console.log('Editar categorías del sobre:', sobre.id)
                     }}
                     onAgregarCategoria={() => handleAgregarCategoria(sobre)}
+                    onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}
                   />
                 </div>
               ))}

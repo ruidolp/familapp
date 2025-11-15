@@ -40,6 +40,7 @@ interface SobreCardProps {
   onEditarCategorias?: () => void
   onAgregarCategoria?: () => void
   onVerDetalle?: () => void
+  onFlashGasto?: (categoriaId: string) => void
 }
 
 export function SobreCard({
@@ -55,6 +56,7 @@ export function SobreCard({
   onEditarCategorias,
   onAgregarCategoria,
   onVerDetalle,
+  onFlashGasto,
 }: SobreCardProps) {
   const [categoriasLoading, setCategoriasLoading] = useState(false)
   const [editarCategoriaOpen, setEditarCategoriaOpen] = useState(false)
@@ -95,68 +97,75 @@ export function SobreCard({
         backgroundImage: `linear-gradient(135deg, ${bgColor}cc 0%, ${bgColor}dd 100%)`,
         backdropFilter: 'blur(8px)',
         boxShadow: '0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
-        minHeight: 'calc(100vh - 10rem)',
+        minHeight: 'calc(100vh - 11.5rem)',
       }}
       onClick={onVerDetalle}
     >
-      {/* Header con color y menu de 3 puntos */}
+      {/* Header con nombre y presupuesto */}
       <div
         className="p-4 text-white flex justify-between items-start border-b border-white/10"
       >
         <div>
           <h3 className="font-bold text-lg">{nombre}</h3>
-          <p className="text-base opacity-90">
-            ${presupuesto.toFixed(2)}
-          </p>
         </div>
 
-        {/* Menu de 3 puntos */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-white/20"
-            >
-              ⋮
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={(e) => {
-              e.stopPropagation()
-              onAgregarPresupuesto?.()
-            }}>
-              Aumentar Presupuesto
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
+        {/* Presupuesto del mes - right aligned */}
+        <div className="text-right flex items-center gap-3">
+          <div>
+            <p className="text-xs opacity-75">Presupuesto mes:</p>
+            <p className="text-base font-bold">
+              ${presupuesto.toFixed(2)}
+            </p>
+          </div>
+
+          {/* Menu de 3 puntos */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-white/20"
+              >
+                ⋮
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={(e) => {
                 e.stopPropagation()
-                onDevolverPresupuesto?.()
-              }}
-              disabled={presupuestoLibre <= 0}
-            >
-              Reducir Presupuesto
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => {
-              e.stopPropagation()
-              onEditarCategorias?.()
-            }}>
-              Editar Categorías
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={(e) => {
-              e.stopPropagation()
-              onVerDetalle?.()
-            }}>
-              Ver Detalle
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                onAgregarPresupuesto?.()
+              }}>
+                Aumentar Presupuesto
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDevolverPresupuesto?.()
+                }}
+                disabled={presupuestoLibre <= 0}
+              >
+                Reducir Presupuesto
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation()
+                onEditarCategorias?.()
+              }}>
+                Editar Categorías
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={(e) => {
+                e.stopPropagation()
+                onVerDetalle?.()
+              }}>
+                Ver Detalle
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Contenido */}
       <div className="p-4 space-y-4 flex-1 overflow-y-auto"  style={{ color: 'rgba(255,255,255,0.95)' }}>
-        {/* Estado de gasto */}
-        <div className="space-y-2">
+        {/* Estado de gasto - Card con fondo transparente */}
+        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur p-3 space-y-2">
           <div className="flex justify-between text-base">
             <span className="font-medium text-white">
               Gastado: ${gastadoNum.toFixed(2)}
@@ -184,6 +193,26 @@ export function SobreCard({
           </p>
         </div>
 
+        {/* Card "Asigne Presupuesto" - cuando no hay presupuesto */}
+        {presupuesto <= 0 && (
+          <div className="p-4 rounded-lg bg-white/10 text-center space-y-3 backdrop-blur border border-white/20">
+            <p className="text-base text-white/75">
+              Asigne presupuesto
+            </p>
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAgregarPresupuesto?.()
+              }}
+              className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+              variant="outline"
+            >
+              ➕ Agregar Presupuesto
+            </Button>
+          </div>
+        )}
+
         {/* Categorías */}
         {categoriasLoading ? (
           <div className="p-3 rounded-lg bg-white/10 text-center backdrop-blur">
@@ -193,22 +222,9 @@ export function SobreCard({
           </div>
         ) : categoriasOrdenadas.length > 0 ? (
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <p className="text-base font-medium text-white/80">
-                Categorías ({categoriasOrdenadas.length})
-              </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onAgregarCategoria?.()
-                }}
-                className="h-6 px-2"
-              >
-                ➕
-              </Button>
-            </div>
+            <p className="text-base font-medium text-white/80">
+              Categorías ({categoriasOrdenadas.length})
+            </p>
 
             <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
               {categoriasOrdenadas.map((categoria) => (
@@ -226,28 +242,34 @@ export function SobreCard({
                     setSelectedCategoria({ id: categoria.id, nombre: categoria.nombre })
                     setEditarCategoriaOpen(true)
                   }}
+                  onFlashGasto={(e) => {
+                    e?.stopPropagation()
+                    onFlashGasto?.(categoria.id)
+                  }}
                 />
               ))}
             </div>
           </div>
         ) : (
-          <div className="p-3 rounded-lg bg-white/10 text-center space-y-2 backdrop-blur border border-white/20">
+          <div className="p-3 rounded-lg bg-white/10 text-center backdrop-blur border border-white/20">
             <p className="text-base text-white/75">
               Sin categorías aún
             </p>
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                onAgregarCategoria?.()
-              }}
-              className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
-              variant="outline"
-            >
-              ➕ Agregar Categorías
-            </Button>
           </div>
         )}
+
+        {/* Agregar Categoría button - Always visible */}
+        <Button
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation()
+            onAgregarCategoria?.()
+          }}
+          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+          variant="outline"
+        >
+          ➕ Agregar Categoría
+        </Button>
 
         {/* Badge de overspend */}
         {isOverspent && (

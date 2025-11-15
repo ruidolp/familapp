@@ -124,11 +124,11 @@ export function AgregarPresupuestoDrawer({
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-base text-muted-foreground">Monto Libre</p>
-                  <p className="text-xl font-bold">${montoLibre.toFixed(2)}</p>
+                  <p className="text-xl font-bold">${Number(montoLibre).toFixed(2)}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-base text-muted-foreground">Presupuesto Asignado</p>
-                  <p className="text-xl font-bold">${presupuestoAsignado.toFixed(2)}</p>
+                  <p className="text-xl font-bold">${Number(presupuestoAsignado).toFixed(2)}</p>
                 </div>
               </div>
             </div>
