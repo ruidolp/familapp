@@ -73,7 +73,7 @@ export function AgregarPresupuestoDrawer({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          presupuestoAsignado: presupuestoAsignado + montoNum,
+          presupuestoAsignado: Number(presupuestoAsignado) + montoNum,
           observacion,
           montoRecurrente: montoRecurrente ? parseFloat(montoRecurrente) : undefined,
         }),
