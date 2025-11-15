@@ -10,6 +10,7 @@ import { AgregarPresupuestoDrawer } from '@/components/drawers/AgregarPresupuest
 import { ReducirPresupuestoDrawer } from '@/components/drawers/ReducirPresupuestoDrawer'
 import { CrearGastoDrawer } from '@/components/drawers/CrearGastoDrawer'
 import { AgregarCategoriaDrawer } from '@/components/drawers/AgregarCategoriaDrawer'
+import { VerDetalleTransaccionesDrawer } from '@/components/drawers/VerDetalleTransaccionesDrawer'
 import { OverspendWarningModal } from '@/components/modals/OverspendWarningModal'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useSobre, useDevolverPresupuesto } from '@/presentation/hooks/useSobres'
@@ -43,6 +44,7 @@ export function SobresScreen({ userId }: { userId: string }) {
   const [reducirPresupuestoOpen, setReducirPresupuestoOpen] = useState(false)
   const [crearGastoOpen, setCrearGastoOpen] = useState(false)
   const [agregarCategoriaOpen, setAgregarCategoriaOpen] = useState(false)
+  const [verDetalleOpen, setVerDetalleOpen] = useState(false)
   const [sobreSeleccionado, setSobreSeleccionado] = useState<Sobre | null>(null)
   const [sobreSeleccionadoParaGasto, setSobreSeleccionadoParaGasto] = useState<string>('')
   const [categoriaPreseleccionada, setCategoriaPreseleccionada] = useState<string>('')
@@ -128,8 +130,8 @@ export function SobresScreen({ userId }: { userId: string }) {
   }
 
   const handleDetalleSobre = (sobre: Sobre) => {
-    // TODO: Navegar a página de detalle del sobre
-    console.log('Detalle de sobre:', sobre.id)
+    setSobreSeleccionado(sobre)
+    setVerDetalleOpen(true)
   }
 
   const handleSobreCreated = (sobre: Sobre) => {
@@ -297,6 +299,13 @@ export function SobresScreen({ userId }: { userId: string }) {
         sobreName={sobreSeleccionado?.nombre || ''}
         userId={userId}
         onSuccess={handleAgregarCategoriaSuccess}
+      />
+
+      <VerDetalleTransaccionesDrawer
+        open={verDetalleOpen}
+        onOpenChange={setVerDetalleOpen}
+        sobreId={sobreSeleccionado?.id || ''}
+        sobreName={sobreSeleccionado?.nombre || ''}
       />
 
       {/* Warning Modal */}
