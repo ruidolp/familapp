@@ -4,12 +4,6 @@ import { useMemo, useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { CategoriaCard } from '@/components/cards/CategoriaCard'
 import { useSobreCategories } from '@/presentation/hooks/useSobres'
 import { EditarCategoriaDrawer } from '@/components/drawers/EditarCategoriaDrawer'
@@ -103,72 +97,35 @@ export function SobreCard({
     >
       {/* Contenido */}
       <div className="flex flex-col h-full" style={{ color: 'rgba(255,255,255,0.95)' }}>
-        {/* Card: Header + Presupuesto Info */}
-        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2">
-          {/* Header con nombre y presupuesto */}
-          <div className="flex justify-between items-start gap-2 mb-2">
-            <div>
-              <h3 className="font-bold text-lg">{nombre}</h3>
-            </div>
-
-            {/* Presupuesto del mes - right aligned */}
-            <div className="text-right flex items-center gap-2">
-              <div>
-                <p className="text-xs opacity-75">Presupuesto mes:</p>
-                <p className="text-base font-bold">
-                  ${presupuesto.toFixed(2)}
-                </p>
-              </div>
-
-              {/* Menu de 3 puntos */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-white/20"
-                  >
-                    ⋮
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    onAgregarPresupuesto?.()
-                  }}>
-                    Aumentar Presupuesto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDevolverPresupuesto?.()
-                    }}
-                    disabled={presupuestoLibre <= 0}
-                  >
-                    Reducir Presupuesto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    onEditarCategorias?.()
-                  }}>
-                    Editar Categorías
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    onVerDetalle?.()
-                  }}>
-                    Ver Detalle
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+        {/* Card: Header con nombre y botón */}
+        <div className="m-4 mb-0">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="font-bold text-xl">{nombre}</h3>
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAgregarPresupuesto?.()
+              }}
+              className="bg-white/20 hover:bg-white/30 text-white border border-white/30 h-8 px-3"
+              variant="outline"
+            >
+              ➕ Agregar Gasto
+            </Button>
           </div>
 
           {/* Separador */}
-          <div className="border-t border-white/20" />
+          <div className="border-t border-white/20 mb-3" />
+
+          {/* Presupuesto mes - Centrado */}
+          <div className="text-center mb-4">
+            <p className="text-base font-bold">
+              Presupuesto mes: ${presupuesto.toFixed(2)}
+            </p>
+          </div>
 
           {/* Estado de gasto */}
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2">
             <div className="flex justify-between text-base">
               <span className="font-medium text-white">
                 Gastado: ${gastadoNum.toFixed(2)}
@@ -181,19 +138,21 @@ export function SobreCard({
                   : `Libre: $${presupuestoLibre.toFixed(2)}`}
               </span>
             </div>
-            <div className={`h-2 rounded-full overflow-hidden ${
-              isOverspent ? 'bg-white/20' : 'bg-white/20'
-            }`}>
-              <div
-                className={`h-full ${
-                  isOverspent ? 'bg-yellow-300' : 'bg-green-300'
-                }`}
-                style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
-              />
+            <div className="flex items-center gap-2">
+              <div className={`h-2 flex-1 rounded-full overflow-hidden ${
+                isOverspent ? 'bg-white/20' : 'bg-white/20'
+              }`}>
+                <div
+                  className={`h-full ${
+                    isOverspent ? 'bg-yellow-300' : 'bg-green-300'
+                  }`}
+                  style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
+                />
+              </div>
+              <span className="text-sm text-white font-medium whitespace-nowrap">
+                {porcentajeGastado.toFixed(0)}% usado
+              </span>
             </div>
-            <p className="text-sm text-white/75">
-              {porcentajeGastado.toFixed(1)}% del presupuesto
-            </p>
           </div>
         </div>
 
@@ -207,19 +166,8 @@ export function SobreCard({
         {presupuesto <= 0 && (
           <div className="p-4 rounded-lg bg-white/10 text-center space-y-3 backdrop-blur border border-white/20">
             <p className="text-base text-white/75">
-              Asigne presupuesto
+              Asigne presupuesto desde el botón arriba
             </p>
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                onAgregarPresupuesto?.()
-              }}
-              className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
-              variant="outline"
-            >
-              ➕ Agregar Presupuesto
-            </Button>
           </div>
         )}
 
@@ -268,14 +216,14 @@ export function SobreCard({
           </div>
         )}
 
-        {/* Agregar Categoría button - Always visible */}
+        {/* Agregar Categoría button */}
         <Button
           size="sm"
           onClick={(e) => {
             e.stopPropagation()
             onAgregarCategoria?.()
           }}
-          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 h-8"
           variant="outline"
         >
           ➕ Agregar Categoría
