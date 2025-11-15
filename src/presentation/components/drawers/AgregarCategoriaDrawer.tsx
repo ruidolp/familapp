@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 
 interface Categoria {
@@ -55,14 +56,13 @@ export function AgregarCategoriaDrawer({
   const [marcas, setMarcas] = useState<Marca[]>([])
   const [selectedCategories, setSelectedCategories] = useState<Categoria[]>([])
   const [inputCategoria, setInputCategoria] = useState('')
-  const [inputMarca, setInputMarca] = useState('')
+  const [inputMarcaPorCategoria, setInputMarcaPorCategoria] = useState<Record<string, string>>({})
   const [suggestionsCategoria, setSuggestionsCategoria] = useState<Categoria[]>([])
-  const [suggestionsMarca, setSuggestionsMarca] = useState<Marca[]>([])
+  const [suggestionsMarcaPorCategoria, setSuggestionsMarcaPorCategoria] = useState<Record<string, Marca[]>>({})
   const [showSuggestionsCategoria, setShowSuggestionsCategoria] = useState(false)
-  const [showSuggestionsMarca, setShowSuggestionsMarca] = useState(false)
-  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<Categoria | null>(null)
+  const [showSuggestionsMarcaPorCategoria, setShowSuggestionsMarcaPorCategoria] = useState<Record<string, boolean>>({})
+  const [expandedEmpresas, setExpandedEmpresas] = useState(false)
   const inputCategoriaRef = useRef<HTMLInputElement>(null)
-  const inputMarcaRef = useRef<HTMLInputElement>(null)
 
   // Cargar categorías cuando se abre el drawer
   useEffect(() => {
@@ -71,12 +71,12 @@ export function AgregarCategoriaDrawer({
       fetchMarcas()
       setSelectedCategories([])
       setInputCategoria('')
-      setInputMarca('')
+      setInputMarcaPorCategoria({})
       setSuggestionsCategoria([])
-      setSuggestionsMarca([])
+      setSuggestionsMarcaPorCategoria({})
       setShowSuggestionsCategoria(false)
-      setShowSuggestionsMarca(false)
-      setCategoriaSeleccionada(null)
+      setShowSuggestionsMarcaPorCategoria({})
+      setExpandedEmpresas(false)
     }
   }, [open])
 
@@ -124,57 +124,80 @@ export function AgregarCategoriaDrawer({
     setShowSuggestionsCategoria(filtered.length > 0)
   }
 
-  // Manejar cambios en input de marca
-  const handleInputMarcaChange = (value: string) => {
-    setInputMarca(value)
-
-    if (!value.trim() || !categoriaSeleccionada) {
-      setSuggestionsMarca([])
-      setShowSuggestionsMarca(false)
-      return
-    }
-
-    const filtered = marcas.filter((marca) => {
-      const perteneceeACategoriaSeleccionada = marca.categoria_id === categoriaSeleccionada.id
-      const coincideConBusqueda = marca.nombre.toLowerCase().includes(value.toLowerCase())
-      return perteneceeACategoriaSeleccionada && coincideConBusqueda
-    })
-
-    setSuggestionsMarca(filtered)
-    setShowSuggestionsMarca(filtered.length > 0)
-  }
-
   // Click en sugerencia de categoría
   const handleSelectCategoria = (categoria: Categoria) => {
     setSelectedCategories([...selectedCategories, categoria])
     setInputCategoria('')
     setSuggestionsCategoria([])
     setShowSuggestionsCategoria(false)
-    setCategoriaSeleccionada(null)
-    setInputMarca('')
-    setSuggestionsMarca([])
     inputCategoriaRef.current?.focus()
   }
 
   // Remover categoría
   const handleRemoveCategoria = (categoriaId: string) => {
     setSelectedCategories(selectedCategories.filter((c) => c.id !== categoriaId))
-    if (categoriaSeleccionada?.id === categoriaId) {
-      setCategoriaSeleccionada(null)
-      setInputMarca('')
-      setSuggestionsMarca([])
-    }
+    // Limpiar datos de marcas para esta categoría
+    const newInputMarcas = { ...inputMarcaPorCategoria }
+    const newShowMarcas = { ...showSuggestionsMarcaPorCategoria }
+    const newSuggestionsMarcas = { ...suggestionsMarcaPorCategoria }
+    delete newInputMarcas[categoriaId]
+    delete newShowMarcas[categoriaId]
+    delete newSuggestionsMarcas[categoriaId]
+    setInputMarcaPorCategoria(newInputMarcas)
+    setShowSuggestionsMarcaPorCategoria(newShowMarcas)
+    setSuggestionsMarcaPorCategoria(newSuggestionsMarcas)
   }
 
-  // Click en sugerencia de marca
-  const handleSelectMarca = (marca: Marca) => {
-    // Aquí simplemente mostramos que la marca fue seleccionada
-    // En CrearGastoDrawer será donde se seleccione realmente
+  // Manejar cambios en input de marca para una categoría específica
+  const handleInputMarcaChangePorCategoria = (categoriaId: string, value: string) => {
+    setInputMarcaPorCategoria({
+      ...inputMarcaPorCategoria,
+      [categoriaId]: value,
+    })
+
+    if (!value.trim()) {
+      setSuggestionsMarcaPorCategoria({
+        ...suggestionsMarcaPorCategoria,
+        [categoriaId]: [],
+      })
+      setShowSuggestionsMarcaPorCategoria({
+        ...showSuggestionsMarcaPorCategoria,
+        [categoriaId]: false,
+      })
+      return
+    }
+
+    const filtered = marcas.filter((marca) => {
+      const perteneceACategoria = marca.categoria_id === categoriaId
+      const coincideConBusqueda = marca.nombre.toLowerCase().includes(value.toLowerCase())
+      return perteneceACategoria && coincideConBusqueda
+    })
+
+    setSuggestionsMarcaPorCategoria({
+      ...suggestionsMarcaPorCategoria,
+      [categoriaId]: filtered,
+    })
+    setShowSuggestionsMarcaPorCategoria({
+      ...showSuggestionsMarcaPorCategoria,
+      [categoriaId]: filtered.length > 0,
+    })
+  }
+
+  // Click en sugerencia de marca para una categoría
+  const handleSelectMarcaPorCategoria = (categoriaId: string, marca: Marca) => {
     notify.info(`Marca "${marca.nombre}" seleccionada`)
-    setInputMarca('')
-    setSuggestionsMarca([])
-    setShowSuggestionsMarca(false)
-    inputMarcaRef.current?.focus()
+    setInputMarcaPorCategoria({
+      ...inputMarcaPorCategoria,
+      [categoriaId]: '',
+    })
+    setSuggestionsMarcaPorCategoria({
+      ...suggestionsMarcaPorCategoria,
+      [categoriaId]: [],
+    })
+    setShowSuggestionsMarcaPorCategoria({
+      ...showSuggestionsMarcaPorCategoria,
+      [categoriaId]: false,
+    })
   }
 
   // ENTER en input de categoría
@@ -199,30 +222,27 @@ export function AgregarCategoriaDrawer({
     setInputCategoria('')
     setSuggestionsCategoria([])
     setShowSuggestionsCategoria(false)
-    setCategoriaSeleccionada(null)
     inputCategoriaRef.current?.focus()
   }
 
-  // ENTER en input de marca
-  const handleKeyDownMarca = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+  // ENTER en input de marca para una categoría específica
+  const handleKeyDownMarcaPorCategoria = async (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    categoriaId: string
+  ) => {
     if (e.key !== 'Enter') return
     e.preventDefault()
 
-    const trimmedValue = inputMarca.trim()
-    if (!trimmedValue || !categoriaSeleccionada) return
+    const trimmedValue = (inputMarcaPorCategoria[categoriaId] || '').trim()
+    if (!trimmedValue) return
 
     const existe = marcas.find((m) => m.nombre.toLowerCase() === trimmedValue.toLowerCase())
 
     if (existe) {
-      handleSelectMarca(existe)
+      handleSelectMarcaPorCategoria(categoriaId, existe)
     } else {
-      await crearYAgregarMarca(trimmedValue)
+      await crearYAgregarMarcaPorCategoria(categoriaId, trimmedValue)
     }
-
-    setInputMarca('')
-    setSuggestionsMarca([])
-    setShowSuggestionsMarca(false)
-    inputMarcaRef.current?.focus()
   }
 
   // Crear nueva categoría
@@ -253,10 +273,8 @@ export function AgregarCategoriaDrawer({
     }
   }
 
-  // Crear nueva marca
-  const crearYAgregarMarca = async (nombre: string) => {
-    if (!categoriaSeleccionada) return
-
+  // Crear nueva marca para una categoría específica
+  const crearYAgregarMarcaPorCategoria = async (categoriaId: string, nombre: string) => {
     setLoading(true)
     try {
       const response = await fetch('/api/subcategorias', {
@@ -264,7 +282,7 @@ export function AgregarCategoriaDrawer({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre,
-          categoriaId: categoriaSeleccionada.id,
+          categoriaId,
         }),
       })
 
@@ -278,9 +296,14 @@ export function AgregarCategoriaDrawer({
 
       setMarcas([...marcas, nuevaMarca])
       notify.success(`Marca "${nombre}" creada`)
-      setInputMarca('')
-      setSuggestionsMarca([])
-      inputMarcaRef.current?.focus()
+      setInputMarcaPorCategoria({
+        ...inputMarcaPorCategoria,
+        [categoriaId]: '',
+      })
+      setSuggestionsMarcaPorCategoria({
+        ...suggestionsMarcaPorCategoria,
+        [categoriaId]: [],
+      })
     } catch (error: any) {
       notify.error(error.message || 'Error al crear marca')
     } finally {
@@ -320,25 +343,23 @@ export function AgregarCategoriaDrawer({
     }
   }
 
-  const marcasDelCategoria = categoriaSeleccionada
-    ? marcas.filter((m) => m.categoria_id === categoriaSeleccionada.id)
-    : []
-
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Editar Categoría</DrawerTitle>
+          <DrawerTitle>Agregar Categorías</DrawerTitle>
           <DrawerDescription>
-            Agrega categorías y marcas al sobre &quot;{sobreName}&quot;
+            Agrega categorías y empresas al sobre &quot;{sobreName}&quot;
           </DrawerDescription>
         </DrawerHeader>
 
         <DrawerBody>
           <div className="space-y-6">
-            {/* SECCIÓN 1: NOMBRE DE CATEGORÍA */}
+            {/* SECCIÓN 1: AGREGAR CATEGORÍAS */}
             <div className="space-y-2">
-              <Label htmlFor="categoria">Nombre</Label>
+              <Label htmlFor="categoria" className="font-medium">
+                Categorías
+              </Label>
               <div className="relative">
                 <Input
                   ref={inputCategoriaRef}
@@ -356,6 +377,7 @@ export function AgregarCategoriaDrawer({
                   onBlur={() => {
                     setTimeout(() => setShowSuggestionsCategoria(false), 200)
                   }}
+                  className="text-base"
                 />
 
                 {showSuggestionsCategoria && suggestionsCategoria.length > 0 && (
@@ -404,87 +426,119 @@ export function AgregarCategoriaDrawer({
             {/* SEPARADOR */}
             <div className="border-t" />
 
-            {/* SECCIÓN 2: DONDE COMPRAS? (MARCAS) */}
+            {/* SECCIÓN 2: AGREGA EMPRESAS POR CADA CATEGORÍA (EXPANDIBLE) */}
             {selectedCategories.length > 0 && (
-              <div className="space-y-2">
-                <div>
-                  <h3 className="font-medium">¿Donde compras?</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Agrega las marcas de estas categorías para conocer cuánto gastas en ellas
-                  </p>
-                </div>
-
-                {/* Card de marcas */}
-                <Card className="p-4 space-y-3">
-                  {/* Marcas agregadas (scroll si hay muchas) */}
-                  {marcasDelCategoria.length > 0 && (
-                    <div className="space-y-1">
-                      <Label className="text-sm">Marcas agregadas</Label>
-                      <div className="max-h-24 overflow-y-auto flex flex-wrap gap-1">
-                        {marcasDelCategoria.map((marca) => (
-                          <Badge key={marca.id} variant="secondary" className="text-sm">
-                            {marca.emoji && <span className="mr-1">{marca.emoji}</span>}
-                            {marca.nombre}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
+              <div className="border rounded-lg">
+                <button
+                  type="button"
+                  onClick={() => setExpandedEmpresas(!expandedEmpresas)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition"
+                >
+                  <span className="font-medium">Agrega empresas por cada categoría</span>
+                  {expandedEmpresas ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
                   )}
+                </button>
 
-                  {/* Input para buscar/crear marcas */}
-                  <div className="space-y-2">
-                    <Label htmlFor="marca" className="text-sm">
-                      Marcas con campo de texto
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        ref={inputMarcaRef}
-                        id="marca"
-                        type="text"
-                        placeholder="Busca o crea marca..."
-                        value={inputMarca}
-                        onChange={(e) => handleInputMarcaChange(e.target.value)}
-                        onKeyDown={handleKeyDownMarca}
-                        onFocus={() => {
-                          if (inputMarca && suggestionsMarca.length > 0) {
-                            setShowSuggestionsMarca(true)
-                          }
-                        }}
-                        onBlur={() => {
-                          setTimeout(() => setShowSuggestionsMarca(false), 200)
-                        }}
-                        disabled={!categoriaSeleccionada}
-                      />
+                {expandedEmpresas && (
+                  <div className="border-t border-border p-4 space-y-4 bg-muted/30">
+                    {selectedCategories.map((categoria) => {
+                      const marcasDelCategoria = marcas.filter((m) => m.categoria_id === categoria.id)
+                      const inputValue = inputMarcaPorCategoria[categoria.id] || ''
+                      const suggestions = suggestionsMarcaPorCategoria[categoria.id] || []
+                      const showSuggestions = showSuggestionsMarcaPorCategoria[categoria.id] || false
 
-                      {showSuggestionsMarca && suggestionsMarca.length > 0 && (
-                        <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white shadow-lg z-10">
-                          {suggestionsMarca.map((marca) => (
-                            <button
-                              key={marca.id}
-                              onClick={() => handleSelectMarca(marca)}
-                              className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
-                              type="button"
-                            >
-                              <span className="text-green-600">✓</span>
-                              {marca.emoji && <span>{marca.emoji}</span>}
-                              <span>{marca.nombre}</span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva marca
-                    </p>
+                      return (
+                        <Card key={categoria.id} className="p-3 space-y-3">
+                          <div>
+                            <p className="text-base font-medium">
+                              {categoria.emoji && <span className="mr-1">{categoria.emoji}</span>}
+                              {categoria.nombre}
+                            </p>
+                          </div>
+
+                          {/* Empresas agregadas */}
+                          {marcasDelCategoria.length > 0 && (
+                            <div className="space-y-1">
+                              <Label className="text-sm">Empresas agregadas</Label>
+                              <div className="flex flex-wrap gap-1">
+                                {marcasDelCategoria.map((marca) => (
+                                  <Badge key={marca.id} variant="secondary" className="text-sm">
+                                    {marca.emoji && <span className="mr-1">{marca.emoji}</span>}
+                                    {marca.nombre}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Input para buscar/crear empresa */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`marca-${categoria.id}`} className="text-sm">
+                              Agregar empresa
+                            </Label>
+                            <div className="relative">
+                              <Input
+                                id={`marca-${categoria.id}`}
+                                type="text"
+                                placeholder="Busca o crea empresa..."
+                                value={inputValue}
+                                onChange={(e) => handleInputMarcaChangePorCategoria(categoria.id, e.target.value)}
+                                onKeyDown={(e) => handleKeyDownMarcaPorCategoria(e, categoria.id)}
+                                onFocus={() => {
+                                  if (inputValue && suggestions.length > 0) {
+                                    setShowSuggestionsMarcaPorCategoria({
+                                      ...showSuggestionsMarcaPorCategoria,
+                                      [categoria.id]: true,
+                                    })
+                                  }
+                                }}
+                                onBlur={() => {
+                                  setTimeout(() => {
+                                    setShowSuggestionsMarcaPorCategoria({
+                                      ...showSuggestionsMarcaPorCategoria,
+                                      [categoria.id]: false,
+                                    })
+                                  }, 200)
+                                }}
+                                className="text-base"
+                              />
+
+                              {showSuggestions && suggestions.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white shadow-lg z-10">
+                                  {suggestions.map((marca) => (
+                                    <button
+                                      key={marca.id}
+                                      onClick={() => handleSelectMarcaPorCategoria(categoria.id, marca)}
+                                      className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
+                                      type="button"
+                                    >
+                                      <span className="text-green-600">✓</span>
+                                      {marca.emoji && <span>{marca.emoji}</span>}
+                                      <span>{marca.nombre}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear
+                            </p>
+                          </div>
+                        </Card>
+                      )
+                    })}
                   </div>
-                </Card>
+                )}
               </div>
             )}
 
             {selectedCategories.length === 0 && (
               <Alert>
                 <AlertDescription>
-                  Selecciona una categoría para agregar marcas
+                  Selecciona al menos una categoría para continuar
                 </AlertDescription>
               </Alert>
             )}
