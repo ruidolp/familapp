@@ -4,6 +4,12 @@ import { useMemo, useEffect, useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { CategoriaCard } from '@/components/cards/CategoriaCard'
 import { useSobreCategories } from '@/presentation/hooks/useSobres'
 import { EditarCategoriaDrawer } from '@/components/drawers/EditarCategoriaDrawer'
@@ -97,51 +103,85 @@ export function SobreCard({
     >
       {/* Contenido */}
       <div className="flex flex-col h-full" style={{ color: 'rgba(255,255,255,0.95)' }}>
-        {/* Header: Nombre + Botón Agregar Gasto */}
-        <div className="flex justify-between items-center m-4 mb-2">
-          <h3 className="font-bold text-lg">{nombre}</h3>
-          <Button
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation()
-              onAgregarPresupuesto?.()
-            }}
-            className="bg-white/20 hover:bg-white/30 text-white border border-white/30 h-8 px-3"
-            variant="outline"
-          >
-            ➕ Agregar Gasto
-          </Button>
-        </div>
+        {/* Card: Header + Presupuesto Info */}
+        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2">
+          {/* Header con nombre y presupuesto */}
+          <div className="flex justify-between items-start gap-2 mb-2">
+            <div>
+              <h3 className="font-bold text-lg">{nombre}</h3>
+            </div>
 
-        {/* Separador */}
-        <div className="border-t border-white/20 mx-4 mb-3" />
+            {/* Presupuesto del mes - right aligned */}
+            <div className="text-right flex items-center gap-2">
+              <div>
+                <p className="text-xs opacity-75">Presupuesto mes:</p>
+                <p className="text-base font-bold">
+                  ${presupuesto.toFixed(2)}
+                </p>
+              </div>
 
-        {/* Presupuesto mes - Centrado */}
-        <div className="text-center mb-3 mx-4">
-          <p className="text-base font-bold">
-            Presupuesto mes: ${presupuesto.toFixed(2)}
-          </p>
-        </div>
-
-        {/* Card con estado de gasto */}
-        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur mx-4 mb-3 p-3 space-y-2">
-          {/* Gastado y Libre */}
-          <div className="flex justify-between text-base">
-            <span className="font-medium text-white">
-              Gastado: ${gastadoNum.toFixed(2)}
-            </span>
-            <span className={`font-medium ${
-              isOverspent ? 'text-yellow-100' : 'text-green-100'
-            }`}>
-              {isOverspent
-                ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
-                : `Libre: $${presupuestoLibre.toFixed(2)}`}
-            </span>
+              {/* Menu de 3 puntos */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-white/20"
+                  >
+                    ⋮
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    onAgregarPresupuesto?.()
+                  }}>
+                    Aumentar Presupuesto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDevolverPresupuesto?.()
+                    }}
+                    disabled={presupuestoLibre <= 0}
+                  >
+                    Reducir Presupuesto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    onEditarCategorias?.()
+                  }}>
+                    Editar Categorías
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    onVerDetalle?.()
+                  }}>
+                    Ver Detalle
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
-          {/* Progress bar con % usado */}
-          <div className="flex items-center gap-2">
-            <div className={`h-2 flex-1 rounded-full overflow-hidden ${
+          {/* Separador */}
+          <div className="border-t border-white/20" />
+
+          {/* Estado de gasto */}
+          <div className="space-y-2 pt-2">
+            <div className="flex justify-between text-base">
+              <span className="font-medium text-white">
+                Gastado: ${gastadoNum.toFixed(2)}
+              </span>
+              <span className={`font-medium ${
+                isOverspent ? 'text-yellow-100' : 'text-green-100'
+              }`}>
+                {isOverspent
+                  ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
+                  : `Libre: $${presupuestoLibre.toFixed(2)}`}
+              </span>
+            </div>
+            <div className={`h-2 rounded-full overflow-hidden ${
               isOverspent ? 'bg-white/20' : 'bg-white/20'
             }`}>
               <div
@@ -151,9 +191,9 @@ export function SobreCard({
                 style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
               />
             </div>
-            <span className="text-sm font-medium text-white whitespace-nowrap">
-              {porcentajeGastado.toFixed(0)}% usado
-            </span>
+            <p className="text-sm text-white/75">
+              {porcentajeGastado.toFixed(1)}% del presupuesto
+            </p>
           </div>
         </div>
 
