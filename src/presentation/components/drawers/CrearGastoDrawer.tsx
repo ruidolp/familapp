@@ -298,8 +298,8 @@ export function CrearGastoDrawer({
       const sobreActual = sobres.find((s) => s.id === sobreSeleccionado)
       if (sobreActual) {
         const montoNum = parseFloat(monto)
-        const presupuesto = sobreActual.presupuesto_asignado || 0
-        const gastado = sobreActual.gastado || 0
+        const presupuesto = Number(sobreActual.presupuesto_asignado) || 0
+        const gastado = Number(sobreActual.gastado) || 0
         const montoLibre = presupuesto - gastado
         const nuevoGastadoTotal = gastado + montoNum
 
