@@ -239,7 +239,7 @@ export function EditarCategoriaDrawer({
             {/* Texto descriptivo */}
             <div className="space-y-1">
               <Label>¿Dónde compras?</Label>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Agrega tus marcas recurrentes para que puedas medir tus gastos
               </p>
             </div>
@@ -300,7 +300,7 @@ export function EditarCategoriaDrawer({
                       <button
                         key={sub.id}
                         onClick={() => handleSelectSuggestion(sub)}
-                        className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-sm"
+                        className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
                         type="button"
                       >
                         <span className="text-green-600">✓</span>
@@ -311,8 +311,8 @@ export function EditarCategoriaDrawer({
                   </div>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-xs">ENTER</kbd> para crear nueva
+              <p className="text-sm text-muted-foreground">
+                Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva
               </p>
             </div>
           </div>

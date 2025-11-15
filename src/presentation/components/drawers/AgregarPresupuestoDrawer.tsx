@@ -182,7 +182,7 @@ export function AgregarPresupuestoDrawer({
               <Alert variant="destructive">
                 <AlertDescription>
                   <p className="font-semibold mb-2">No tienes billeteras creadas</p>
-                  <p className="text-sm mb-3">
+                  <p className="text-base mb-3">
                     Necesitas crear una billetera para poder asignar presupuesto a este sobre.
                   </p>
                 </AlertDescription>
@@ -211,7 +211,7 @@ export function AgregarPresupuestoDrawer({
                       <SelectItem key={b.id} value={b.id}>
                         <span className="mr-2">{b.emoji || '💳'}</span>
                         <span className="font-medium">{b.nombre}</span>
-                        <span className="ml-2 text-xs text-muted-foreground">
+                        <span className="ml-2 text-sm text-muted-foreground">
                           ${Number(b.saldo_real || 0).toFixed(2)}
                         </span>
                       </SelectItem>
@@ -219,7 +219,7 @@ export function AgregarPresupuestoDrawer({
                   </SelectContent>
                 </Select>
                 {billeteraActual && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Saldo disponible: ${Number(billeteraActual.saldo_real || 0).toFixed(2)}
                   </p>
                 )}

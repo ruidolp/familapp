@@ -364,7 +364,7 @@ export function AgregarCategoriaDrawer({
                       <button
                         key={cat.id}
                         onClick={() => handleSelectCategoria(cat)}
-                        className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-sm"
+                        className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
                         type="button"
                       >
                         <span className="text-green-600">✓</span>
@@ -375,8 +375,8 @@ export function AgregarCategoriaDrawer({
                   </div>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground">
-                Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-xs">ENTER</kbd> para crear nueva
+              <p className="text-sm text-muted-foreground">
+                Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva
               </p>
             </div>
 
@@ -409,7 +409,7 @@ export function AgregarCategoriaDrawer({
               <div className="space-y-2">
                 <div>
                   <h3 className="font-medium">¿Donde compras?</h3>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Agrega las marcas de estas categorías para conocer cuánto gastas en ellas
                   </p>
                 </div>
@@ -419,10 +419,10 @@ export function AgregarCategoriaDrawer({
                   {/* Marcas agregadas (scroll si hay muchas) */}
                   {marcasDelCategoria.length > 0 && (
                     <div className="space-y-1">
-                      <Label className="text-xs">Marcas agregadas</Label>
+                      <Label className="text-sm">Marcas agregadas</Label>
                       <div className="max-h-24 overflow-y-auto flex flex-wrap gap-1">
                         {marcasDelCategoria.map((marca) => (
-                          <Badge key={marca.id} variant="secondary" className="text-xs">
+                          <Badge key={marca.id} variant="secondary" className="text-sm">
                             {marca.emoji && <span className="mr-1">{marca.emoji}</span>}
                             {marca.nombre}
                           </Badge>
@@ -433,7 +433,7 @@ export function AgregarCategoriaDrawer({
 
                   {/* Input para buscar/crear marcas */}
                   <div className="space-y-2">
-                    <Label htmlFor="marca" className="text-xs">
+                    <Label htmlFor="marca" className="text-sm">
                       Marcas con campo de texto
                     </Label>
                     <div className="relative">
@@ -462,7 +462,7 @@ export function AgregarCategoriaDrawer({
                             <button
                               key={marca.id}
                               onClick={() => handleSelectMarca(marca)}
-                              className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-sm"
+                              className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
                               type="button"
                             >
                               <span className="text-green-600">✓</span>
@@ -473,8 +473,8 @@ export function AgregarCategoriaDrawer({
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-xs">ENTER</kbd> para crear nueva marca
+                    <p className="text-sm text-muted-foreground">
+                      Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva marca
                     </p>
                   </div>
                 </Card>

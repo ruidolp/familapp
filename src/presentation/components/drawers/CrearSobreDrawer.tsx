@@ -189,7 +189,7 @@ export function CrearSobreDrawer({
                 <button
                   type="button"
                   onClick={() => setShowColorPicker(!showColorPicker)}
-                  className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center text-xs font-bold ${
+                  className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center text-sm font-bold ${
                     showColorPicker
                       ? 'border-slate-900 bg-slate-100'
                       : 'border-slate-300 hover:bg-slate-50'
@@ -211,7 +211,7 @@ export function CrearSobreDrawer({
                       type="text"
                       value={sobreColor}
                       onChange={(e) => setSobreColor(e.target.value)}
-                      className="flex-1 font-mono text-sm"
+                      className="flex-1 font-mono text-base"
                     />
                   </div>
                 </div>

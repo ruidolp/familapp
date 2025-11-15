@@ -34,7 +34,7 @@ export function CardsList({
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <p className="text-muted-foreground mb-2">{t('empty')}</p>
-        <p className="text-sm text-muted-foreground">{t('emptyDescription')}</p>
+        <p className="text-base text-muted-foreground">{t('emptyDescription')}</p>
       </div>
     )
   }
@@ -52,7 +52,7 @@ export function CardsList({
               <h3 className="font-semibold text-foreground">
                 {billetera.nombre}
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 {t(`types.${billetera.tipo}`)}
               </p>
             </div>
@@ -86,7 +86,7 @@ export function CardsList({
           {/* Saldos */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">
+              <p className="text-sm text-muted-foreground mb-1">
                 {t('balance.real')}
               </p>
               <p className={`text-lg font-bold ${Number(billetera.saldo_real) < 0 ? 'text-red-600' : 'text-foreground'}`}>
@@ -94,7 +94,7 @@ export function CardsList({
               </p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground mb-1">
+              <p className="text-sm text-muted-foreground mb-1">
                 {t('balance.projected')}
               </p>
               <p className={`text-lg font-bold ${Number(billetera.saldo_proyectado) < 0 ? 'text-red-600' : 'text-foreground'}`}>
@@ -107,12 +107,12 @@ export function CardsList({
           {(billetera.is_compartida || billetera.tasa_interes) && (
             <div className="flex gap-2">
               {billetera.is_compartida && (
-                <span className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                <span className="text-sm px-2 py-1 rounded-md bg-muted text-muted-foreground">
                   {t('fields.shared')}
                 </span>
               )}
               {billetera.tasa_interes && (
-                <span className="text-xs px-2 py-1 rounded-md bg-muted text-muted-foreground">
+                <span className="text-sm px-2 py-1 rounded-md bg-muted text-muted-foreground">
                   {t('fields.interest')}: {billetera.tasa_interes}%
                 </span>
               )}

@@ -73,7 +73,7 @@ export function DowngradeForm({ currentPlanSlug, currentPlanName, locale }: Down
               <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div>
                 <div className="font-medium">{t('willLose.features')}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-base text-muted-foreground">
                   {t('willLose.featuresDescription')}
                 </div>
               </div>
@@ -83,7 +83,7 @@ export function DowngradeForm({ currentPlanSlug, currentPlanName, locale }: Down
               <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div>
                 <div className="font-medium">{t('willLose.linkedUsers')}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-base text-muted-foreground">
                   {t('willLose.linkedUsersDescription')}
                 </div>
               </div>
@@ -93,7 +93,7 @@ export function DowngradeForm({ currentPlanSlug, currentPlanName, locale }: Down
               <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div>
                 <div className="font-medium">{t('willLose.limits')}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-base text-muted-foreground">
                   {t('willLose.limitsDescription')}
                 </div>
               </div>
@@ -103,7 +103,7 @@ export function DowngradeForm({ currentPlanSlug, currentPlanName, locale }: Down
               <XCircle className="h-5 w-5 text-red-500 mt-0.5" />
               <div>
                 <div className="font-medium">{t('willLose.support')}</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-base text-muted-foreground">
                   {t('willLose.supportDescription')}
                 </div>
               </div>
@@ -122,7 +122,7 @@ export function DowngradeForm({ currentPlanSlug, currentPlanName, locale }: Down
         </CardHeader>
         <CardContent>
           <div className="rounded-lg bg-muted p-4">
-            <div className="text-sm">
+            <div className="text-base">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-muted-foreground">{t('confirm.currentPlan')}</span>
                 <span className="font-semibold">{currentPlanName}</span>
@@ -162,7 +162,7 @@ export function DowngradeForm({ currentPlanSlug, currentPlanName, locale }: Down
           <CardDescription>{t('help.description')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-base text-muted-foreground">
             {t('help.contact')}
           </div>
         </CardContent>

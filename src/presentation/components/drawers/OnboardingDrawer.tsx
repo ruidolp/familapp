@@ -225,7 +225,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">{t('fields.currencyDescription')}</p>
+              <p className="text-base text-muted-foreground">{t('fields.currencyDescription')}</p>
             </div>
 
             {/* Día de inicio período */}
@@ -245,7 +245,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">{t('fields.dayOfMonthDescription')}</p>
+              <p className="text-base text-muted-foreground">{t('fields.dayOfMonthDescription')}</p>
             </div>
           </form>
         </DrawerBody>
@@ -258,7 +258,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
           >
             {loading ? t('buttons.submitting') : t('buttons.submit')}
           </Button>
-          <p className="text-xs text-center text-muted-foreground mt-2">{t('buttons.disclaimer')}</p>
+          <p className="text-sm text-center text-muted-foreground mt-2">{t('buttons.disclaimer')}</p>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

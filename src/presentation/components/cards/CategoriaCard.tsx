@@ -39,13 +39,13 @@ export function CategoriaCard({
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-2 flex-1">
             {emoji && <span className="text-xl">{emoji}</span>}
-            <h4 className="font-medium text-sm truncate">{nombre}</h4>
+            <h4 className="font-medium text-base truncate">{nombre}</h4>
           </div>
           <div className="text-right ml-2">
-            <p className="text-sm font-bold">
+            <p className="text-base font-bold">
               ${gastadoNum.toFixed(2)}
             </p>
-            <p className={`text-xs font-medium ${
+            <p className={`text-sm font-medium ${
               isOverspent ? 'text-red-600' : 'text-blue-600'
             }`}>
               {porcentajeNum.toFixed(1)}%

@@ -99,7 +99,7 @@ export function SobreCard({
       >
         <div>
           <h3 className="font-bold text-lg">{nombre}</h3>
-          <p className="text-sm opacity-90">
+          <p className="text-base opacity-90">
             ${presupuesto.toFixed(2)}
           </p>
         </div>
@@ -151,7 +151,7 @@ export function SobreCard({
       <div className="p-4 space-y-4">
         {/* Estado de gasto */}
         <div className="space-y-2">
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between text-base">
             <span className="font-medium">
               Gastado: ${gastadoNum.toFixed(2)}
             </span>
@@ -173,7 +173,7 @@ export function SobreCard({
               style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {porcentajeGastado.toFixed(1)}% del presupuesto
           </p>
         </div>
@@ -181,14 +181,14 @@ export function SobreCard({
         {/* Categorías */}
         {categoriasLoading ? (
           <div className="p-3 rounded-lg bg-slate-50 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               Cargando categorías...
             </p>
           </div>
         ) : categoriasOrdenadas.length > 0 ? (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-base font-medium text-muted-foreground">
                 Categorías ({categoriasOrdenadas.length})
               </p>
               <Button
@@ -226,7 +226,7 @@ export function SobreCard({
           </div>
         ) : (
           <div className="p-3 rounded-lg bg-slate-50 text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-base text-muted-foreground">
               Sin categorías aún
             </p>
             <Button

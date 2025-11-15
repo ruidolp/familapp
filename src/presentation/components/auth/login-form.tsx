@@ -203,7 +203,7 @@ export function LoginForm() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              <div className="relative flex justify-center text-sm uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
                   {tCommon('or')}
                 </span>
@@ -236,7 +236,7 @@ export function LoginForm() {
                 {...register('identifier')}
               />
               {errors.identifier && (
-                <p className="text-sm text-destructive">{errors.identifier.message}</p>
+                <p className="text-base text-destructive">{errors.identifier.message}</p>
               )}
             </div>
 
@@ -250,7 +250,7 @@ export function LoginForm() {
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-base text-destructive">{errors.password.message}</p>
               )}
             </div>
 
@@ -276,7 +276,7 @@ export function LoginForm() {
         {config.auth.recovery.enabled && (
           <Button
             variant="link"
-            className="text-sm"
+            className="text-base"
             onClick={() => router.push(`/${locale}/auth/recovery`)}
           >
             {t('forgotPassword')}
@@ -284,7 +284,7 @@ export function LoginForm() {
         )}
 
         {config.auth.registration.allowSelfSignup && (
-          <div className="text-sm text-center text-muted-foreground">
+          <div className="text-base text-center text-muted-foreground">
             {t('noAccount')}{' '}
             <Button
               variant="link"
