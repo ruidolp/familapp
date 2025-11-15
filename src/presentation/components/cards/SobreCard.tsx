@@ -129,7 +129,7 @@ export function SobreCard({
               }}
               disabled={presupuestoLibre <= 0}
             >
-              Devolver Presupuesto
+              Reducir Presupuesto
             </DropdownMenuItem>
             <DropdownMenuItem onClick={(e) => {
               e.stopPropagation()

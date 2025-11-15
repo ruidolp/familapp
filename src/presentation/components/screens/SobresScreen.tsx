@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { SobreCard } from '@/components/cards/SobreCard'
 import { CrearSobreDrawer } from '@/components/drawers/CrearSobreDrawer'
 import { AgregarPresupuestoDrawer } from '@/components/drawers/AgregarPresupuestoDrawer'
+import { ReducirPresupuestoDrawer } from '@/components/drawers/ReducirPresupuestoDrawer'
 import { CrearGastoDrawer } from '@/components/drawers/CrearGastoDrawer'
 import { AgregarCategoriaDrawer } from '@/components/drawers/AgregarCategoriaDrawer'
 import { OverspendWarningModal } from '@/components/modals/OverspendWarningModal'
@@ -39,6 +40,7 @@ export function SobresScreen({ userId }: { userId: string }) {
   // Drawers y modales
   const [crearSobreOpen, setCrearSobreOpen] = useState(false)
   const [agregarPresupuestoOpen, setAgregarPresupuestoOpen] = useState(false)
+  const [reducirPresupuestoOpen, setReducirPresupuestoOpen] = useState(false)
   const [crearGastoOpen, setCrearGastoOpen] = useState(false)
   const [agregarCategoriaOpen, setAgregarCategoriaOpen] = useState(false)
   const [sobreSeleccionado, setSobreSeleccionado] = useState<Sobre | null>(null)
@@ -113,6 +115,16 @@ export function SobresScreen({ userId }: { userId: string }) {
     } catch (error) {
       notify.error('Error al devolver presupuesto')
     }
+  }
+
+  const handleReducirPresupuesto = (sobre: Sobre) => {
+    setSobreSeleccionado(sobre)
+    setReducirPresupuestoOpen(true)
+  }
+
+  const handleReducirPresupuestoSuccess = () => {
+    fetchSobres()
+    setReducirPresupuestoOpen(false)
   }
 
   const handleDetalleSobre = (sobre: Sobre) => {
@@ -209,7 +221,7 @@ export function SobresScreen({ userId }: { userId: string }) {
                     asignaciones={sobre.asignaciones || []}
                     onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
                     onVerDetalle={() => handleDetalleSobre(sobre)}
-                    onDevolverPresupuesto={() => handleDevolverPresupuesto(sobre)}
+                    onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
                     onEditarCategorias={() => {
                       // TODO: Implementar editar categorías
                       console.log('Editar categorías del sobre:', sobre.id)
@@ -254,8 +266,19 @@ export function SobresScreen({ userId }: { userId: string }) {
         onOpenChange={setAgregarPresupuestoOpen}
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
-        userId={userId}
+        montoLibre={sobreSeleccionado ? (sobreSeleccionado.presupuesto_asignado - (sobreSeleccionado.gastado || 0)) : 0}
+        presupuestoAsignado={sobreSeleccionado?.presupuesto_asignado || 0}
         onSuccess={handleAgregarPresupuestoSuccess}
+      />
+
+      <ReducirPresupuestoDrawer
+        open={reducirPresupuestoOpen}
+        onOpenChange={setReducirPresupuestoOpen}
+        sobreId={sobreSeleccionado?.id || ''}
+        sobreName={sobreSeleccionado?.nombre || ''}
+        montoLibre={sobreSeleccionado ? (sobreSeleccionado.presupuesto_asignado - (sobreSeleccionado.gastado || 0)) : 0}
+        presupuestoAsignado={sobreSeleccionado?.presupuesto_asignado || 0}
+        onSuccess={handleReducirPresupuestoSuccess}
       />
 
       <CrearGastoDrawer
