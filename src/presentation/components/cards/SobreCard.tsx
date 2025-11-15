@@ -97,62 +97,63 @@ export function SobreCard({
     >
       {/* Contenido */}
       <div className="flex flex-col h-full" style={{ color: 'rgba(255,255,255,0.95)' }}>
-        {/* Card: Header con nombre y botón */}
-        <div className="m-4 mb-0">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-bold text-xl">{nombre}</h3>
-            <Button
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation()
-                onAgregarPresupuesto?.()
-              }}
-              className="bg-white/20 hover:bg-white/30 text-white border border-white/30 h-8 px-3"
-              variant="outline"
-            >
-              ➕ Agregar Gasto
-            </Button>
+        {/* Header: Nombre + Botón Agregar Gasto */}
+        <div className="flex justify-between items-center m-4 mb-2">
+          <h3 className="font-bold text-lg">{nombre}</h3>
+          <Button
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              onAgregarPresupuesto?.()
+            }}
+            className="bg-white/20 hover:bg-white/30 text-white border border-white/30 h-8 px-3"
+            variant="outline"
+          >
+            ➕ Agregar Gasto
+          </Button>
+        </div>
+
+        {/* Separador */}
+        <div className="border-t border-white/20 mx-4 mb-3" />
+
+        {/* Presupuesto mes - Centrado */}
+        <div className="text-center mb-3 mx-4">
+          <p className="text-base font-bold">
+            Presupuesto mes: ${presupuesto.toFixed(2)}
+          </p>
+        </div>
+
+        {/* Card con estado de gasto */}
+        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur mx-4 mb-3 p-3 space-y-2">
+          {/* Gastado y Libre */}
+          <div className="flex justify-between text-base">
+            <span className="font-medium text-white">
+              Gastado: ${gastadoNum.toFixed(2)}
+            </span>
+            <span className={`font-medium ${
+              isOverspent ? 'text-yellow-100' : 'text-green-100'
+            }`}>
+              {isOverspent
+                ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
+                : `Libre: $${presupuestoLibre.toFixed(2)}`}
+            </span>
           </div>
 
-          {/* Separador */}
-          <div className="border-t border-white/20 mb-3" />
-
-          {/* Presupuesto mes - Centrado */}
-          <div className="text-center mb-4">
-            <p className="text-base font-bold">
-              Presupuesto mes: ${presupuesto.toFixed(2)}
-            </p>
-          </div>
-
-          {/* Estado de gasto */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-base">
-              <span className="font-medium text-white">
-                Gastado: ${gastadoNum.toFixed(2)}
-              </span>
-              <span className={`font-medium ${
-                isOverspent ? 'text-yellow-100' : 'text-green-100'
-              }`}>
-                {isOverspent
-                  ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
-                  : `Libre: $${presupuestoLibre.toFixed(2)}`}
-              </span>
+          {/* Progress bar con % usado */}
+          <div className="flex items-center gap-2">
+            <div className={`h-2 flex-1 rounded-full overflow-hidden ${
+              isOverspent ? 'bg-white/20' : 'bg-white/20'
+            }`}>
+              <div
+                className={`h-full ${
+                  isOverspent ? 'bg-yellow-300' : 'bg-green-300'
+                }`}
+                style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
+              />
             </div>
-            <div className="flex items-center gap-2">
-              <div className={`h-2 flex-1 rounded-full overflow-hidden ${
-                isOverspent ? 'bg-white/20' : 'bg-white/20'
-              }`}>
-                <div
-                  className={`h-full ${
-                    isOverspent ? 'bg-yellow-300' : 'bg-green-300'
-                  }`}
-                  style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
-                />
-              </div>
-              <span className="text-sm text-white font-medium whitespace-nowrap">
-                {porcentajeGastado.toFixed(0)}% usado
-              </span>
-            </div>
+            <span className="text-sm font-medium text-white whitespace-nowrap">
+              {porcentajeGastado.toFixed(0)}% usado
+            </span>
           </div>
         </div>
 
@@ -166,8 +167,19 @@ export function SobreCard({
         {presupuesto <= 0 && (
           <div className="p-4 rounded-lg bg-white/10 text-center space-y-3 backdrop-blur border border-white/20">
             <p className="text-base text-white/75">
-              Asigne presupuesto desde el botón arriba
+              Asigne presupuesto
             </p>
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAgregarPresupuesto?.()
+              }}
+              className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
+              variant="outline"
+            >
+              ➕ Agregar Presupuesto
+            </Button>
           </div>
         )}
 
@@ -216,14 +228,14 @@ export function SobreCard({
           </div>
         )}
 
-        {/* Agregar Categoría button */}
+        {/* Agregar Categoría button - Always visible */}
         <Button
           size="sm"
           onClick={(e) => {
             e.stopPropagation()
             onAgregarCategoria?.()
           }}
-          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 h-8"
+          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30"
           variant="outline"
         >
           ➕ Agregar Categoría
