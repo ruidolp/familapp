@@ -75,7 +75,7 @@ export function VerDetalleTransaccionesDrawer({
             const transDate = new Date(t.fecha)
             return transDate.getMonth() === currentMonth && transDate.getFullYear() === currentYear
           })
-          .reduce((sum: number, t: Transaccion) => sum + t.monto, 0)
+          .reduce((sum: number, t: Transaccion) => sum + Number(t.monto), 0)
 
         setTotalMes(totalDelMes)
       } else {
@@ -185,7 +185,7 @@ export function VerDetalleTransaccionesDrawer({
 
                           {/* Monto */}
                           <p className="text-base font-semibold text-foreground ml-2">
-                            -${transaccion.monto.toFixed(2)}
+                            -${Number(transaccion.monto).toFixed(2)}
                           </p>
                         </Card>
                       ))}
