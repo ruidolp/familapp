@@ -11,6 +11,7 @@ interface CategoriaCardProps {
   porcentaje: number
   presupuestoAsignado: number
   onClick?: (e?: React.MouseEvent) => void
+  onFlashGasto?: (e?: React.MouseEvent) => void
 }
 
 export function CategoriaCard({
@@ -22,6 +23,7 @@ export function CategoriaCard({
   porcentaje,
   presupuestoAsignado,
   onClick,
+  onFlashGasto,
 }: CategoriaCardProps) {
   const gastadoNum = Number(gastado) || 0
   const porcentajeNum = Number(porcentaje) || 0
@@ -35,21 +37,34 @@ export function CategoriaCard({
       onClick={(e) => onClick?.(e)}
     >
       <div className="space-y-2">
-        {/* Header: emoji + nombre | gastado + % */}
-        <div className="flex justify-between items-start">
+        {/* Header: emoji + nombre | gastado + % | flash$ button */}
+        <div className="flex justify-between items-start gap-2">
           <div className="flex items-center gap-2 flex-1">
             {emoji && <span className="text-xl">{emoji}</span>}
             <h4 className="font-medium text-base truncate">{nombre}</h4>
           </div>
-          <div className="text-right ml-2">
-            <p className="text-base font-bold">
-              ${gastadoNum.toFixed(2)}
-            </p>
-            <p className={`text-sm font-medium ${
-              isOverspent ? 'text-red-600' : 'text-blue-600'
-            }`}>
-              {porcentajeNum.toFixed(1)}%
-            </p>
+          <div className="text-right flex items-center gap-2 whitespace-nowrap">
+            <div>
+              <p className="text-base font-bold">
+                ${gastadoNum.toFixed(2)}
+              </p>
+              <p className={`text-sm font-medium ${
+                isOverspent ? 'text-red-600' : 'text-blue-600'
+              }`}>
+                {porcentajeNum.toFixed(1)}%
+              </p>
+            </div>
+            {/* Flash$ button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onFlashGasto?.(e)
+              }}
+              className="text-lg hover:scale-110 transition-transform"
+              title="Agregar gasto rápido"
+            >
+              ⚡💰
+            </button>
           </div>
         </div>
 
