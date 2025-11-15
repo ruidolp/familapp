@@ -15,11 +15,10 @@ import {
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ChevronDown, ChevronUp } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 
-interface AgregarPresupuestoDrawerProps {
+interface ReducirPresupuestoDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   sobreId: string
@@ -29,7 +28,7 @@ interface AgregarPresupuestoDrawerProps {
   onSuccess?: () => void
 }
 
-export function AgregarPresupuestoDrawer({
+export function ReducirPresupuestoDrawer({
   open,
   onOpenChange,
   sobreId,
@@ -37,13 +36,11 @@ export function AgregarPresupuestoDrawer({
   montoLibre,
   presupuestoAsignado,
   onSuccess,
-}: AgregarPresupuestoDrawerProps) {
+}: ReducirPresupuestoDrawerProps) {
   const t = useTranslations('common')
   const [loading, setLoading] = useState(false)
   const [monto, setMonto] = useState('')
   const [observacion, setObservacion] = useState('')
-  const [expandedConfig, setExpandedConfig] = useState(false)
-  const [montoRecurrente, setMontoRecurrente] = useState('')
 
   const montoRef = useRef<HTMLInputElement>(null)
   useInputFocus(montoRef, 350)
@@ -52,8 +49,6 @@ export function AgregarPresupuestoDrawer({
     if (open) {
       setMonto('')
       setObservacion('')
-      setMontoRecurrente('')
-      setExpandedConfig(false)
     }
   }, [open])
 
@@ -73,26 +68,24 @@ export function AgregarPresupuestoDrawer({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          presupuestoAsignado: presupuestoAsignado + montoNum,
+          presupuestoAsignado: Math.max(0, presupuestoAsignado - montoNum),
           observacion,
-          montoRecurrente: montoRecurrente ? parseFloat(montoRecurrente) : undefined,
         }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        notify.error(data.error || 'Error al agregar presupuesto')
+        notify.error(data.error || 'Error al reducir presupuesto')
         setLoading(false)
         return
       }
 
-      notify.success(`Presupuesto agregado a ${sobreName}`)
+      notify.success(`Presupuesto reducido en ${sobreName}`)
 
       // Reset form
       setMonto('')
       setObservacion('')
-      setMontoRecurrente('')
 
       // Close drawer
       onOpenChange(false)
@@ -100,7 +93,7 @@ export function AgregarPresupuestoDrawer({
       // Callback
       onSuccess?.()
     } catch (err: any) {
-      notify.error(err.message || 'Error al agregar presupuesto')
+      notify.error(err.message || 'Error al reducir presupuesto')
     } finally {
       setLoading(false)
     }
@@ -110,10 +103,10 @@ export function AgregarPresupuestoDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Agregar Presupuesto</DrawerTitle>
+          <DrawerTitle>Reducir Presupuesto</DrawerTitle>
           <DrawerDescription>
-            Agrega presupuesto a tu sobre <span className="font-bold text-foreground">{sobreName}</span>, cada gasto
-            reducirá el presupuesto. Todo en orden con 1 clic
+            Reduce presupuesto de tu sobre <span className="font-bold text-foreground">{sobreName}</span>. Esta acción
+            no afecta gastos registrados
           </DrawerDescription>
         </DrawerHeader>
 
@@ -136,23 +129,28 @@ export function AgregarPresupuestoDrawer({
             {/* Separador */}
             <div className="border-t border-border" />
 
-            {/* Monto a sumar */}
+            {/* Monto a restar */}
             <div className="space-y-2">
               <Label htmlFor="monto" className="font-medium">
-                Monto a sumar <span className="text-red-500">*</span>
+                Monto a restar <span className="text-red-500">*</span>
               </Label>
-              <Input
-                ref={montoRef}
-                id="monto"
-                type="number"
-                step="0.01"
-                min="0"
-                value={monto}
-                onChange={(e) => setMonto(e.target.value)}
-                placeholder="0.00"
-                required
-                className="text-base"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xl font-bold text-foreground">
+                  -
+                </span>
+                <Input
+                  ref={montoRef}
+                  id="monto"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={monto}
+                  onChange={(e) => setMonto(e.target.value)}
+                  placeholder="0.00"
+                  required
+                  className="text-base pl-8"
+                />
+              </div>
             </div>
 
             {/* Observación */}
@@ -164,49 +162,9 @@ export function AgregarPresupuestoDrawer({
                 id="observacion"
                 value={observacion}
                 onChange={(e) => setObservacion(e.target.value)}
-                placeholder="Ej: Presupuesto inicial"
+                placeholder="Ej: Ajuste de presupuesto"
                 className="text-base"
               />
-            </div>
-
-            {/* Configuración Avanzada (Expandible) */}
-            <div className="border rounded-lg">
-              <button
-                type="button"
-                onClick={() => setExpandedConfig(!expandedConfig)}
-                className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition"
-              >
-                <span className="font-medium">Configuración Avanzada</span>
-                {expandedConfig ? (
-                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                )}
-              </button>
-
-              {expandedConfig && (
-                <div className="border-t border-border p-4 space-y-4 bg-muted/30">
-                  <div className="space-y-2">
-                    <Label htmlFor="montoRecurrente" className="font-medium">
-                      Monto Recurrente
-                    </Label>
-                    <Input
-                      id="montoRecurrente"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={montoRecurrente}
-                      onChange={(e) => setMontoRecurrente(e.target.value)}
-                      placeholder="0.00"
-                      className="text-base"
-                    />
-                  </div>
-                  <p className="text-base text-muted-foreground">
-                    Te ahorramos ingresar todos los meses el presupuesto manual, asigna el valor por defecto y
-                    nosotros lo cargaremos todos los meses
-                  </p>
-                </div>
-              )}
             </div>
           </form>
         </DrawerBody>
