@@ -268,8 +268,9 @@ export async function crearTransaccion(
       usuario_id: userId,
     })
 
-    // Actualizar saldo de billetera según tipo de transacción
-    await actualizarSaldoBilletera(billeteraId, tipo, monto)
+    // NOTA: No actualizamos saldo de billetera aquí
+    // Billetera se mantiene dormida (no se usa en UI)
+    // Solo se actualiza en operaciones administrativas
 
     // Actualizar gastado del sobre si es un GASTO
     if (tipo === 'GASTO' && sobreId) {
