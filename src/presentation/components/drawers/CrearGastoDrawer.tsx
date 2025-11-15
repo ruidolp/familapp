@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Select,
   SelectContent,
@@ -26,25 +27,21 @@ import {
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 import { useCrearGasto } from '@/presentation/hooks/useTransacciones'
+import { useCategoryContext } from '@/presentation/providers/category-context'
 
 interface Sobre {
   id: string
   nombre: string
   emoji?: string
-}
-
-interface Billetera {
-  id: string
-  nombre: string
-  emoji?: string
-  saldo_real: number
-  moneda_principal_id: string
+  presupuesto_asignado: number
+  gastado?: number
 }
 
 interface Categoria {
   id: string
   nombre: string
   emoji?: string
+  gastado?: number
 }
 
 interface Marca {
@@ -71,14 +68,14 @@ export function CrearGastoDrawer({
   preselectedCategoriaId,
   onSuccess,
 }: CrearGastoDrawerProps) {
+  const { selectedCategoryId, setSelectedCategoryId } = useCategoryContext()
+
   const [loading, setLoading] = useState(false)
   const [sobres, setSobres] = useState<Sobre[]>([])
-  const [billeteras, setBilleteras] = useState<Billetera[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [marcas, setMarcas] = useState<Marca[]>([])
 
   const [sobreSeleccionado, setSobreSeleccionado] = useState<string>('')
-  const [billeteraSeleccionada, setBilleteraSeleccionada] = useState<string>('')
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string>('')
   const [marcaSeleccionada, setMarcaSeleccionada] = useState<string>('')
   const [inputMarca, setInputMarca] = useState('')
@@ -86,6 +83,12 @@ export function CrearGastoDrawer({
   const [showSuggestionsMarca, setShowSuggestionsMarca] = useState(false)
   const [monto, setMonto] = useState('')
   const [comentario, setComentario] = useState('')
+  const [presupuestoWarning, setPresupuestoWarning] = useState<{
+    excede: boolean
+    sobre: Sobre | null
+    exceso: number
+    porcentaje: number
+  } | null>(null)
 
   const montoRef = useRef<HTMLInputElement>(null)
   const inputMarcaRef = useRef<HTMLInputElement>(null)
@@ -98,26 +101,21 @@ export function CrearGastoDrawer({
     if (open) {
       fetchData()
       setSobreSeleccionado(preselectedSobreId || '')
-      setCategoriaSeleccionada(preselectedCategoriaId || '')
+      // Usar selectedCategoryId del context si está disponible, sino usar preselectedCategoriaId
+      const categoryToSet = selectedCategoryId || preselectedCategoriaId || ''
+      setCategoriaSeleccionada(categoryToSet)
       setMarcaSeleccionada('')
       setInputMarca('')
       setMonto('')
       setComentario('')
+      setPresupuestoWarning(null)
     }
-  }, [open, preselectedSobreId, preselectedCategoriaId])
-
-  // Auto-select billetera si solo hay una
-  useEffect(() => {
-    if (billeteras.length === 1 && !billeteraSeleccionada) {
-      setBilleteraSeleccionada(billeteras[0].id)
-    }
-  }, [billeteras, billeteraSeleccionada])
+  }, [open, preselectedSobreId, preselectedCategoriaId, selectedCategoryId])
 
   const fetchData = async () => {
     try {
-      const [sobresRes, billeterasRes, categoriasRes, marcasRes] = await Promise.all([
+      const [sobresRes, categoriasRes, marcasRes] = await Promise.all([
         fetch('/api/sobres'),
-        fetch('/api/billeteras'),
         fetch('/api/categorias'),
         fetch('/api/subcategorias'),
       ])
@@ -125,10 +123,6 @@ export function CrearGastoDrawer({
       if (sobresRes.ok) {
         const data = await sobresRes.json()
         setSobres(data.sobres || [])
-      }
-      if (billeterasRes.ok) {
-        const data = await billeterasRes.json()
-        setBilleteras(data.billeteras || [])
       }
       if (categoriasRes.ok) {
         const data = await categoriasRes.json()
@@ -244,11 +238,6 @@ export function CrearGastoDrawer({
         setLoading(false)
         return
       }
-      if (!billeteraSeleccionada) {
-        notify.error('Selecciona una billetera')
-        setLoading(false)
-        return
-      }
       if (!categoriaSeleccionada) {
         notify.error('La categoría es obligatoria')
         setLoading(false)
@@ -260,10 +249,23 @@ export function CrearGastoDrawer({
         return
       }
 
+      // Obtener moneda del sobre (usando la moneda principal del usuario)
+      // Por ahora, haremos una llamada a la API para obtener la configuración del usuario
+      let monedaId = ''
+      try {
+        const configRes = await fetch('/api/user/config')
+        if (configRes.ok) {
+          const configData = await configRes.json()
+          monedaId = configData.monedaPrincipalId || ''
+        }
+      } catch (error) {
+        console.error('Error getting user currency:', error)
+      }
+
       const result = await crearGasto({
         monto: parseFloat(monto),
-        monedaId: billeteras.find((b) => b.id === billeteraSeleccionada)?.moneda_principal_id || '',
-        billeteraId: billeteraSeleccionada,
+        monedaId: monedaId,
+        billeteraId: '', // No se usa billetera, pero required por API
         tipo: 'GASTO',
         descripcion: comentario || undefined,
         fecha: new Date().toISOString(),
@@ -278,6 +280,9 @@ export function CrearGastoDrawer({
         notify.warning(`${result.warning.type}: ${result.warning.message}`)
       }
 
+      // Limpiar selectedCategoryId del context
+      setSelectedCategoryId(null)
+
       onOpenChange(false)
       onSuccess?.()
     } catch (err: any) {
@@ -287,13 +292,46 @@ export function CrearGastoDrawer({
     }
   }
 
-  const billeteraActual = billeteras.find((b) => b.id === billeteraSeleccionada)
+  // Validar presupuesto cuando el monto o sobre cambian
+  useEffect(() => {
+    if (monto && sobreSeleccionado) {
+      const sobreActual = sobres.find((s) => s.id === sobreSeleccionado)
+      if (sobreActual) {
+        const montoNum = parseFloat(monto)
+        const presupuesto = sobreActual.presupuesto_asignado || 0
+        const gastado = sobreActual.gastado || 0
+        const montoLibre = presupuesto - gastado
+        const nuevoGastadoTotal = gastado + montoNum
+
+        if (nuevoGastadoTotal > presupuesto) {
+          const exceso = nuevoGastadoTotal - presupuesto
+          const porcentaje = (exceso / presupuesto) * 100
+          setPresupuestoWarning({
+            excede: true,
+            sobre: sobreActual,
+            exceso,
+            porcentaje,
+          })
+        } else {
+          setPresupuestoWarning(null)
+        }
+      }
+    }
+  }, [monto, sobreSeleccionado, sobres])
+
   const sobreActual = sobres.find((s) => s.id === sobreSeleccionado)
   const categoriaActual = categorias.find((c) => c.id === categoriaSeleccionada)
   const marcasDelCategoria = categoriaSeleccionada
     ? marcas.filter((m) => m.categoria_id === categoriaSeleccionada)
     : []
   const marcaActual = marcas.find((m) => m.id === marcaSeleccionada)
+
+  // Ordenar categorías por uso (gastado) descendente
+  const categoriasOrdenadas = [...categorias].sort((a, b) => {
+    const gastadoA = Number(a.gastado) || 0
+    const gastadoB = Number(b.gastado) || 0
+    return gastadoB - gastadoA
+  })
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -309,16 +347,16 @@ export function CrearGastoDrawer({
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Sobre */}
             <div className="space-y-2">
-              <Label htmlFor="sobre">Sobre</Label>
+              <Label htmlFor="sobre" className="font-medium">Sobre</Label>
               {sobres.length === 1 ? (
                 <div className="flex items-center gap-2 p-2 rounded-lg border bg-slate-50">
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="text-base">
                     {sobreActual?.emoji} {sobreActual?.nombre}
                   </Badge>
                 </div>
               ) : (
                 <Select value={sobreSeleccionado} onValueChange={setSobreSeleccionado}>
-                  <SelectTrigger id="sobre">
+                  <SelectTrigger id="sobre" className="text-base">
                     <SelectValue placeholder="Seleccionar sobre" />
                   </SelectTrigger>
                   <SelectContent>
@@ -332,46 +370,26 @@ export function CrearGastoDrawer({
               )}
             </div>
 
-            {/* Billetera */}
+            {/* Categorías (como chips) */}
             <div className="space-y-2">
-              <Label htmlFor="billetera">Billetera</Label>
-              {billeteras.length === 1 ? (
-                <div className="flex items-center gap-2 p-2 rounded-lg border bg-slate-50">
-                  <Badge variant="outline">
-                    {billeteraActual?.emoji || '💳'} {billeteraActual?.nombre}
-                  </Badge>
-                </div>
-              ) : (
-                <Select value={billeteraSeleccionada} onValueChange={setBilleteraSeleccionada}>
-                  <SelectTrigger id="billetera">
-                    <SelectValue placeholder="Seleccionar billetera" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {billeteras.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.emoji || '💳'} {b.nombre} (${Number(b.saldo_real).toFixed(2)})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            {/* Categoría */}
-            <div className="space-y-2">
-              <Label htmlFor="categoria">Categoría</Label>
-              <Select value={categoriaSeleccionada} onValueChange={setCategoriaSeleccionada}>
-                <SelectTrigger id="categoria">
-                  <SelectValue placeholder="Seleccionar categoría" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categorias.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.emoji} {c.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label className="font-medium">Categoría</Label>
+              <div className="flex flex-wrap gap-2">
+                {categoriasOrdenadas.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => setCategoriaSeleccionada(c.id)}
+                    className={`px-3 py-2 rounded-full text-base font-medium transition-all ${
+                      categoriaSeleccionada === c.id
+                        ? 'bg-primary text-primary-foreground shadow-lg'
+                        : 'border border-border hover:border-primary hover:bg-muted'
+                    }`}
+                  >
+                    {c.emoji && <span className="mr-1">{c.emoji}</span>}
+                    {c.nombre}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Marca (en Card si categoría seleccionada) */}
@@ -462,7 +480,7 @@ export function CrearGastoDrawer({
 
             {/* Monto */}
             <div className="space-y-2">
-              <Label htmlFor="monto">Monto</Label>
+              <Label htmlFor="monto" className="font-medium">Monto</Label>
               <Input
                 ref={montoRef}
                 id="monto"
@@ -473,17 +491,33 @@ export function CrearGastoDrawer({
                 onChange={(e) => setMonto(e.target.value)}
                 placeholder="0.00"
                 required
+                className="text-base"
               />
             </div>
 
+            {/* Warning de presupuesto */}
+            {presupuestoWarning?.excede && (
+              <Alert className="border-red-200 bg-red-50">
+                <AlertDescription className="text-red-700">
+                  <p className="font-semibold mb-2">
+                    ⚠️ INFORMATIVO: Excede el presupuesto del sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; en ${presupuestoWarning.exceso.toFixed(2)} ({presupuestoWarning.porcentaje.toFixed(2)}%)
+                  </p>
+                  <p className="text-sm">
+                    Podrás ingresar el gasto de todas maneras, es solo informativo
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
+
             {/* Comentario */}
             <div className="space-y-2">
-              <Label htmlFor="comentario">Comentario (opcional)</Label>
+              <Label htmlFor="comentario" className="font-medium">Comentario (opcional)</Label>
               <Input
                 id="comentario"
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder="Ej: Almuerzo en la oficina"
+                className="text-base"
               />
             </div>
           </form>
@@ -495,7 +529,6 @@ export function CrearGastoDrawer({
             disabled={
               loading ||
               !sobreSeleccionado ||
-              !billeteraSeleccionada ||
               !categoriaSeleccionada ||
               !monto
             }
