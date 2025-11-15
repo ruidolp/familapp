@@ -68,7 +68,7 @@ export function ReducirPresupuestoDrawer({
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          presupuestoAsignado: Math.max(0, presupuestoAsignado - montoNum),
+          presupuestoAsignado: Math.max(0, Number(presupuestoAsignado) - montoNum),
           observacion,
         }),
       })

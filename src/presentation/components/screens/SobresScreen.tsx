@@ -343,9 +343,9 @@ export function SobresScreen({ userId }: { userId: string }) {
               }
             }}
             className="rounded-full shadow-lg"
-            size="lg"
+            size="sm"
           >
-            ➕ Agregar Gasto
+            ➕ Gasto
           </Button>
         </div>
       )}

@@ -101,97 +101,107 @@ export function SobreCard({
       }}
       onClick={onVerDetalle}
     >
-      {/* Header con nombre y presupuesto */}
-      <div
-        className="p-4 text-white flex justify-between items-start border-b border-white/10"
-      >
-        <div>
-          <h3 className="font-bold text-lg">{nombre}</h3>
-        </div>
+      {/* Contenido */}
+      <div className="flex flex-col h-full" style={{ color: 'rgba(255,255,255,0.95)' }}>
+        {/* Card: Header + Presupuesto Info */}
+        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2">
+          {/* Header con nombre y presupuesto */}
+          <div className="flex justify-between items-start gap-2 mb-2">
+            <div>
+              <h3 className="font-bold text-lg">{nombre}</h3>
+            </div>
 
-        {/* Presupuesto del mes - right aligned */}
-        <div className="text-right flex items-center gap-3">
-          <div>
-            <p className="text-xs opacity-75">Presupuesto mes:</p>
-            <p className="text-base font-bold">
-              ${presupuesto.toFixed(2)}
+            {/* Presupuesto del mes - right aligned */}
+            <div className="text-right flex items-center gap-2">
+              <div>
+                <p className="text-xs opacity-75">Presupuesto mes:</p>
+                <p className="text-base font-bold">
+                  ${presupuesto.toFixed(2)}
+                </p>
+              </div>
+
+              {/* Menu de 3 puntos */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-white/20"
+                  >
+                    ⋮
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    onAgregarPresupuesto?.()
+                  }}>
+                    Aumentar Presupuesto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onDevolverPresupuesto?.()
+                    }}
+                    disabled={presupuestoLibre <= 0}
+                  >
+                    Reducir Presupuesto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    onEditarCategorias?.()
+                  }}>
+                    Editar Categorías
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation()
+                    onVerDetalle?.()
+                  }}>
+                    Ver Detalle
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          {/* Separador */}
+          <div className="border-t border-white/20" />
+
+          {/* Estado de gasto */}
+          <div className="space-y-2 pt-2">
+            <div className="flex justify-between text-base">
+              <span className="font-medium text-white">
+                Gastado: ${gastadoNum.toFixed(2)}
+              </span>
+              <span className={`font-medium ${
+                isOverspent ? 'text-yellow-100' : 'text-green-100'
+              }`}>
+                {isOverspent
+                  ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
+                  : `Libre: $${presupuestoLibre.toFixed(2)}`}
+              </span>
+            </div>
+            <div className={`h-2 rounded-full overflow-hidden ${
+              isOverspent ? 'bg-white/20' : 'bg-white/20'
+            }`}>
+              <div
+                className={`h-full ${
+                  isOverspent ? 'bg-yellow-300' : 'bg-green-300'
+                }`}
+                style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
+              />
+            </div>
+            <p className="text-sm text-white/75">
+              {porcentajeGastado.toFixed(1)}% del presupuesto
             </p>
           </div>
-
-          {/* Menu de 3 puntos */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-white/20"
-              >
-                ⋮
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation()
-                onAgregarPresupuesto?.()
-              }}>
-                Aumentar Presupuesto
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onDevolverPresupuesto?.()
-                }}
-                disabled={presupuestoLibre <= 0}
-              >
-                Reducir Presupuesto
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation()
-                onEditarCategorias?.()
-              }}>
-                Editar Categorías
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={(e) => {
-                e.stopPropagation()
-                onVerDetalle?.()
-              }}>
-                Ver Detalle
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </div>
 
-      {/* Contenido */}
-      <div className="p-4 space-y-4 flex-1 overflow-y-auto"  style={{ color: 'rgba(255,255,255,0.95)' }}>
-        {/* Estado de gasto - Card con fondo transparente */}
-        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur p-3 space-y-2">
-          <div className="flex justify-between text-base">
-            <span className="font-medium text-white">
-              Gastado: ${gastadoNum.toFixed(2)}
-            </span>
-            <span className={`font-medium ${
-              isOverspent ? 'text-yellow-100' : 'text-green-100'
-            }`}>
-              {isOverspent
-                ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
-                : `Libre: $${presupuestoLibre.toFixed(2)}`}
-            </span>
-          </div>
-          <div className={`h-2 rounded-full overflow-hidden ${
-            isOverspent ? 'bg-white/20' : 'bg-white/20'
-          }`}>
-            <div
-              className={`h-full ${
-                isOverspent ? 'bg-yellow-300' : 'bg-green-300'
-              }`}
-              style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
-            />
-          </div>
-          <p className="text-sm text-white/75">
-            {porcentajeGastado.toFixed(1)}% del presupuesto
-          </p>
-        </div>
+        {/* Separador visual */}
+        <div className="border-t border-white/20 mx-4 mt-3 mb-3" />
+
+        {/* Contenido: Categorías y opciones */}
+        <div className="p-4 space-y-4 flex-1 overflow-y-auto">
 
         {/* Card "Asigne Presupuesto" - cuando no hay presupuesto */}
         {presupuesto <= 0 && (
@@ -277,6 +287,7 @@ export function SobreCard({
             ⚠️ Presupuesto excedido
           </Badge>
         )}
+        </div>
       </div>
 
       {/* Drawer editar categoría */}
