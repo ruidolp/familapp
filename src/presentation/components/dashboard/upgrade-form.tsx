@@ -138,12 +138,12 @@ export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
                   <Badge variant="default">Popular</Badge>
                 )}
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-base text-muted-foreground">
                 {t('plans.premium.description')}
               </div>
               <div className="text-lg font-bold">
                 ${selectedPeriod === 'monthly' ? plans.premium.monthlyPrice : plans.premium.yearlyPrice}
-                <span className="text-sm font-normal text-muted-foreground">
+                <span className="text-base font-normal text-muted-foreground">
                   /{selectedPeriod === 'monthly' ? t('period.month') : t('period.year')}
                 </span>
               </div>
@@ -165,12 +165,12 @@ export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
                 </div>
                 <Badge variant="default" className="bg-purple-500">Best Value</Badge>
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-base text-muted-foreground">
                 {t('plans.familiar.description')}
               </div>
               <div className="text-lg font-bold">
                 ${selectedPeriod === 'monthly' ? plans.familiar.monthlyPrice : plans.familiar.yearlyPrice}
-                <span className="text-sm font-normal text-muted-foreground">
+                <span className="text-base font-normal text-muted-foreground">
                   /{selectedPeriod === 'monthly' ? t('period.month') : t('period.year')}
                 </span>
               </div>
@@ -204,7 +204,7 @@ export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
                 <RadioGroupItem value="monthly" id="monthly" />
                 <div>
                   <div className="font-semibold">{t('period.monthly')}</div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-base text-muted-foreground">
                     ${selectedPlanData.monthlyPrice}/{t('period.month')}
                   </div>
                 </div>
@@ -225,11 +225,11 @@ export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
                 <div>
                   <div className="font-semibold flex items-center gap-2">
                     {t('period.yearly')}
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-sm">
                       {t('period.save')} {yearlyDiscount}%
                     </Badge>
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-base text-muted-foreground">
                     ${selectedPlanData.yearlyPrice}/{t('period.year')}
                   </div>
                 </div>
@@ -250,7 +250,7 @@ export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
             {selectedPlanData.features.map((feature) => (
               <div key={feature} className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span className="text-sm">
+                <span className="text-base">
                   {t(`features.${feature}`)}
                 </span>
               </div>
@@ -258,7 +258,7 @@ export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
             {selectedPlan === 'familiar' && (
               <div className="flex items-center gap-2 mt-2 p-2 bg-purple-50 rounded">
                 <CheckCircle2 className="h-5 w-5 text-purple-500" />
-                <span className="text-sm font-semibold">
+                <span className="text-base font-semibold">
                   {t('features.shareWith', { count: plans.familiar.maxLinkedUsers })}
                 </span>
               </div>

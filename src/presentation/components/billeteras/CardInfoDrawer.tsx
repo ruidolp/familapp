@@ -46,7 +46,7 @@ export function CardInfoDrawer({
           <div className="space-y-4">
             {/* Tipo */}
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-base text-muted-foreground mb-1">
                 {t('fields.type')}
               </p>
               <p className="font-medium">{t(`types.${billetera.tipo}`)}</p>
@@ -54,7 +54,7 @@ export function CardInfoDrawer({
 
             {/* Saldo Real */}
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-base text-muted-foreground mb-1">
                 {t('balance.real')}
               </p>
               <p className={`text-2xl font-bold ${Number(billetera.saldo_real) < 0 ? 'text-red-600' : 'text-foreground'}`}>
@@ -64,7 +64,7 @@ export function CardInfoDrawer({
 
             {/* Saldo Proyectado */}
             <div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-base text-muted-foreground mb-1">
                 {t('balance.projected')}
               </p>
               <p className={`text-2xl font-bold ${Number(billetera.saldo_proyectado) < 0 ? 'text-red-600' : 'text-foreground'}`}>
@@ -76,14 +76,14 @@ export function CardInfoDrawer({
             {billetera.is_compartida && (
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-primary" />
-                <p className="text-sm">{t('fields.shared')}</p>
+                <p className="text-base">{t('fields.shared')}</p>
               </div>
             )}
 
             {/* Interés */}
             {billetera.tasa_interes && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">
+                <p className="text-base text-muted-foreground mb-1">
                   {t('fields.interestRate')}
                 </p>
                 <p className="font-medium">{billetera.tasa_interes}%</p>

@@ -377,7 +377,7 @@ export function CrearGastoDrawer({
             {/* Marca (en Card si categoría seleccionada) */}
             {categoriaSeleccionada && (
               <Card className="p-4 space-y-3 border-blue-200 bg-blue-50">
-                <Label className="text-sm font-medium">Marca</Label>
+                <Label className="text-base font-medium">Marca</Label>
 
                 {/* Marca seleccionada */}
                 {marcaSeleccionada && marcaActual && (
@@ -388,7 +388,7 @@ export function CrearGastoDrawer({
                     </Badge>
                     <button
                       onClick={handleRemoveMarca}
-                      className="ml-auto text-xs hover:text-red-600"
+                      className="ml-auto text-sm hover:text-red-600"
                       type="button"
                     >
                       Cambiar
@@ -399,13 +399,13 @@ export function CrearGastoDrawer({
                 {/* Marcas disponibles con scroll */}
                 {!marcaSeleccionada && marcasDelCategoria.length > 0 && (
                   <div className="space-y-2">
-                    <Label className="text-xs text-muted-foreground">Selecciona una marca:</Label>
+                    <Label className="text-sm text-muted-foreground">Selecciona una marca:</Label>
                     <div className="max-h-20 overflow-x-auto flex gap-2 pb-2">
                       {marcasDelCategoria.map((marca) => (
                         <button
                           key={marca.id}
                           onClick={() => handleSelectMarca(marca)}
-                          className="flex-shrink-0 px-3 py-1 rounded-full border border-blue-300 hover:bg-blue-100 text-sm transition"
+                          className="flex-shrink-0 px-3 py-1 rounded-full border border-blue-300 hover:bg-blue-100 text-base transition"
                           type="button"
                         >
                           {marca.emoji && <span className="mr-1">{marca.emoji}</span>}
@@ -442,7 +442,7 @@ export function CrearGastoDrawer({
                         <button
                           key={marca.id}
                           onClick={() => handleSelectMarca(marca)}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-sm"
+                          className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
                           type="button"
                         >
                           <span className="text-green-600">✓</span>
@@ -454,8 +454,8 @@ export function CrearGastoDrawer({
                   )}
                 </div>
 
-                <p className="text-xs text-muted-foreground">
-                  Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-xs">ENTER</kbd> para crear nueva marca
+                <p className="text-sm text-muted-foreground">
+                  Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva marca
                 </p>
               </Card>
             )}

@@ -174,7 +174,7 @@ export function CardManageDrawer({
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div className="space-y-0.5">
                 <Label>{t('fields.shared')}</Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-base text-muted-foreground">
                   {t('fields.sharedDescription')}
                 </p>
               </div>
@@ -186,7 +186,7 @@ export function CardManageDrawer({
               <div className="flex items-center justify-between rounded-lg border p-3">
                 <div className="space-y-0.5">
                   <Label>{t('fields.interest')}</Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-base text-muted-foreground">
                     {t('fields.interestDescription')}
                   </p>
                 </div>

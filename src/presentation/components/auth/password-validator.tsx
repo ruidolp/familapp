@@ -64,7 +64,7 @@ export function PasswordValidator({ password, className = '' }: PasswordValidato
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <p className="text-sm font-medium text-muted-foreground">
+      <p className="text-base font-medium text-muted-foreground">
         La contraseña debe cumplir con:
       </p>
       <ul className="space-y-1.5">
@@ -73,7 +73,7 @@ export function PasswordValidator({ password, className = '' }: PasswordValidato
           return (
             <li
               key={rule.id}
-              className={`flex items-center gap-2 text-sm transition-colors ${
+              className={`flex items-center gap-2 text-base transition-colors ${
                 password
                   ? isValid
                     ? 'text-green-600 dark:text-green-500'

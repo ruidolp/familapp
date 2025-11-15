@@ -73,7 +73,7 @@ export function ProfileDrawer({
                 <p className="text-lg font-semibold text-red-700 font-display">
                   Cerrar Sesión
                 </p>
-                <p className="text-sm text-red-600">
+                <p className="text-base text-red-600">
                   Salir de la aplicación
                 </p>
               </div>

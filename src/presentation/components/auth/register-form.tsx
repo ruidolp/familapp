@@ -211,7 +211,7 @@ export function RegisterForm() {
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
+              <div className="relative flex justify-center text-sm uppercase">
                 <span className="bg-card px-2 text-muted-foreground">
                   {tCommon('or')}
                 </span>
@@ -267,7 +267,7 @@ export function RegisterForm() {
                 {...register('name')}
               />
               {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
+                <p className="text-base text-destructive">{errors.name.message}</p>
               )}
             </div>
 
@@ -282,7 +282,7 @@ export function RegisterForm() {
                   {...register('email' as keyof RegisterFormData)}
                 />
                 {'email' in errors && errors.email && (
-                  <p className="text-sm text-destructive">{errors.email.message}</p>
+                  <p className="text-base text-destructive">{errors.email.message}</p>
                 )}
               </div>
             ) : (
@@ -296,7 +296,7 @@ export function RegisterForm() {
                   {...register('phone' as keyof RegisterFormData)}
                 />
                 {'phone' in errors && errors.phone && (
-                  <p className="text-sm text-destructive">{errors.phone.message}</p>
+                  <p className="text-base text-destructive">{errors.phone.message}</p>
                 )}
               </div>
             )}
@@ -311,7 +311,7 @@ export function RegisterForm() {
                 {...register('password')}
               />
               {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
+                <p className="text-base text-destructive">{errors.password.message}</p>
               )}
 
               {/* Validador de contraseña en línea */}
@@ -328,7 +328,7 @@ export function RegisterForm() {
                 {...register('confirmPassword')}
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
+                <p className="text-base text-destructive">
                   {errors.confirmPassword.message}
                 </p>
               )}
@@ -353,7 +353,7 @@ export function RegisterForm() {
       </CardContent>
 
       <CardFooter className="flex flex-col">
-        <div className="text-sm text-center text-muted-foreground">
+        <div className="text-base text-center text-muted-foreground">
           {t('hasAccount')}{' '}
           <Button
             variant="link"
