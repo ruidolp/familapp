@@ -123,8 +123,27 @@ export async function POST(req: NextRequest) {
       subcategoriaId,
     } = body
 
+    console.log('📥 POST /api/transacciones - Body recibido:', {
+      monto,
+      monedaId,
+      billeteraId,
+      tipo,
+      fecha,
+      sobreId,
+      categoriaId,
+      subcategoriaId,
+      bodyKeys: Object.keys(body),
+    })
+
     // Validaciones
     if (!monto || !monedaId || !billeteraId || !tipo || !fecha) {
+      console.error('❌ Validación fallida en transacciones:', {
+        monto: !monto ? 'FALTA' : 'OK',
+        monedaId: !monedaId ? 'FALTA' : 'OK',
+        billeteraId: !billeteraId ? 'FALTA' : 'OK',
+        tipo: !tipo ? 'FALTA' : 'OK',
+        fecha: !fecha ? 'FALTA' : 'OK',
+      })
       return NextResponse.json(
         { error: 'Campos requeridos: monto, monedaId, billeteraId, tipo, fecha' },
         { status: 400 }

@@ -282,7 +282,13 @@ export function CrearGastoDrawer({
         return
       }
 
-      const result = await crearGasto({
+      if (!monedaId) {
+        notify.error('No se encontró moneda configurada. Por favor completa el onboarding.')
+        setLoading(false)
+        return
+      }
+
+      const gastoData = {
         monto: parseFloat(monto),
         monedaId: monedaId,
         billeteraId: billeteraId,
@@ -292,7 +298,11 @@ export function CrearGastoDrawer({
         sobreId: sobreSeleccionado,
         categoriaId: categoriaSeleccionada,
         subcategoriaId: marcaSeleccionada || undefined,
-      })
+      }
+
+      console.log('📤 Enviando gasto:', gastoData)
+
+      const result = await crearGasto(gastoData)
 
       notify.success('Gasto registrado correctamente')
 
