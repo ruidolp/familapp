@@ -33,7 +33,8 @@ export function CategoriaCard({
 
   return (
     <Card
-      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow p-3"
+      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow p-3 border-white/20 bg-white/10 backdrop-blur"
+      style={{ color: 'rgba(255,255,255,0.95)' }}
       onClick={(e) => onClick?.(e)}
     >
       <div className="space-y-2">
@@ -41,15 +42,15 @@ export function CategoriaCard({
         <div className="flex justify-between items-start gap-2">
           <div className="flex items-center gap-2 flex-1">
             {emoji && <span className="text-xl">{emoji}</span>}
-            <h4 className="font-medium text-base truncate">{nombre}</h4>
+            <h4 className="font-medium text-base truncate text-white">{nombre}</h4>
           </div>
           <div className="text-right flex items-center gap-2 whitespace-nowrap">
             <div>
-              <p className="text-base font-bold">
+              <p className="text-base font-bold text-white">
                 ${gastadoNum.toFixed(2)}
               </p>
               <p className={`text-sm font-medium ${
-                isOverspent ? 'text-red-600' : 'text-blue-600'
+                isOverspent ? 'text-yellow-100' : 'text-green-100'
               }`}>
                 {porcentajeNum.toFixed(1)}%
               </p>
@@ -70,11 +71,11 @@ export function CategoriaCard({
 
         {/* Progress bar */}
         <div className={`h-1.5 rounded-full overflow-hidden ${
-          isOverspent ? 'bg-red-100' : 'bg-blue-100'
+          isOverspent ? 'bg-white/20' : 'bg-white/20'
         }`}>
           <div
             className={`h-full ${
-              isOverspent ? 'bg-red-500' : 'bg-blue-500'
+              isOverspent ? 'bg-yellow-300' : 'bg-green-300'
             }`}
             style={{ width: `${Math.min(porcentajeNum, 100)}%` }}
           />

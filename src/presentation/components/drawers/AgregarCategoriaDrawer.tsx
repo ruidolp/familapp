@@ -349,7 +349,7 @@ export function AgregarCategoriaDrawer({
         <DrawerHeader>
           <DrawerTitle>Agregar Categorías</DrawerTitle>
           <DrawerDescription>
-            Agrega categorías y empresas al sobre &quot;{sobreName}&quot;
+            Usados para categorizar gastos en &quot;{sobreName}&quot;
           </DrawerDescription>
         </DrawerHeader>
 
@@ -503,6 +503,7 @@ export function AgregarCategoriaDrawer({
                                     })
                                   }, 200)
                                 }}
+                                enterKeyHint="go"
                                 className="text-base"
                               />
 

@@ -97,7 +97,7 @@ export function SobreCard({
         backgroundImage: `linear-gradient(135deg, ${bgColor}cc 0%, ${bgColor}dd 100%)`,
         backdropFilter: 'blur(8px)',
         boxShadow: '0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
-        minHeight: 'calc(100vh - 11.5rem)',
+        minHeight: 'calc(100vh - 14rem)',
       }}
       onClick={onVerDetalle}
     >
