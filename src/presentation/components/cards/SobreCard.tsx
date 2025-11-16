@@ -242,12 +242,12 @@ export function SobreCard({
             </p>
           </div>
         ) : categoriasOrdenadas.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3 flex-1 flex flex-col min-h-0">
             <p className="text-base font-medium text-white/80">
               Categorías ({categoriasOrdenadas.length})
             </p>
 
-            <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
+            <div className="overflow-y-auto space-y-2 pr-2 flex-1">
               {categoriasOrdenadas.map((categoria) => (
                 <CategoriaCard
                   key={categoria.id}

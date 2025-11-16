@@ -138,6 +138,27 @@ export function CrearGastoDrawer({
     }
   }
 
+  // Cargar categorías del sobre seleccionado cuando cambia
+  useEffect(() => {
+    if (sobreSeleccionado) {
+      fetchCategoriasBySobre(sobreSeleccionado)
+    }
+  }, [sobreSeleccionado])
+
+  const fetchCategoriasBySobre = async (sobreId: string) => {
+    try {
+      const response = await fetch(`/api/sobres/${sobreId}/categorias`)
+      if (response.ok) {
+        const data = await response.json()
+        setCategorias(data.categorias || [])
+      } else {
+        console.error('Error al cargar categorías del sobre:', response.status)
+      }
+    } catch (error) {
+      console.error('Error fetching categorías del sobre:', error)
+    }
+  }
+
   // Manejar cambios en input de marca
   const handleInputMarcaChange = (value: string) => {
     setInputMarca(value)
@@ -340,17 +361,8 @@ export function CrearGastoDrawer({
     : []
   const marcaActual = marcas.find((m) => m.id === marcaSeleccionada)
 
-  // Filtrar categorías del sobre actual y ordenar por uso (gastado) descendente
-  const categoriasDelSobre = sobreSeleccionado
-    ? categorias.filter((c) => {
-        // Obtener la asignación del sobre actual para esta categoría
-        const sobreActualData = sobres.find((s) => s.id === sobreSeleccionado)
-        // Por ahora mostrar todas las categorías (pueden ser usadas en cualquier sobre)
-        return true
-      })
-    : categorias
-
-  const categoriasOrdenadas = [...categoriasDelSobre].sort((a, b) => {
+  // Ordenar categorías del sobre por uso (gastado) descendente
+  const categoriasOrdenadas = [...categorias].sort((a, b) => {
     const gastadoA = Number(a.gastado) || 0
     const gastadoB = Number(b.gastado) || 0
     return gastadoB - gastadoA
