@@ -1,5 +1,6 @@
 'use client'
 
+import { Zap } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 interface CategoriaCardProps {
@@ -48,16 +49,16 @@ export function CategoriaCard({
             <p className="text-sm font-bold text-white">
               ${gastadoNum.toFixed(2)}
             </p>
-            {/* Flash$ button */}
+            {/* Flash gasto button */}
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 onFlashGasto?.(e)
               }}
-              className="text-base hover:scale-110 transition-transform"
+              className="hover:scale-110 transition-transform text-white/75 hover:text-white"
               title="Agregar gasto rápido"
             >
-              ⚡💰
+              <Zap size={16} className="fill-current" />
             </button>
           </div>
         </div>
