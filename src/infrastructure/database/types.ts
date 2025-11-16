@@ -526,6 +526,190 @@ export interface PeriodosTable {
 }
 
 /**
+ * ============================================
+ * SHOPPING LISTS MODULE TABLES
+ * ============================================
+ */
+
+/**
+ * Tabla: product_catalog (Catálogo global de productos)
+ */
+export interface ProductCatalogTable {
+  id: Generated<string>
+  nombre: string
+  idioma: Generated<string>
+  descripcion: string | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: product_user_custom (Productos personalizados del usuario)
+ */
+export interface ProductUserCustomTable {
+  id: Generated<string>
+  user_id: string
+  nombre: string
+  descripcion: string | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: product_categories_user (Categorías personales de productos)
+ */
+export interface ProductCategoriesUserTable {
+  id: Generated<string>
+  user_id: string
+  nombre: string
+  color: string | null
+  emoji: string | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: product_favorites (Productos favoritos)
+ */
+export interface ProductFavoritesTable {
+  id: Generated<string>
+  user_id: string
+  product_id: string | null
+  product_custom_id: string | null
+  is_catalog: Generated<boolean>
+  created_at: Generated<Timestamp>
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: product_frequency (Frecuencia de compra)
+ */
+export interface ProductFrequencyTable {
+  id: Generated<string>
+  user_id: string
+  product_id: string | null
+  product_custom_id: string | null
+  is_catalog: Generated<boolean>
+  count_purchases: Generated<number>
+  last_purchase_date: Timestamp | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+}
+
+/**
+ * Tabla: product_prices_history (Histórico de precios)
+ */
+export interface ProductPricesHistoryTable {
+  id: Generated<string>
+  user_id: string
+  product_id: string | null
+  product_custom_id: string | null
+  is_catalog: Generated<boolean>
+  store_name: string
+  price: number // DECIMAL(12,2)
+  currency_id: string | null
+  recorded_at: Generated<Timestamp>
+}
+
+/**
+ * Tabla: shopping_lists (Listas de compras)
+ */
+export interface ShoppingListsTable {
+  id: Generated<string>
+  user_id: string
+  nombre: string
+  descripcion: string | null
+  list_order: number | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: shopping_list_items (Items en las listas)
+ */
+export interface ShoppingListItemsTable {
+  id: Generated<string>
+  shopping_list_id: string
+  product_id: string | null
+  product_custom_id: string | null
+  is_catalog: Generated<boolean>
+  cantidad: number // DECIMAL(10,2)
+  unidad_medida: string | null
+  categoria_producto_id: string | null
+  marca: string | null
+  comentario: string | null
+  item_order: number
+  item_type: Generated<string>
+  created_by: string
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: shopping_list_collaborators (Colaboradores en listas)
+ */
+export interface ShoppingListCollaboratorsTable {
+  id: Generated<string>
+  shopping_list_id: string
+  user_id: string
+  permission_level: string
+  added_by: string
+  created_at: Generated<Timestamp>
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: shopping_executions (Registros de compras)
+ */
+export interface ShoppingExecutionsTable {
+  id: Generated<string>
+  shopping_list_id: string
+  user_id: string
+  status: Generated<string>
+  store_name: string
+  sobre_id: string | null
+  categoria_sobre_id: string | null
+  total_estimado: number | null // DECIMAL(12,2)
+  total_calculated: number | null // DECIMAL(12,2)
+  total_manual: number | null // DECIMAL(12,2)
+  tiempo_transcurrido: number | null
+  gasto_id: string | null
+  started_at: Generated<Timestamp>
+  completed_at: Timestamp | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+  deleted_at: Timestamp | null
+}
+
+/**
+ * Tabla: shopping_execution_items (Items en compras)
+ */
+export interface ShoppingExecutionItemsTable {
+  id: Generated<string>
+  shopping_execution_id: string
+  shopping_list_item_id: string | null
+  product_id: string | null
+  product_custom_id: string | null
+  is_catalog: Generated<boolean>
+  cantidad_comprada: number | null // DECIMAL(10,2)
+  unidad_medida: string | null
+  marca: string | null
+  precio_unitario: number | null // DECIMAL(12,2)
+  precio_total: number | null // DECIMAL(12,2)
+  es_comprado: Generated<boolean>
+  razon_no_comprado: string | null
+  es_agregado_vuelo: Generated<boolean>
+  agregado_por: string | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+}
+
+/**
  * Database interface con todas las tablas
  */
 export interface Database {
@@ -560,4 +744,16 @@ export interface Database {
   asignaciones_presupuesto: AsignacionesPresupuestoTable
   ingresos_recurrentes: IngresosRecurrentesTable
   periodos: PeriodosTable
+  // Shopping Lists Module
+  product_catalog: ProductCatalogTable
+  product_user_custom: ProductUserCustomTable
+  product_categories_user: ProductCategoriesUserTable
+  product_favorites: ProductFavoritesTable
+  product_frequency: ProductFrequencyTable
+  product_prices_history: ProductPricesHistoryTable
+  shopping_lists: ShoppingListsTable
+  shopping_list_items: ShoppingListItemsTable
+  shopping_list_collaborators: ShoppingListCollaboratorsTable
+  shopping_executions: ShoppingExecutionsTable
+  shopping_execution_items: ShoppingExecutionItemsTable
 }
