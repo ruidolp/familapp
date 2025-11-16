@@ -160,8 +160,17 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
     setReducirPresupuestoOpen(true)
   }
 
-  const handleReducirPresupuestoSuccess = () => {
-    fetchSobres()
+  const handleReducirPresupuestoSuccess = async () => {
+    const previousIndex = selectedIndex
+
+    await fetchSobres()
+
+    setTimeout(() => {
+      if (emblaApi && previousIndex >= 0) {
+        emblaApi.scrollTo(previousIndex)
+      }
+    }, 100)
+
     setReducirPresupuestoOpen(false)
   }
 
@@ -178,8 +187,17 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
     setAgregarPresupuestoOpen(true)
   }
 
-  const handleAgregarPresupuestoSuccess = () => {
-    fetchSobres()
+  const handleAgregarPresupuestoSuccess = async () => {
+    const previousIndex = selectedIndex
+
+    await fetchSobres()
+
+    setTimeout(() => {
+      if (emblaApi && previousIndex >= 0) {
+        emblaApi.scrollTo(previousIndex)
+      }
+    }, 100)
+
     setAgregarPresupuestoOpen(false)
   }
 
@@ -199,15 +217,36 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
     setAgregarCategoriaOpen(true)
   }
 
-  const handleCrearGastoSuccess = () => {
-    fetchSobres()
+  const handleCrearGastoSuccess = async () => {
+    // Guardar índice actual antes de actualizar
+    const previousIndex = selectedIndex
+
+    // Actualizar lista de sobres
+    await fetchSobres()
+
+    // Restaurar posición del carousel después de actualizar
+    setTimeout(() => {
+      if (emblaApi && previousIndex >= 0) {
+        emblaApi.scrollTo(previousIndex)
+      }
+    }, 100)
+
     setCrearGastoOpen(false)
     setSobreSeleccionadoParaGasto('')
     setCategoriaPreseleccionada('')
   }
 
-  const handleAgregarCategoriaSuccess = () => {
-    fetchSobres()
+  const handleAgregarCategoriaSuccess = async () => {
+    const previousIndex = selectedIndex
+
+    await fetchSobres()
+
+    setTimeout(() => {
+      if (emblaApi && previousIndex >= 0) {
+        emblaApi.scrollTo(previousIndex)
+      }
+    }, 100)
+
     setAgregarCategoriaOpen(false)
   }
 
