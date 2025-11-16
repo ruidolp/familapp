@@ -90,6 +90,12 @@ export function CrearGastoDrawer({
     porcentaje: number
   } | null>(null)
 
+  // Para crear categoría inline
+  const [crearCategoriaMode, setCrearCategoriaMode] = useState(false)
+  const [nuevaCategoriaName, setNuevaCategoriaName] = useState('')
+  const [nuevaCategoriaEmoji, setNuevaCategoriaEmoji] = useState('')
+  const [creandoCategoria, setCreandoCategoria] = useState(false)
+
   const montoRef = useRef<HTMLInputElement>(null)
   const inputMarcaRef = useRef<HTMLInputElement>(null)
   useInputFocus(montoRef, 350)
@@ -109,6 +115,11 @@ export function CrearGastoDrawer({
       setMonto('')
       setComentario('')
       setPresupuestoWarning(null)
+
+      // Si hay un sobre preseleccionado, cargar sus categorías inmediatamente
+      if (preselectedSobreId) {
+        fetchCategoriasBySobre(preselectedSobreId)
+      }
     }
   }, [open, preselectedSobreId, preselectedCategoriaId, selectedCategoryId])
 
@@ -246,6 +257,56 @@ export function CrearGastoDrawer({
       notify.error(error.message || 'Error al crear marca')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Crear nueva categoría
+  const handleCreateCategoria = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!nuevaCategoriaName.trim()) {
+      notify.error('Ingresa el nombre de la categoría')
+      return
+    }
+
+    if (!sobreSeleccionado) {
+      notify.error('Selecciona un sobre')
+      return
+    }
+
+    setCreandoCategoria(true)
+    try {
+      const response = await fetch('/api/categorias', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: nuevaCategoriaName.trim(),
+          emoji: nuevaCategoriaEmoji || '📁',
+          sobreId: sobreSeleccionado,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Error al crear categoría')
+      }
+
+      const data = await response.json()
+      const nuevaCategoria = data.categoria
+
+      // Agregar la nueva categoría al listado
+      setCategorias([...categorias, nuevaCategoria])
+      // Seleccionar la nueva categoría automáticamente
+      setCategoriaSeleccionada(nuevaCategoria.id)
+      // Limpiar el formulario
+      setCrearCategoriaMode(false)
+      setNuevaCategoriaName('')
+      setNuevaCategoriaEmoji('')
+      notify.success(`Categoría "${nuevaCategoriaName}" creada`)
+    } catch (error: any) {
+      notify.error(error.message || 'Error al crear categoría')
+    } finally {
+      setCreandoCategoria(false)
     }
   }
 
@@ -406,8 +467,66 @@ export function CrearGastoDrawer({
             </div>
 
             {/* Categorías (como chips) */}
-            <div className="space-y-2">
-              <Label className="font-medium">Categoría</Label>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="font-medium">Categoría</Label>
+                {!crearCategoriaMode && (
+                  <button
+                    type="button"
+                    onClick={() => setCrearCategoriaMode(true)}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    + Crear categoría
+                  </button>
+                )}
+              </div>
+
+              {/* Formulario crear categoría inline */}
+              {crearCategoriaMode && (
+                <form onSubmit={handleCreateCategoria} className="space-y-2 p-3 rounded-lg border border-dashed border-primary bg-primary/5">
+                  <Input
+                    type="text"
+                    placeholder="Nombre de la categoría"
+                    value={nuevaCategoriaName}
+                    onChange={(e) => setNuevaCategoriaName(e.target.value)}
+                    className="text-base"
+                    autoFocus
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Emoji (opcional)"
+                    value={nuevaCategoriaEmoji}
+                    onChange={(e) => setNuevaCategoriaEmoji(e.target.value)}
+                    className="text-base w-20"
+                    maxLength={2}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      type="submit"
+                      disabled={creandoCategoria || !nuevaCategoriaName.trim()}
+                      className="flex-1 text-base"
+                      size="sm"
+                    >
+                      {creandoCategoria ? 'Creando...' : 'Crear'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setCrearCategoriaMode(false)
+                        setNuevaCategoriaName('')
+                        setNuevaCategoriaEmoji('')
+                      }}
+                      className="text-base"
+                      size="sm"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {/* Chips de categorías */}
               <div className="flex flex-wrap gap-2">
                 {categoriasOrdenadas.map((c) => (
                   <button

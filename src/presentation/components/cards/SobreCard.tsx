@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useEffect, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Mail } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -108,7 +108,8 @@ export function SobreCard({
         <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2">
           {/* Header con nombre y presupuesto */}
           <div className="flex justify-between items-start gap-2 mb-2">
-            <div>
+            <div className="flex items-center gap-2">
+              <Mail size={20} className="text-white/80 flex-shrink-0" />
               <h3 className="font-bold text-lg">{nombre}</h3>
             </div>
 
