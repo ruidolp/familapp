@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
     const {
       monto,
       monedaId,
-      billeteraId,
+      billeteraId: billeteraIdFromBody,
       tipo,
       descripcion,
       fecha,
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
     console.log('📥 POST /api/transacciones - Body recibido:', {
       monto,
       monedaId,
-      billeteraId,
+      billeteraId: billeteraIdFromBody,
       tipo,
       fecha,
       sobreId,
@@ -136,18 +136,49 @@ export async function POST(req: NextRequest) {
     })
 
     // Validaciones
-    if (!monto || !monedaId || !billeteraId || !tipo || !fecha) {
+    if (!monto || !monedaId || !tipo || !fecha) {
       console.error('❌ Validación fallida en transacciones:', {
         monto: !monto ? 'FALTA' : 'OK',
         monedaId: !monedaId ? 'FALTA' : 'OK',
-        billeteraId: !billeteraId ? 'FALTA' : 'OK',
         tipo: !tipo ? 'FALTA' : 'OK',
         fecha: !fecha ? 'FALTA' : 'OK',
       })
       return NextResponse.json(
-        { error: 'Campos requeridos: monto, monedaId, billeteraId, tipo, fecha' },
+        { error: 'Campos requeridos: monto, monedaId, tipo, fecha' },
         { status: 400 }
       )
+    }
+
+    // Si no se proporciona billeteraId, obtener la billetera dummy del usuario
+    let billeteraId = billeteraIdFromBody
+    if (!billeteraId) {
+      try {
+        const { db } = await import('@/infrastructure/database/kysely')
+        const dummyWallet = await db
+          .selectFrom('billeteras')
+          .select(['id', 'nombre'])
+          .where('usuario_id', '=', session.user.id)
+          .where('nombre', '=', 'dummy')
+          .where('deleted_at', 'is', null)
+          .executeTakeFirst()
+
+        if (dummyWallet) {
+          billeteraId = dummyWallet.id
+          console.log('💰 Billetera dummy obtenida automáticamente:', billeteraId)
+        } else {
+          console.error('❌ No se encontró billetera dummy para el usuario')
+          return NextResponse.json(
+            { error: 'No se encontró billetera. Por favor completa el onboarding.' },
+            { status: 400 }
+          )
+        }
+      } catch (error) {
+        console.error('❌ Error al obtener billetera:', error)
+        return NextResponse.json(
+          { error: 'Error al procesar la transacción' },
+          { status: 500 }
+        )
+      }
     }
 
     const result = await crearTransaccion({

@@ -5,15 +5,24 @@
  * - 4 tabs principales + 1 botón contextual central
  */
 
+'use client'
+
+import { useState } from 'react'
 import { BookMarked, MailOpen, Plus, ChartColumn, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export type TabType = 'listas' | 'sobres' | 'metricas' | 'config'
 
 interface BottomNavProps {
   activeTab: TabType
   onTabChange: (tab: TabType) => void
-  onContextualAction: () => void
+  onContextualAction: (action?: string) => void
 }
 
 export function BottomNav({ activeTab, onTabChange, onContextualAction }: BottomNavProps) {
@@ -36,14 +45,42 @@ export function BottomNav({ activeTab, onTabChange, onContextualAction }: Bottom
       />
 
       {/* BOTÓN CONTEXTUAL CENTRAL */}
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onContextualAction}
-        className="h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
+      {activeTab === 'sobres' ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" side="top" className="w-48">
+            <DropdownMenuItem onClick={() => onContextualAction('nuevo-sobre')}>
+              Nuevo Sobre
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onContextualAction('nueva-categoria')}>
+              Nueva Categoría
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onContextualAction('nueva-marca')}>
+              Nueva Marca
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onContextualAction('nuevo-gasto')}>
+              Nuevo Gasto
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onContextualAction()}
+          className="h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      )}
 
       {/* MÉTRICAS */}
       <NavButton
@@ -75,16 +112,18 @@ function NavButton({ icon: Icon, label, active, onClick }: NavButtonProps) {
   return (
     <button
       onClick={onClick}
-      className="flex flex-1 flex-col items-center justify-center gap-1 py-2"
+      className={`flex flex-1 flex-col items-center justify-center gap-1 py-2 rounded-lg transition-all ${
+        active ? 'bg-primary/10' : ''
+      }`}
     >
       <Icon
-        className={`h-5 w-5 ${
-          active ? 'text-primary' : 'text-muted-foreground'
+        className={`h-5 w-5 transition-all ${
+          active ? 'text-primary font-bold' : 'text-muted-foreground'
         }`}
       />
       <span
-        className={`text-[10px] font-medium ${
-          active ? 'text-primary' : 'text-muted-foreground'
+        className={`text-[10px] font-medium transition-all ${
+          active ? 'text-primary font-bold' : 'text-muted-foreground'
         }`}
       >
         {label}

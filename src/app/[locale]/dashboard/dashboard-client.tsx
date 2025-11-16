@@ -24,6 +24,7 @@ interface DashboardClientProps {
 export function DashboardClient({ locale, user }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('listas')
   const [contextualOpen, setContextualOpen] = useState(false)
+  const [menuAction, setMenuAction] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
@@ -68,12 +69,10 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   }, [activeTab, mounted])
 
   // Acción contextual del botón central (+)
-  const handleContextualAction = () => {
-    if (activeTab === 'sobres') {
-      // TODO: Abrir menú contextual para SOBRES (Crear Sobre, Crear Gasto)
-      setContextualOpen(true)
+  const handleContextualAction = (action?: string) => {
+    if (action) {
+      setMenuAction(action)
     }
-    // Cuando está en 'listas', no hace nada (placeholder para futuro)
   }
 
   // Renderizar screen según tab activo
@@ -88,7 +87,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
           </div>
         )
       case 'sobres':
-        return <SobresScreen userId={user.id} />
+        return <SobresScreen userId={user.id} menuAction={menuAction} onMenuActionHandled={() => setMenuAction(null)} />
       case 'metricas':
         return <MetricasScreen />
       case 'config':

@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react'
 interface CrearGastoInput {
   monto: number
   monedaId: string
-  billeteraId: string
+  billeteraId?: string
   tipo: string
   descripcion?: string
   fecha: string

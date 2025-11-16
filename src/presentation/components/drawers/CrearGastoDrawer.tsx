@@ -251,7 +251,6 @@ export function CrearGastoDrawer({
 
       // Obtener moneda del usuario
       let monedaId = ''
-      let billeteraId = ''
 
       try {
         const configRes = await fetch('/api/user/config')
@@ -268,32 +267,6 @@ export function CrearGastoDrawer({
         console.error('❌ Error fetching user config:', error)
       }
 
-      // Obtener billetera dummy del usuario
-      try {
-        const billeterasRes = await fetch('/api/billeteras')
-        if (billeterasRes.ok) {
-          const billeterasData = await billeterasRes.json()
-          console.log('💼 Billeteras:', billeterasData)
-          const dummy = billeterasData.billeteras?.find((b: any) => b.nombre === 'dummy')
-          if (dummy) {
-            billeteraId = dummy.id
-            console.log('💰 Billetera dummy encontrada:', billeteraId)
-          } else {
-            console.error('❌ No se encontró billetera dummy')
-          }
-        } else {
-          console.error('❌ Error al obtener billeteras:', billeterasRes.status)
-        }
-      } catch (error) {
-        console.error('❌ Error fetching billeteras:', error)
-      }
-
-      if (!billeteraId) {
-        notify.error('No se encontró billetera. Por favor completa el onboarding.')
-        setLoading(false)
-        return
-      }
-
       if (!monedaId) {
         notify.error('No se encontró moneda configurada. Por favor completa el onboarding.')
         setLoading(false)
@@ -303,7 +276,6 @@ export function CrearGastoDrawer({
       const gastoData = {
         monto: parseFloat(monto),
         monedaId: monedaId,
-        billeteraId: billeteraId,
         tipo: 'GASTO',
         descripcion: comentario || undefined,
         fecha: new Date().toISOString(),

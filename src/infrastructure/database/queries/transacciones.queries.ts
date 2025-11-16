@@ -113,19 +113,56 @@ export async function findTransaccionesBySobre(
 ) {
   let query = db
     .selectFrom('transacciones')
-    .selectAll()
-    .where('sobre_id', '=', sobreId)
-    .where('deleted_at', 'is', null)
-    .orderBy('fecha', 'desc')
+    .leftJoin('categorias', 'categorias.id', 'transacciones.categoria_id')
+    .leftJoin('subcategorias', 'subcategorias.id', 'transacciones.subcategoria_id')
+    .select([
+      'transacciones.id',
+      'transacciones.monto',
+      'transacciones.fecha',
+      'transacciones.descripcion',
+      'transacciones.tipo',
+      'transacciones.categoria_id',
+      'transacciones.subcategoria_id',
+      'categorias.id as categoria_id_obj',
+      'categorias.nombre as categoria_nombre',
+      'categorias.emoji as categoria_emoji',
+      'subcategorias.id as subcategoria_id_obj',
+      'subcategorias.nombre as subcategoria_nombre',
+      'subcategorias.emoji as subcategoria_emoji',
+    ])
+    .where('transacciones.sobre_id', '=', sobreId)
+    .where('transacciones.deleted_at', 'is', null)
+    .orderBy('transacciones.fecha', 'desc')
 
   if (fechaInicio) {
-    query = query.where('fecha', '>=', fechaInicio)
+    query = query.where('transacciones.fecha', '>=', fechaInicio)
   }
   if (fechaFin) {
-    query = query.where('fecha', '<=', fechaFin)
+    query = query.where('transacciones.fecha', '<=', fechaFin)
   }
 
-  return await query.execute()
+  const results = await query.execute()
+
+  // Mapear resultados a estructura esperada
+  return results.map((row: any) => ({
+    id: row.id,
+    monto: row.monto,
+    fecha: row.fecha,
+    descripcion: row.descripcion,
+    tipo: row.tipo,
+    categoria_id: row.categoria_id,
+    subcategoria_id: row.subcategoria_id,
+    categoria: row.categoria_nombre ? {
+      id: row.categoria_id_obj,
+      nombre: row.categoria_nombre,
+      emoji: row.categoria_emoji,
+    } : null,
+    subcategoria: row.subcategoria_nombre ? {
+      id: row.subcategoria_id_obj,
+      nombre: row.subcategoria_nombre,
+      emoji: row.subcategoria_emoji,
+    } : null,
+  }))
 }
 
 /**

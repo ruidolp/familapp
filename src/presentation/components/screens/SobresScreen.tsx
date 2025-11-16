@@ -34,7 +34,13 @@ interface WarningType {
   details: any
 }
 
-export function SobresScreen({ userId }: { userId: string }) {
+interface SobresScreenProps {
+  userId: string
+  menuAction?: string | null
+  onMenuActionHandled?: () => void
+}
+
+export function SobresScreen({ userId, menuAction, onMenuActionHandled }: SobresScreenProps) {
   const router = useRouter()
   const [sobres, setSobres] = useState<Sobre[]>([])
   const [loading, setLoading] = useState(false)
@@ -85,6 +91,35 @@ export function SobresScreen({ userId }: { userId: string }) {
       emblaApi.off('select', onSelect)
     }
   }, [emblaApi])
+
+  // Manejar acciones del menú contextual
+  useEffect(() => {
+    if (!menuAction) return
+
+    switch (menuAction) {
+      case 'nuevo-sobre':
+        setCrearSobreOpen(true)
+        break
+      case 'nueva-categoria':
+        if (sobres.length > 0) {
+          handleAgregarCategoria(sobres[selectedIndex])
+        }
+        break
+      case 'nueva-marca':
+        // Las marcas se crean dentro del flujo de crear gasto
+        if (sobres.length > 0) {
+          handleCrearGasto(sobres[selectedIndex])
+        }
+        break
+      case 'nuevo-gasto':
+        if (sobres.length > 0) {
+          handleCrearGasto(sobres[selectedIndex])
+        }
+        break
+    }
+
+    onMenuActionHandled?.()
+  }, [menuAction])
 
   const fetchSobres = async () => {
     setLoading(true)
@@ -186,19 +221,6 @@ export function SobresScreen({ userId }: { userId: string }) {
 
   return (
     <div className="px-6 py-4 space-y-4">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">{tituloDinamico}</h2>
-        <Button
-          onClick={() => setCrearSobreOpen(true)}
-          className="shadow-lg flex items-center gap-2"
-          size="lg"
-        >
-          <Plus size={20} />
-          Nuevo Sobre
-        </Button>
-      </div>
-
       {/* Contenido */}
       {loading ? (
         <div className="rounded-lg border bg-card p-8 text-center">
