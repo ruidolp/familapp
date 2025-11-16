@@ -4,12 +4,12 @@
  * Header fijo superior con:
  * - Avatar del usuario (izquierda)
  * - Logo WAPP (centro) - Click para cerrar sesión
- * - Menú hamburguesa (derecha)
+ * - Menú hamburguesa con selector de temas (derecha)
  */
 
 'use client'
 
-import { Menu, LogOut, Moon, Sun } from 'lucide-react'
+import { Menu, LogOut, Palette, Check } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useTheme } from '@/presentation/providers/theme-provider'
 
 interface HeaderProps {
   userName?: string | null
@@ -26,22 +27,29 @@ interface HeaderProps {
 }
 
 export function Header({ userName, userImage }: HeaderProps) {
-  const handleThemeChange = (theme: string) => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else if (theme === 'light') {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    } else {
-      localStorage.setItem('theme', 'system')
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      if (prefersDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-    }
+  const { theme: currentTheme, themes, setTheme, isLoading } = useTheme()
+
+  const applyThemeVariables = (themeSlug: string) => {
+    const selectedTheme = themes.find(t => t.slug === themeSlug)
+    if (!selectedTheme) return
+
+    const root = document.documentElement
+
+    // Apply CSS custom properties for all theme colors
+    Object.entries(selectedTheme.colors).forEach(([key, value]) => {
+      root.style.setProperty(`--color-${key}`, value)
+    })
+
+    // Set data-theme attribute
+    root.setAttribute('data-theme', themeSlug)
+  }
+
+  const handleThemeChange = async (themeSlug: string) => {
+    // Apply theme immediately (optimistic update)
+    applyThemeVariables(themeSlug)
+
+    // Then save via the provider hook
+    await setTheme(themeSlug)
   }
 
   const initials = userName
@@ -72,26 +80,53 @@ export function Header({ userName, userImage }: HeaderProps) {
         <LogOut className="h-4 w-4 opacity-50" />
       </Button>
 
-      {/* Menú hamburguesa con tema */}
+      {/* Menú hamburguesa con selector de temas */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" disabled={isLoading}>
             <Menu className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => handleThemeChange('light')} className="flex items-center gap-2">
-            <Sun className="h-4 w-4" />
-            <span>Claro</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleThemeChange('dark')} className="flex items-center gap-2">
-            <Moon className="h-4 w-4" />
-            <span>Oscuro</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => handleThemeChange('system')} className="flex items-center gap-2">
-            <span>⚙️</span>
-            <span>Sistema</span>
-          </DropdownMenuItem>
+        <DropdownMenuContent align="end" className="w-56">
+          {/* Header del menú */}
+          <div className="px-2 py-1.5 flex items-center gap-2 text-sm font-semibold">
+            <Palette className="h-4 w-4" />
+            <span>Temas</span>
+          </div>
+
+          {/* Separador */}
+          <div className="my-1 h-px bg-border" />
+
+          {/* Temas disponibles */}
+          {themes.length > 0 ? (
+            themes.map((theme) => (
+              <DropdownMenuItem
+                key={theme.slug}
+                onClick={() => handleThemeChange(theme.slug)}
+                className="cursor-pointer"
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    {/* Color preview */}
+                    <div
+                      className="h-4 w-4 rounded-full border-2 border-foreground/20"
+                      style={{
+                        backgroundColor: `hsl(${theme.colors.primary})`,
+                      }}
+                    />
+                    <span className="text-sm">{theme.name}</span>
+                  </div>
+                  {currentTheme === theme.slug && (
+                    <Check className="h-4 w-4 text-primary" />
+                  )}
+                </div>
+              </DropdownMenuItem>
+            ))
+          ) : (
+            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+              No themes available
+            </div>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

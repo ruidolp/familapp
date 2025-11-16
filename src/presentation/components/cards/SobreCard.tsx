@@ -165,6 +165,15 @@ export function SobreCard({
             </div>
           </div>
 
+          {/* Badge de overspend - segunda línea del header */}
+          {isOverspent && (
+            <div className="flex justify-between items-center">
+              <Badge className="bg-red-500/30 text-red-100 border border-red-400/50">
+                ⚠️ Presupuesto excedido
+              </Badge>
+            </div>
+          )}
+
           {/* Separador */}
           <div className="border-t border-white/20" />
 
@@ -260,6 +269,19 @@ export function SobreCard({
                   }}
                 />
               ))}
+              {/* Agregar Categoría button - inside scroll container */}
+              <Button
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onAgregarCategoria?.()
+                }}
+                className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 flex items-center justify-center gap-2"
+                variant="outline"
+              >
+                <Plus size={18} />
+                Agregar Categoría
+              </Button>
             </div>
           </div>
         ) : (
@@ -267,28 +289,20 @@ export function SobreCard({
             <p className="text-base text-white/75">
               Sin categorías aún
             </p>
+            {/* Agregar Categoría button - when no categories */}
+            <Button
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAgregarCategoria?.()
+              }}
+              className="w-full mt-3 bg-white/20 hover:bg-white/30 text-white border border-white/30 flex items-center justify-center gap-2"
+              variant="outline"
+            >
+              <Plus size={18} />
+              Agregar Categoría
+            </Button>
           </div>
-        )}
-
-        {/* Agregar Categoría button - Always visible */}
-        <Button
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation()
-            onAgregarCategoria?.()
-          }}
-          className="w-full bg-white/20 hover:bg-white/30 text-white border border-white/30 flex items-center justify-center gap-2"
-          variant="outline"
-        >
-          <Plus size={18} />
-          Agregar Categoría
-        </Button>
-
-        {/* Badge de overspend */}
-        {isOverspent && (
-          <Badge className="w-full justify-center bg-yellow-400/30 text-yellow-100 border border-yellow-300/50">
-            ⚠️ Presupuesto excedido
-          </Badge>
         )}
         </div>
       </div>
