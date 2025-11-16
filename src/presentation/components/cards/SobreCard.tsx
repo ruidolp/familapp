@@ -158,7 +158,7 @@ export function SobreCard({
                     e.stopPropagation()
                     onVerDetalle?.()
                   }}>
-                    Ver Detalle
+                    Listado de Compras
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
