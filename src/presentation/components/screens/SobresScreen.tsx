@@ -38,9 +38,10 @@ interface SobresScreenProps {
   userId: string
   menuAction?: string | null
   onMenuActionHandled?: () => void
+  onCarouselChange?: (index: number, total: number) => void
 }
 
-export function SobresScreen({ userId, menuAction, onMenuActionHandled }: SobresScreenProps) {
+export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarouselChange }: SobresScreenProps) {
   const router = useRouter()
   const [sobres, setSobres] = useState<Sobre[]>([])
   const [loading, setLoading] = useState(false)
@@ -91,6 +92,11 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
       emblaApi.off('select', onSelect)
     }
   }, [emblaApi])
+
+  // Notificar al padre sobre cambios en el carousel
+  useEffect(() => {
+    onCarouselChange?.(selectedIndex, sobres.length)
+  }, [selectedIndex, sobres.length, onCarouselChange])
 
   // Manejar acciones del menú contextual
   useEffect(() => {
@@ -259,14 +265,14 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
   const tituloDinamico = sobreActual ? `${sobreActual.emoji} ${sobreActual.nombre}` : 'Sobres'
 
   return (
-    <div className="px-6 py-4 space-y-4">
+    <div className="h-full flex flex-col">
       {/* Contenido */}
       {loading ? (
-        <div className="rounded-lg border bg-card p-8 text-center">
+        <div className="flex-1 flex items-center justify-center rounded-lg border bg-card">
           <p className="text-muted-foreground">Cargando sobres...</p>
         </div>
       ) : sobres.length === 0 ? (
-        <div className="rounded-lg border bg-card p-8 text-center space-y-4">
+        <div className="flex-1 flex flex-col items-center justify-center rounded-lg border bg-card space-y-4">
           <p className="text-muted-foreground">No tienes sobres aún</p>
           <Button
             onClick={() => setCrearSobreOpen(true)}
@@ -276,7 +282,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
           </Button>
         </div>
       ) : (
-        <div className="relative pb-20">
+        <div className="relative flex-1 px-4 py-4">
           {/* Carousel Container */}
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex gap-4">
@@ -307,24 +313,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
               ))}
             </div>
           </div>
-
-          {/* Dot Indicators */}
-          {sobres.length > 1 && (
-            <div className="absolute bottom-[calc(2rem)] left-1/2 -translate-x-1/2 z-40 flex gap-2">
-              {sobres.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => scrollToSlide(index)}
-                  className={`h-2 rounded-full transition-all cursor-pointer ${
-                    index === selectedIndex
-                      ? 'w-6 bg-primary'
-                      : 'w-2 bg-muted'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       )}
 
@@ -396,25 +384,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled }: Sobres
         }}
         loading={false}
       />
-
-      {/* Botones flotantes para sobre */}
-      {/* Botón abajo: Agregar Gasto a sobre existente */}
-      {sobres.length > 0 && (
-        <div className="fixed right-3 bottom-[calc(6rem-2px)] z-40 px-2">
-          <Button
-            onClick={() => {
-              const sobreActual = sobres[selectedIndex]
-              if (sobreActual) {
-                handleCrearGasto(sobreActual)
-              }
-            }}
-            className="rounded-full shadow-lg"
-            size="sm"
-          >
-            ➕ Gasto
-          </Button>
-        </div>
-      )}
     </div>
   )
 }

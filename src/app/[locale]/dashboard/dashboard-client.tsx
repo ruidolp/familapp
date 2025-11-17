@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { AppShell } from '@/presentation/components/layout/AppShell'
 import { Header } from '@/presentation/components/layout/Header'
 import { BottomNav, type TabType } from '@/presentation/components/layout/BottomNav'
+import { DotIndicator } from '@/presentation/components/layout/DotIndicator'
 import { SobresScreen } from '@/presentation/components/screens/SobresScreen'
 import { MetricasScreen } from '@/presentation/components/screens/MetricasScreen'
 import { ConfigScreen } from '@/presentation/components/screens/ConfigScreen'
@@ -28,6 +29,8 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
+  const [sobreCarouselIndex, setSobreCarouselIndex] = useState(0)
+  const [sobreCarouselTotal, setSobreCarouselTotal] = useState(0)
 
   // Mantener la página activa al refrescar usando localStorage
   useEffect(() => {
@@ -80,21 +83,31 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
     switch (activeTab) {
       case 'listas':
         return (
-          <div className="p-4 flex items-center justify-center min-h-screen">
+          <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <p className="text-muted-foreground">Listas próximamente</p>
             </div>
           </div>
         )
       case 'sobres':
-        return <SobresScreen userId={user.id} menuAction={menuAction} onMenuActionHandled={() => setMenuAction(null)} />
+        return (
+          <SobresScreen
+            userId={user.id}
+            menuAction={menuAction}
+            onMenuActionHandled={() => setMenuAction(null)}
+            onCarouselChange={(index: number, total: number) => {
+              setSobreCarouselIndex(index)
+              setSobreCarouselTotal(total)
+            }}
+          />
+        )
       case 'metricas':
         return <MetricasScreen />
       case 'config':
         return <ConfigScreen />
       default:
         return (
-          <div className="p-4 flex items-center justify-center min-h-screen">
+          <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <p className="text-muted-foreground">Listas próximamente</p>
             </div>
@@ -106,18 +119,23 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   return (
     <>
       <AppShell
-        header={
+        headerContent={
           <Header
             userName={user.name}
             userImage={user.image}
           />
         }
-        footer={
+        footerContent={
           <BottomNav
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onContextualAction={handleContextualAction}
           />
+        }
+        dotIndicator={
+          activeTab === 'sobres' && sobreCarouselTotal > 0
+            ? <DotIndicator total={sobreCarouselTotal} current={sobreCarouselIndex} />
+            : undefined
         }
       >
         {renderActiveScreen()}
