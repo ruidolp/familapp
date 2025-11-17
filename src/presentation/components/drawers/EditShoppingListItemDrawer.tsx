@@ -19,7 +19,7 @@ import { quantityToDecimal } from '@/infrastructure/utils/quantity'
 
 interface ListItem {
   id: string
-  nombre: string
+  nombre?: string
   cantidad: number
   comentario?: string
 }
