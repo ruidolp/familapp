@@ -31,6 +31,11 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const [sobreCarouselIndex, setSobreCarouselIndex] = useState(0)
   const [sobreCarouselTotal, setSobreCarouselTotal] = useState(0)
+  const [sobreActual, setSobreActual] = useState<{
+    nombre: string
+    emoji?: string
+    presupuesto: number
+  } | null>(null)
 
   // Mantener la página activa al refrescar usando localStorage
   useEffect(() => {
@@ -99,6 +104,9 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
               setSobreCarouselIndex(index)
               setSobreCarouselTotal(total)
             }}
+            onSobreChange={(sobre: { nombre: string; emoji?: string; presupuesto: number } | null) => {
+              setSobreActual(sobre)
+            }}
           />
         )
       case 'metricas':
@@ -121,8 +129,10 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
       <AppShell
         headerContent={
           <Header
-            userName={user.name}
-            userImage={user.image}
+            activeTab={activeTab}
+            sobreNombre={sobreActual?.nombre}
+            sobreEmoji={sobreActual?.emoji}
+            sobrePresupuesto={sobreActual?.presupuesto}
           />
         }
         footerContent={

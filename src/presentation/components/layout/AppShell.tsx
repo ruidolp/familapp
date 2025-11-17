@@ -47,7 +47,7 @@ export function AppShell({
   children,
   footerContent,
   dotIndicator,
-  headerHeight = 60,
+  headerHeight = 51,
   footerHeight = 80,
   dotIndicatorHeight = 40,
 }: AppShellProps) {

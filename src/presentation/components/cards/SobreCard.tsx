@@ -98,121 +98,101 @@ export function SobreCard({
         backgroundImage: `linear-gradient(135deg, ${bgColor}cc 0%, ${bgColor}dd 100%)`,
         backdropFilter: 'blur(8px)',
         boxShadow: '0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
-        minHeight: 'calc(100vh - 14rem)',
+        minHeight: 'calc(100vh - 12rem)',
       }}
       onClick={onVerDetalle}
     >
       {/* Contenido */}
       <div className="flex flex-col h-full" style={{ color: 'rgba(255,255,255,0.95)' }}>
-        {/* Card: Header + Presupuesto Info */}
+        {/* Card: Estado de gasto */}
         <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2">
-          {/* Header con nombre y presupuesto */}
-          <div className="flex justify-between items-start gap-2 mb-2">
-            <div className="flex items-center gap-2">
-              <Mail size={20} className="text-white/80 flex-shrink-0" />
-              <h3 className="font-bold text-lg">{nombre}</h3>
-            </div>
-
-            {/* Presupuesto del mes - right aligned */}
-            <div className="text-right flex items-center gap-2">
-              <div>
-                <p className="text-xs opacity-75">Presupuesto mes:</p>
-                <p className="text-base font-bold">
-                  ${presupuesto.toFixed(2)}
-                </p>
+          {/* Header con estado de gasto y menú */}
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-1">
+              <div className="flex justify-between text-base mb-2">
+                <span className="font-medium text-white">
+                  Gastado: ${gastadoNum.toFixed(2)}
+                </span>
+                <span className={`font-medium ${
+                  isOverspent ? 'text-yellow-100' : 'text-green-100'
+                }`}>
+                  {isOverspent
+                    ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
+                    : `Libre: $${presupuestoLibre.toFixed(2)}`}
+                </span>
               </div>
 
-              {/* Menu de 3 puntos */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 hover:bg-white/20"
-                  >
-                    ⋮
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    onAgregarPresupuesto?.()
-                  }}>
-                    Aumentar Presupuesto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onDevolverPresupuesto?.()
-                    }}
-                    disabled={presupuestoLibre <= 0}
-                  >
-                    Reducir Presupuesto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    onEditarCategorias?.()
-                  }}>
-                    Editar Categorías
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={(e) => {
-                    e.stopPropagation()
-                    onVerDetalle?.()
-                  }}>
-                    Listado de Compras
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
+              {/* Badge de overspend */}
+              {isOverspent && (
+                <Badge className="bg-red-500/30 text-red-100 border border-red-400/50 mb-2">
+                  ⚠️ Presupuesto excedido
+                </Badge>
+              )}
 
-          {/* Badge de overspend - segunda línea del header */}
-          {isOverspent && (
-            <div className="flex justify-between items-center">
-              <Badge className="bg-red-500/30 text-red-100 border border-red-400/50">
-                ⚠️ Presupuesto excedido
-              </Badge>
-            </div>
-          )}
-
-          {/* Separador */}
-          <div className="border-t border-white/20" />
-
-          {/* Estado de gasto */}
-          <div className="space-y-2 pt-2">
-            <div className="flex justify-between text-base">
-              <span className="font-medium text-white">
-                Gastado: ${gastadoNum.toFixed(2)}
-              </span>
-              <span className={`font-medium ${
-                isOverspent ? 'text-yellow-100' : 'text-green-100'
+              <div className={`h-2 rounded-full overflow-hidden ${
+                isOverspent ? 'bg-white/20' : 'bg-white/20'
               }`}>
-                {isOverspent
-                  ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
-                  : `Libre: $${presupuestoLibre.toFixed(2)}`}
-              </span>
+                <div
+                  className={`h-full ${
+                    isOverspent ? 'bg-yellow-300' : 'bg-green-300'
+                  }`}
+                  style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
+                />
+              </div>
+              <p className="text-sm text-white/75 mt-1">
+                {porcentajeGastado.toFixed(1)}% del presupuesto
+              </p>
             </div>
-            <div className={`h-2 rounded-full overflow-hidden ${
-              isOverspent ? 'bg-white/20' : 'bg-white/20'
-            }`}>
-              <div
-                className={`h-full ${
-                  isOverspent ? 'bg-yellow-300' : 'bg-green-300'
-                }`}
-                style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
-              />
-            </div>
-            <p className="text-sm text-white/75">
-              {porcentajeGastado.toFixed(1)}% del presupuesto
-            </p>
+
+            {/* Menu de 3 puntos */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-white/20 flex-shrink-0"
+                >
+                  ⋮
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation()
+                  onAgregarPresupuesto?.()
+                }}>
+                  Aumentar Presupuesto
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDevolverPresupuesto?.()
+                  }}
+                  disabled={presupuestoLibre <= 0}
+                >
+                  Reducir Presupuesto
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation()
+                  onEditarCategorias?.()
+                }}>
+                  Editar Categorías
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation()
+                  onVerDetalle?.()
+                }}>
+                  Listado de Compras
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
         {/* Separador visual */}
-        <div className="border-t border-white/20 mx-4 mt-3 mb-3" />
+        <div className="border-t border-white/20 mx-4 mt-3 mb-1" />
 
         {/* Contenido: Categorías y opciones */}
-        <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+        <div className="px-4 pt-2 pb-4 space-y-4 flex-1 overflow-y-auto">
 
         {/* Card "Asigne Presupuesto" - cuando no hay presupuesto */}
         {presupuesto <= 0 && (

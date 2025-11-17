@@ -39,9 +39,10 @@ interface SobresScreenProps {
   menuAction?: string | null
   onMenuActionHandled?: () => void
   onCarouselChange?: (index: number, total: number) => void
+  onSobreChange?: (sobre: { nombre: string; emoji?: string; presupuesto: number } | null) => void
 }
 
-export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarouselChange }: SobresScreenProps) {
+export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarouselChange, onSobreChange }: SobresScreenProps) {
   const router = useRouter()
   const [sobres, setSobres] = useState<Sobre[]>([])
   const [loading, setLoading] = useState(false)
@@ -97,6 +98,20 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   useEffect(() => {
     onCarouselChange?.(selectedIndex, sobres.length)
   }, [selectedIndex, sobres.length, onCarouselChange])
+
+  // Notificar al padre sobre el sobre actual
+  useEffect(() => {
+    if (sobres.length > 0 && sobres[selectedIndex]) {
+      const sobre = sobres[selectedIndex]
+      onSobreChange?.({
+        nombre: sobre.nombre,
+        emoji: sobre.emoji,
+        presupuesto: sobre.presupuesto_asignado,
+      })
+    } else {
+      onSobreChange?.(null)
+    }
+  }, [selectedIndex, sobres, onSobreChange])
 
   // Manejar acciones del menú contextual
   useEffect(() => {
