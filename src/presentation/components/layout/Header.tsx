@@ -68,7 +68,7 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
               <span className="font-semibold truncate">{sobreNombre}</span>
               {sobrePresupuesto !== undefined && (
                 <span className="text-sm text-muted-foreground ml-auto whitespace-nowrap">
-                  Presupuesto: ${sobrePresupuesto.toFixed(2)}
+                  Presupuesto: ${Number(sobrePresupuesto).toFixed(2)}
                 </span>
               )}
             </div>
