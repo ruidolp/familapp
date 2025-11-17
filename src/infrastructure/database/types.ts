@@ -279,6 +279,19 @@ export interface UserThemePreferencesTable {
 }
 
 /**
+ * Tabla: user_preferences (Preferencias de usuario para listas de compras)
+ */
+export interface UserPreferencesTable {
+  id: Generated<string>
+  user_id: string
+  show_inline_qty: Generated<boolean>
+  group_by_category: Generated<boolean>
+  quick_list_mode: Generated<boolean>
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+}
+
+/**
  * CORE - Financial System Tables
  */
 
@@ -623,6 +636,7 @@ export interface ShoppingListsTable {
   nombre: string
   descripcion: string | null
   list_order: number | null
+  purchase_count: Generated<number>
   created_at: Generated<Timestamp>
   updated_at: Timestamp
   deleted_at: Timestamp | null
@@ -728,6 +742,7 @@ export interface Database {
   payment_products: PaymentProductsTable
   themes: ThemesTable
   user_theme_preferences: UserThemePreferencesTable
+  user_preferences: UserPreferencesTable
   // CORE - Financial System
   monedas: MonedasTable
   tipos_cambio: TiposCambioTable
