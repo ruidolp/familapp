@@ -2,31 +2,34 @@
  * Header Component
  *
  * Header fijo superior con:
- * - Avatar del usuario (izquierda)
- * - Logo WAPP (centro) - Click para cerrar sesión
- * - Menú hamburguesa con selector de temas (derecha)
+ * - Título dinámico según la sección activa (izquierda/centro)
+ * - Menú hamburguesa con selector de temas y logout (derecha)
  */
 
 'use client'
 
-import { Menu, LogOut, Palette, Check } from 'lucide-react'
+import { Menu, LogOut, Palette, Check, Mail } from 'lucide-react'
 import { signOut } from 'next-auth/react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useTheme } from '@/presentation/providers/theme-provider'
 
+type TabType = 'listas' | 'sobres' | 'metricas' | 'config'
+
 interface HeaderProps {
-  userName?: string | null
-  userImage?: string | null
+  activeTab: TabType
+  sobreNombre?: string
+  sobreEmoji?: string
+  sobrePresupuesto?: number
 }
 
-export function Header({ userName, userImage }: HeaderProps) {
+export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }: HeaderProps) {
   const { theme: currentTheme, themes, setTheme, isLoading } = useTheme()
 
   const applyThemeVariables = (themeSlug: string) => {
@@ -52,35 +55,49 @@ export function Header({ userName, userImage }: HeaderProps) {
     await setTheme(themeSlug)
   }
 
-  const initials = userName
-    ?.split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2) || '??'
+  // Determinar el título según la tab activa
+  const getTitulo = () => {
+    switch (activeTab) {
+      case 'listas':
+        return 'Listas'
+      case 'sobres':
+        if (sobreNombre) {
+          return (
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <Mail size={20} className="text-foreground/80 flex-shrink-0" />
+              <span className="font-semibold truncate">{sobreNombre}</span>
+              {sobrePresupuesto !== undefined && (
+                <span className="text-sm text-muted-foreground ml-auto whitespace-nowrap">
+                  Presupuesto: ${sobrePresupuesto.toFixed(2)}
+                </span>
+              )}
+            </div>
+          )
+        }
+        return 'Sobres'
+      case 'metricas':
+        return 'Métricas'
+      case 'config':
+        return 'Config'
+      default:
+        return 'WAPP'
+    }
+  }
 
   return (
     <div className="h-full flex items-center justify-between px-4 border-b bg-card">
-      {/* Avatar usuario */}
-      <Button variant="ghost" size="icon" className="rounded-full">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={userImage || undefined} />
-          <AvatarFallback>{initials}</AvatarFallback>
-        </Avatar>
-      </Button>
+      {/* Título dinámico */}
+      <div className="flex-1 min-w-0 mr-4">
+        {typeof getTitulo() === 'string' ? (
+          <h1 className="text-lg font-semibold text-foreground truncate">
+            {getTitulo()}
+          </h1>
+        ) : (
+          getTitulo()
+        )}
+      </div>
 
-      {/* Logo WAPP - Click para cerrar sesión */}
-      <Button
-        variant="ghost"
-        className="text-xl font-bold tracking-tight text-foreground hover:bg-transparent"
-        onClick={() => signOut({ callbackUrl: '/auth/login' })}
-        title="Cerrar sesión"
-      >
-        <span className="mr-2">WAPP</span>
-        <LogOut className="h-4 w-4 opacity-50" />
-      </Button>
-
-      {/* Menú hamburguesa con selector de temas */}
+      {/* Menú hamburguesa con selector de temas y logout */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" disabled={isLoading}>
@@ -95,7 +112,7 @@ export function Header({ userName, userImage }: HeaderProps) {
           </div>
 
           {/* Separador */}
-          <div className="my-1 h-px bg-border" />
+          <DropdownMenuSeparator />
 
           {/* Temas disponibles */}
           {themes.length > 0 ? (
@@ -127,6 +144,20 @@ export function Header({ userName, userImage }: HeaderProps) {
               No themes available
             </div>
           )}
+
+          {/* Separador antes de logout */}
+          <DropdownMenuSeparator />
+
+          {/* Logout */}
+          <DropdownMenuItem
+            onClick={() => signOut({ callbackUrl: '/auth/login' })}
+            className="cursor-pointer text-destructive focus:text-destructive"
+          >
+            <div className="flex items-center gap-2 w-full">
+              <LogOut className="h-4 w-4" />
+              <span>Cerrar sesión</span>
+            </div>
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
