@@ -28,6 +28,7 @@ export async function createShoppingList(
       'user_id',
       'nombre',
       'descripcion',
+      'purchase_count',
       'created_at',
       'updated_at',
     ])
