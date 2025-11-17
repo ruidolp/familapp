@@ -64,7 +64,7 @@ export function CreateShoppingListDrawer({
       }
 
       const data = await response.json()
-      const listId = data.shopping_list.id
+      const listId = data.list.id
 
       notify.success('Lista creada correctamente')
 

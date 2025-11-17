@@ -4,6 +4,8 @@ import {
   createShoppingList,
   getShoppingListsByUser,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
+import { db } from '@/infrastructure/database/kysely'
+import { sql } from 'kysely'
 import { notify } from '@/infrastructure/lib/notifications'
 
 export async function GET(req: NextRequest) {
@@ -14,9 +16,29 @@ export async function GET(req: NextRequest) {
     }
 
     const lists = await getShoppingListsByUser(session.user.id)
+
+    // Get item counts for each list
+    const itemCounts = await db
+      .selectFrom('shopping_list_items')
+      .select(['shopping_list_id', sql<number>`count(*) as item_count`.as('item_count')])
+      .where('deleted_at', 'is', null)
+      .groupBy('shopping_list_id')
+      .execute()
+
+    // Create a map of list id -> item count
+    const itemCountMap = new Map(
+      itemCounts.map((row) => [row.shopping_list_id, (row as any).item_count])
+    )
+
+    // Add item count to each list
+    const listsWithCounts = lists.map((list) => ({
+      ...list,
+      _itemCount: itemCountMap.get(list.id) || 0,
+    }))
+
     return NextResponse.json({
       success: true,
-      lists,
+      lists: listsWithCounts,
       total: lists.length,
     })
   } catch (error: any) {

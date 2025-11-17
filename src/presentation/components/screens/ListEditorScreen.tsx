@@ -24,6 +24,7 @@ import { Label } from '@/components/ui/label'
 import { notify } from '@/infrastructure/lib/notifications'
 import { adjustQty, quantityToDecimal, isValidQuantity } from '@/infrastructure/utils/quantity'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
+import { EditShoppingListItemDrawer } from '@/components/drawers/EditShoppingListItemDrawer'
 
 // Types
 interface Product {
@@ -52,6 +53,7 @@ interface ListItem {
   marca?: string
   comentario?: string
   item_order: number
+  nombre?: string // From COALESCE in database query
   _productName?: string // Enriched client-side
 }
 
@@ -102,6 +104,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // UI preferences
   const [groupByCategory, setGroupByCategory] = useState(false)
   const [showInlineQty, setShowInlineQty] = useState(true)
+
+  // Edit drawer state
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
 
   // Autosave state
   const [pendingChanges, setPendingChanges] = useState<{
@@ -215,6 +221,37 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const handleRetry = () => {
     setSaveError(false)
     saveChanges()
+  }
+
+  const handleEditItem = (item: ListItem) => {
+    setSelectedItem(item)
+    setEditDrawerOpen(true)
+  }
+
+  const handleSaveItemEdit = (cantidad: number, comentario?: string) => {
+    if (!selectedItem) return
+
+    // Update local state
+    setItems(
+      items.map((i) =>
+        i.id === selectedItem.id
+          ? { ...i, cantidad, comentario }
+          : i
+      )
+    )
+
+    // Add to pending updates
+    if (!selectedItem.id.startsWith('temp-')) {
+      setPendingChanges((prev) => ({
+        ...prev,
+        updates: [
+          ...prev.updates.filter((u) => u.id !== selectedItem.id),
+          { id: selectedItem.id, cantidad, comentario },
+        ],
+      }))
+    }
+
+    notify.success('Producto actualizado')
   }
 
   const handleAddItem = (
@@ -453,11 +490,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
           <div className="flex items-center gap-2">
             <Switch
-              id="inline-qty"
-              checked={showInlineQty}
-              onCheckedChange={setShowInlineQty}
+              id="show-qty-buttons"
+              checked={!showInlineQty}
+              onCheckedChange={(checked) => setShowInlineQty(!checked)}
             />
-            <Label htmlFor="inline-qty">Edición inline cantidad</Label>
+            <Label htmlFor="show-qty-buttons">Mostrar controles de cantidad</Label>
           </div>
         </div>
       </div>
@@ -473,53 +510,64 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           <div className="space-y-2">
             {items.map((item) => (
               <Card key={item.id} className="p-3">
-                <div className="flex items-center gap-3">
-                  {/* Quantity (large, bold, on left) */}
-                  <div className="text-2xl font-bold min-w-[3rem] text-center">
-                    {item.cantidad}
-                  </div>
-
-                  {/* Product name */}
-                  <div className="flex-1">
-                    <p className="font-medium">
-                      {item._productName || item.product_id || item.product_custom_id}
-                    </p>
-                    {item.unidad_medida && (
-                      <p className="text-sm text-muted-foreground">
-                        {item.unidad_medida}
-                      </p>
+                <div className="space-y-2">
+                  {/* Line 1: Quantity, Name, and buttons */}
+                  <div className="flex items-center gap-2">
+                    {/* Minus button (if inline qty disabled) */}
+                    {!showInlineQty && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleUpdateQuantity(item.id, 'down')}
+                        className="h-8 w-8 flex-shrink-0"
+                      >
+                        <Minus size={14} />
+                      </Button>
                     )}
+
+                    {/* Quantity */}
+                    <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
+                      {item.cantidad}
+                    </div>
+
+                    {/* Plus button (if inline qty disabled) */}
+                    {!showInlineQty && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleUpdateQuantity(item.id, 'up')}
+                        className="h-8 w-8 flex-shrink-0"
+                      >
+                        <Plus size={14} />
+                      </Button>
+                    )}
+
+                    {/* Product name (clickable) */}
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleEditItem(item)}
+                      className="flex-1 h-auto justify-start text-left px-2 py-1 font-medium hover:bg-muted"
+                    >
+                      {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                    </Button>
+
+                    {/* Delete button */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteItem(item.id)}
+                      className="h-8 w-8 flex-shrink-0"
+                    >
+                      <X size={14} />
+                    </Button>
                   </div>
 
-                  {/* Minus button */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleUpdateQuantity(item.id, 'down')}
-                    className="h-9 w-9"
-                  >
-                    <Minus size={16} />
-                  </Button>
-
-                  {/* Plus button */}
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => handleUpdateQuantity(item.id, 'up')}
-                    className="h-9 w-9"
-                  >
-                    <Plus size={16} />
-                  </Button>
-
-                  {/* Delete button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteItem(item.id)}
-                    className="h-9 w-9"
-                  >
-                    <X size={16} />
-                  </Button>
+                  {/* Line 2: Comment (if exists) */}
+                  {item.comentario && (
+                    <div className="text-xs text-muted-foreground px-2">
+                      {item.comentario}
+                    </div>
+                  )}
                 </div>
               </Card>
             ))}
@@ -533,6 +581,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           onAddProduct={(name, qty) => handleAddItem(name, false, undefined, qty)}
         />
       </div>
+
+      {/* Edit Item Drawer */}
+      {selectedItem && (
+        <EditShoppingListItemDrawer
+          open={editDrawerOpen}
+          onOpenChange={setEditDrawerOpen}
+          item={selectedItem}
+          onSave={handleSaveItemEdit}
+        />
+      )}
     </div>
   )
 }
