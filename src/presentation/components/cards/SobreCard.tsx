@@ -14,6 +14,7 @@ import {
 import { CategoriaCard } from '@/components/cards/CategoriaCard'
 import { useSobreCategories } from '@/presentation/hooks/useSobres'
 import { EditarCategoriaDrawer } from '@/components/drawers/EditarCategoriaDrawer'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface Billetera {
   id: string
@@ -59,6 +60,7 @@ export function SobreCard({
   onVerDetalle,
   onFlashGasto,
 }: SobreCardProps) {
+  const { formatNumber } = useCurrency()
   const [categoriasLoading, setCategoriasLoading] = useState(false)
   const [editarCategoriaOpen, setEditarCategoriaOpen] = useState(false)
   const [selectedCategoria, setSelectedCategoria] = useState<{ id: string; nombre: string } | null>(null)
@@ -111,14 +113,14 @@ export function SobreCard({
             <div className="flex-1 space-y-1">
               {/* Línea 1: Usado */}
               <div className="text-base text-white">
-                Usado: ${gastadoNum.toFixed(2)} <span className="text-xs">({porcentajeGastado.toFixed(1)}%)</span>
+                Usado: {formatNumber(gastadoNum)} <span className="text-xs">({porcentajeGastado.toFixed(1)}%)</span>
               </div>
 
               {/* Línea 2: Libre */}
               <div className={`text-base font-bold ${
                 presupuestoLibre < 0 ? 'text-red-300' : 'text-white'
               }`}>
-                Libre: ${presupuestoLibre.toFixed(2)}
+                Libre: {formatNumber(presupuestoLibre)}
               </div>
             </div>
 

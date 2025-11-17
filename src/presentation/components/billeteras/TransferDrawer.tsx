@@ -2,6 +2,8 @@
  * TransferDrawer - Transferencia entre billeteras
  */
 
+'use client'
+
 import { useTranslations } from 'next-intl'
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -30,6 +32,7 @@ import {
 } from '@/presentation/hooks/useBilleteras'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 import { notify } from '@/infrastructure/lib/notifications'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface TransferDrawerProps {
   open: boolean
@@ -45,6 +48,7 @@ export function TransferDrawer({
   preselectedId,
 }: TransferDrawerProps) {
   const t = useTranslations('billeteras')
+  const { formatNumber } = useCurrency()
   const transferMutation = useTransferBetween()
 
   // Refs para inputs
@@ -143,7 +147,7 @@ export function TransferDrawer({
                 <SelectContent>
                   {billeteras.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.nombre} (${Number(b.saldo_real).toFixed(2)})
+                      {b.nombre} (${formatNumber(Number(b.saldo_real))})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -162,7 +166,7 @@ export function TransferDrawer({
                 <SelectContent>
                   {availableDestinations.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.nombre} (${Number(b.saldo_real).toFixed(2)})
+                      {b.nombre} (${formatNumber(Number(b.saldo_real))})
                     </SelectItem>
                   ))}
                 </SelectContent>

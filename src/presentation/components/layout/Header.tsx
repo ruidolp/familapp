@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import { useTheme } from '@/presentation/providers/theme-provider'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 type TabType = 'listas' | 'sobres' | 'metricas' | 'config'
 
@@ -31,6 +32,7 @@ interface HeaderProps {
 
 export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }: HeaderProps) {
   const { theme: currentTheme, themes, setTheme, isLoading } = useTheme()
+  const { formatNumber } = useCurrency()
 
   const applyThemeVariables = (themeSlug: string) => {
     const selectedTheme = themes.find(t => t.slug === themeSlug)
@@ -68,7 +70,7 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
               <span className="truncate">{sobreNombre}</span>
               {sobrePresupuesto !== undefined && (
                 <span className="ml-auto whitespace-nowrap">
-                  Presupuesto: ${Number(sobrePresupuesto).toFixed(2)}
+                  Presupuesto: {formatNumber(Number(sobrePresupuesto))}
                 </span>
               )}
             </div>

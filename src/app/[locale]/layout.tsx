@@ -15,6 +15,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { routing } from '@/i18n/routing'
 import { SessionProvider } from '@/presentation/providers/session-provider'
+import { CurrencyProvider } from '@/presentation/providers/currency-provider'
 import { ThemeProvider } from '@/presentation/providers/theme-provider'
 import { QueryProvider } from '@/presentation/providers/query-provider'
 import { CategoryProvider } from '@/presentation/providers/category-context'
@@ -116,13 +117,15 @@ export default async function LocaleLayout({
         <QueryProvider>
           <ThemeProvider defaultTheme={defaultTheme} themes={themes}>
             <SessionProvider>
-              <CategoryProvider>
-                <NextIntlClientProvider messages={messages}>
-                  {children}
-                  <Toaster />
-                  <SonnerToaster position="top-center" richColors />
-                </NextIntlClientProvider>
-              </CategoryProvider>
+              <CurrencyProvider>
+                <CategoryProvider>
+                  <NextIntlClientProvider messages={messages}>
+                    {children}
+                    <Toaster />
+                    <SonnerToaster position="top-center" richColors />
+                  </NextIntlClientProvider>
+                </CategoryProvider>
+              </CurrencyProvider>
             </SessionProvider>
           </ThemeProvider>
         </QueryProvider>

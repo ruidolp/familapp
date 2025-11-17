@@ -28,6 +28,7 @@ import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 import { useCrearGasto } from '@/presentation/hooks/useTransacciones'
 import { useCategoryContext } from '@/presentation/providers/category-context'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface Sobre {
   id: string
@@ -69,6 +70,7 @@ export function CrearGastoDrawer({
   onSuccess,
 }: CrearGastoDrawerProps) {
   const { selectedCategoryId, setSelectedCategoryId } = useCategoryContext()
+  const { formatNumber } = useCurrency()
 
   const [loading, setLoading] = useState(false)
   const [sobres, setSobres] = useState<Sobre[]>([])
@@ -713,7 +715,7 @@ export function CrearGastoDrawer({
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-700">
                   <p className="font-semibold mb-2">
-                    ⚠️ INFORMATIVO: Excede el presupuesto del sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; en ${presupuestoWarning.exceso.toFixed(2)} ({presupuestoWarning.porcentaje.toFixed(2)}%)
+                    ⚠️ INFORMATIVO: Excede el presupuesto del sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; en ${formatNumber(presupuestoWarning.exceso)} ({presupuestoWarning.porcentaje.toFixed(2)}%)
                   </p>
                   <p className="text-sm">
                     Podrás ingresar el gasto de todas maneras, es solo informativo
