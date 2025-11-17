@@ -397,9 +397,19 @@ export function AgregarCategoriaDrawer({
                   </div>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva
-              </p>
+              <Button
+                type="button"
+                onClick={async () => {
+                  if (inputCategoria.trim()) {
+                    await handleKeyDownCategoria({ key: 'Enter', preventDefault: () => {} } as any)
+                  }
+                }}
+                disabled={!inputCategoria.trim() || loading}
+                className="w-full"
+                size="sm"
+              >
+                {loading ? 'Agregando...' : 'Agregar Categoría'}
+              </Button>
             </div>
 
             {/* Categorías seleccionadas */}
@@ -524,9 +534,19 @@ export function AgregarCategoriaDrawer({
                                 </div>
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear
-                            </p>
+                            <Button
+                              type="button"
+                              onClick={async () => {
+                                if (inputValue.trim()) {
+                                  await handleKeyDownMarcaPorCategoria({ key: 'Enter', preventDefault: () => {} } as any, categoria.id)
+                                }
+                              }}
+                              disabled={!inputValue.trim() || loading}
+                              className="w-full"
+                              size="sm"
+                            >
+                              {loading ? 'Agregando...' : 'Agregar Marca'}
+                            </Button>
                           </div>
                         </Card>
                       )
