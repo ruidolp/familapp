@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { AppShell } from '@/presentation/components/layout/AppShell'
 import { Header } from '@/presentation/components/layout/Header'
 import { BottomNav, type TabType } from '@/presentation/components/layout/BottomNav'
@@ -83,6 +83,16 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
     }
   }
 
+  // Callbacks para SobresScreen (memoizados para evitar re-renders infinitos)
+  const handleCarouselChange = useCallback((index: number, total: number) => {
+    setSobreCarouselIndex(index)
+    setSobreCarouselTotal(total)
+  }, [])
+
+  const handleSobreChange = useCallback((sobre: { nombre: string; emoji?: string; presupuesto: number } | null) => {
+    setSobreActual(sobre)
+  }, [])
+
   // Renderizar screen según tab activo
   const renderActiveScreen = () => {
     switch (activeTab) {
@@ -100,13 +110,8 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
             userId={user.id}
             menuAction={menuAction}
             onMenuActionHandled={() => setMenuAction(null)}
-            onCarouselChange={(index: number, total: number) => {
-              setSobreCarouselIndex(index)
-              setSobreCarouselTotal(total)
-            }}
-            onSobreChange={(sobre: { nombre: string; emoji?: string; presupuesto: number } | null) => {
-              setSobreActual(sobre)
-            }}
+            onCarouselChange={handleCarouselChange}
+            onSobreChange={handleSobreChange}
           />
         )
       case 'metricas':
