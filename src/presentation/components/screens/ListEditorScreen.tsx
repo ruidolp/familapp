@@ -10,7 +10,10 @@ import {
   Save,
   X,
   Plus,
+  Minus,
   Check,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +22,8 @@ import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { notify } from '@/infrastructure/lib/notifications'
+import { adjustQty, quantityToDecimal, isValidQuantity } from '@/infrastructure/utils/quantity'
+import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 
 // Types
 interface Product {
@@ -98,10 +103,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const [groupByCategory, setGroupByCategory] = useState(false)
   const [showInlineQty, setShowInlineQty] = useState(true)
 
-  // Input state
-  const [inputValue, setInputValue] = useState('')
-  const [showSuggestions, setShowSuggestions] = useState(false)
-
   // Autosave state
   const [pendingChanges, setPendingChanges] = useState<{
     creates: any[]
@@ -113,9 +114,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     deletes: [],
   })
   const [isSaving, setIsSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
 
   // Refs
-  const inputRef = useRef<HTMLInputElement>(null)
   const saveTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Load data on mount
@@ -181,6 +182,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     if (isSaving) return
 
     setIsSaving(true)
+    setSaveError(false)
     try {
       const response = await fetch(`/api/shopping-lists/${listId}/items/batch`, {
         method: 'POST',
@@ -198,110 +200,36 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         // Optionally reload to get server state
         // await loadEditorData()
       } else {
+        setSaveError(true)
         notify.error('Error al guardar cambios')
       }
     } catch (error) {
       console.error('Error saving changes:', error)
+      setSaveError(true)
       notify.error('Error al guardar cambios')
     } finally {
       setIsSaving(false)
     }
   }
 
-  // Parse quick text entry (supports multiple formats)
-  const parseQuickEntry = (text: string): Array<{
-    nombre: string
-    cantidad: number
-    unidad?: string
-  }> => {
-    // Format examples:
-    // - "leche"
-    // - "2 leche"
-    // - "leche, pan, queso"
-    // - "2 kg manzanas, 1 L leche, pan"
-
-    const lines = text.split(/[,\n]/).map((l) => l.trim()).filter((l) => l)
-    const parsed: Array<{ nombre: string; cantidad: number; unidad?: string }> = []
-
-    for (const line of lines) {
-      // Try to extract quantity and unit
-      const match = line.match(/^(\d+\.?\d*)\s*([a-zA-Z]+)?\s+(.+)$/)
-      if (match) {
-        const [, cantidadStr, unidad, nombre] = match
-        parsed.push({
-          nombre: nombre.trim(),
-          cantidad: parseFloat(cantidadStr),
-          unidad: unidad?.toLowerCase(),
-        })
-      } else {
-        // Just a product name
-        parsed.push({
-          nombre: line.trim(),
-          cantidad: 1,
-        })
-      }
-    }
-
-    return parsed
+  const handleRetry = () => {
+    setSaveError(false)
+    saveChanges()
   }
 
-  // Search for products in all sources
-  const searchProducts = useCallback(
-    (query: string): Product[] => {
-      if (!data || query.length < 1) return []
-
-      const lowerQuery = query.toLowerCase()
-      const results: Product[] = []
-
-      // Search in catalog
-      const catalogMatches = data.catalog
-        .filter((p) => p.nombre.toLowerCase().includes(lowerQuery))
-        .slice(0, 10)
-        .map((p) => ({ ...p, is_catalog: true }))
-
-      // Search in custom products
-      const customMatches = data.customProducts
-        .filter((p) => p.nombre.toLowerCase().includes(lowerQuery))
-        .slice(0, 10)
-        .map((p) => ({ ...p, is_catalog: false }))
-
-      // Combine and prioritize favorites/frequent
-      results.push(...catalogMatches, ...customMatches)
-
-      return results.slice(0, 20)
-    },
-    [data]
-  )
-
-  const handleInputChange = (value: string) => {
-    setInputValue(value)
-    if (value.trim()) {
-      setShowSuggestions(true)
-    } else {
-      setShowSuggestions(false)
-    }
-  }
-
-  const handleAddItem = (productName: string, isCatalog: boolean, productId?: string) => {
-    // Parse entrada rápida si hay comas o múltiples líneas
-    if (inputValue.includes(',') || inputValue.includes('\n')) {
-      const parsed = parseQuickEntry(inputValue)
-      for (const entry of parsed) {
-        addItemToList(entry.nombre, 1, entry.cantidad, entry.unidad)
-      }
-    } else {
-      addItemToList(productName, isCatalog ? 1 : 0, 1, undefined, productId)
-    }
-
-    setInputValue('')
-    setShowSuggestions(false)
-    inputRef.current?.focus()
+  const handleAddItem = (
+    productName: string,
+    isCatalog: boolean,
+    productId?: string,
+    quantity: string = '1'
+  ) => {
+    addItemToList(productName, isCatalog ? 1 : 0, quantity, undefined, productId)
   }
 
   const addItemToList = async (
     productName: string,
     isCatalog: number,
-    cantidad: number = 1,
+    quantity: string = '1',
     unidad?: string,
     productId?: string
   ) => {
@@ -358,6 +286,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       }
     }
 
+    // Convert quantity to decimal
+    const cantidadDecimal = quantityToDecimal(quantity)
+
     // Create new item
     const newItem: ListItem = {
       id: `temp-${Date.now()}`, // Temporary ID
@@ -365,7 +296,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       product_id: finalIsCatalog ? finalProductId : undefined,
       product_custom_id: !finalIsCatalog ? finalProductId : undefined,
       is_catalog: finalIsCatalog,
-      cantidad,
+      cantidad: cantidadDecimal,
       unidad_medida: unidad,
       item_order: items.length,
       _productName: productName,
@@ -404,7 +335,20 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }
 
-  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
+  const handleUpdateQuantity = (itemId: string, direction: 'up' | 'down') => {
+    // Find the item
+    const item = items.find((i) => i.id === itemId)
+    if (!item) return
+
+    // Get current quantity as string
+    const currentQuantity = item.cantidad.toString()
+
+    // Adjust quantity
+    const newQuantityStr = adjustQty(currentQuantity, direction)
+
+    // Convert to decimal for storage
+    const newQuantity = quantityToDecimal(newQuantityStr)
+
     // Update local state
     setItems(
       items.map((i) =>
@@ -423,11 +367,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       }))
     }
   }
-
-  // Suggestions filtered by input
-  const suggestions = useMemo(() => {
-    return searchProducts(inputValue)
-  }, [inputValue, searchProducts])
 
   if (loading) {
     return (
@@ -474,7 +413,33 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               Guardando...
             </Badge>
           )}
+          {saveError && (
+            <Badge variant="destructive" className="gap-1">
+              <AlertCircle size={14} />
+              Error al guardar
+            </Badge>
+          )}
         </div>
+
+        {/* Error banner with retry */}
+        {saveError && (
+          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center gap-3">
+            <AlertCircle size={18} className="text-destructive flex-shrink-0" />
+            <p className="text-sm text-destructive flex-1">
+              No se pudieron guardar los cambios. Verifica tu conexión.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRetry}
+              disabled={isSaving}
+              className="gap-1"
+            >
+              <RefreshCw size={14} />
+              Reintentar
+            </Button>
+          </div>
+        )}
 
         {/* Preferences */}
         <div className="flex items-center gap-4 text-sm">
@@ -509,6 +474,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             {items.map((item) => (
               <Card key={item.id} className="p-3">
                 <div className="flex items-center gap-3">
+                  {/* Quantity (large, bold, on left) */}
+                  <div className="text-2xl font-bold min-w-[3rem] text-center">
+                    {item.cantidad}
+                  </div>
+
+                  {/* Product name */}
                   <div className="flex-1">
                     <p className="font-medium">
                       {item._productName || item.product_id || item.product_custom_id}
@@ -520,25 +491,32 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                     )}
                   </div>
 
-                  {showInlineQty ? (
-                    <Input
-                      type="number"
-                      value={item.cantidad}
-                      onChange={(e) =>
-                        handleUpdateQuantity(item.id, parseFloat(e.target.value) || 1)
-                      }
-                      className="w-20"
-                      min="0.1"
-                      step="0.1"
-                    />
-                  ) : (
-                    <span className="text-sm">{item.cantidad}</span>
-                  )}
+                  {/* Minus button */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleUpdateQuantity(item.id, 'down')}
+                    className="h-9 w-9"
+                  >
+                    <Minus size={16} />
+                  </Button>
 
+                  {/* Plus button */}
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleUpdateQuantity(item.id, 'up')}
+                    className="h-9 w-9"
+                  >
+                    <Plus size={16} />
+                  </Button>
+
+                  {/* Delete button */}
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleDeleteItem(item.id)}
+                    className="h-9 w-9"
                   >
                     <X size={16} />
                   </Button>
@@ -551,51 +529,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
       {/* Input Fixed at Bottom */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="relative">
-          {/* Suggestions Dropdown (above input) */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute bottom-full left-0 right-0 mb-2 bg-card border rounded-lg shadow-lg max-h-48 overflow-y-auto">
-              {suggestions.map((product) => (
-                <button
-                  key={product.id}
-                  className="w-full text-left px-4 py-2 hover:bg-accent transition-colors"
-                  onClick={() =>
-                    handleAddItem(product.nombre, !!product.is_catalog, product.id)
-                  }
-                >
-                  <p className="font-medium">{product.nombre}</p>
-                  {product.descripcion && (
-                    <p className="text-xs text-muted-foreground">
-                      {product.descripcion}
-                    </p>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Input */}
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
-              value={inputValue}
-              onChange={(e) => handleInputChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && inputValue.trim()) {
-                  handleAddItem(inputValue.trim(), false)
-                }
-              }}
-              placeholder="Agregar producto (ej: 2 kg manzanas, pan, leche)"
-              className="flex-1"
-            />
-            <Button
-              onClick={() => inputValue.trim() && handleAddItem(inputValue.trim(), false)}
-              disabled={!inputValue.trim()}
-            >
-              <Plus size={18} />
-            </Button>
-          </div>
-        </div>
+        <ProductQuantityInput
+          onAddProduct={(name, qty) => handleAddItem(name, false, undefined, qty)}
+        />
       </div>
     </div>
   )

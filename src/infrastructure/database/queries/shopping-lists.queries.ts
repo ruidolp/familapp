@@ -1,4 +1,5 @@
 import { db } from '../kysely'
+import { sql } from 'kysely'
 
 /**
  * SHOPPING LISTS - Queries
@@ -163,10 +164,31 @@ export async function createShoppingListItem(data: {
 export async function getShoppingListItems(listId: string) {
   return db
     .selectFrom('shopping_list_items')
-    .selectAll()
-    .where('shopping_list_id', '=', listId)
-    .where('deleted_at', 'is', null)
-    .orderBy('item_order', 'asc')
+    .leftJoin('product_catalog', 'shopping_list_items.product_id', 'product_catalog.id')
+    .leftJoin('product_user_custom', 'shopping_list_items.product_custom_id', 'product_user_custom.id')
+    .select([
+      'shopping_list_items.id',
+      'shopping_list_items.shopping_list_id',
+      'shopping_list_items.product_id',
+      'shopping_list_items.product_custom_id',
+      'shopping_list_items.is_catalog',
+      'shopping_list_items.cantidad',
+      'shopping_list_items.unidad_medida',
+      'shopping_list_items.categoria_producto_id',
+      'shopping_list_items.marca',
+      'shopping_list_items.comentario',
+      'shopping_list_items.item_order',
+      'shopping_list_items.item_type',
+      'shopping_list_items.created_by',
+      'shopping_list_items.created_at',
+      'shopping_list_items.updated_at',
+      'shopping_list_items.deleted_at',
+      // Product names
+      sql<string>`COALESCE(product_catalog.nombre, product_user_custom.nombre)`.as('nombre'),
+    ])
+    .where('shopping_list_items.shopping_list_id', '=', listId)
+    .where('shopping_list_items.deleted_at', 'is', null)
+    .orderBy('shopping_list_items.item_order', 'asc')
     .execute()
 }
 

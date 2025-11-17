@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { CreateShoppingListDrawer } from '@/components/drawers/CreateShoppingListDrawer'
 import { notify } from '@/infrastructure/lib/notifications'
 
 interface ShoppingList {
@@ -31,6 +32,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
   const router = useRouter()
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [loading, setLoading] = useState(false)
+  const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
 
   // Cargar listas al montar
   useEffect(() => {
@@ -55,28 +57,15 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     }
   }
 
-  const handleCreateList = async () => {
-    try {
-      const response = await fetch('/api/shopping-lists', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: 'Nueva Lista',
-          descripcion: '',
-        }),
-      })
+  const handleOpenCreateDrawer = () => {
+    setCreateDrawerOpen(true)
+  }
 
-      if (response.ok) {
-        const data = await response.json()
-        notify.success('Lista creada')
-        // Navigate to editor immediately
-        router.push(`/shopping-lists/${data.list.id}`)
-      } else {
-        notify.error('Error al crear lista')
-      }
-    } catch (error) {
-      console.error('Error creating list:', error)
-      notify.error('Error al crear lista')
+  const handleCreateDrawerOpenChange = (open: boolean) => {
+    setCreateDrawerOpen(open)
+    // Refresh list when drawer closes (in case a list was created)
+    if (!open) {
+      fetchLists()
     }
   }
 
@@ -140,7 +129,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       <div className="flex items-center justify-between p-4 border-b">
         <h2 className="text-lg font-semibold">Mis Listas de Compras</h2>
         <Button
-          onClick={handleCreateList}
+          onClick={handleOpenCreateDrawer}
           size="sm"
           className="gap-2"
         >
@@ -159,7 +148,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
               <br />
               <span className="text-sm">Crea tu primera lista para empezar</span>
             </p>
-            <Button onClick={handleCreateList} className="gap-2">
+            <Button onClick={handleOpenCreateDrawer} className="gap-2">
               <Plus size={18} />
               Crear Primera Lista
             </Button>
@@ -244,6 +233,12 @@ export function ListasScreen({ userId }: ListasScreenProps) {
           </div>
         )}
       </div>
+
+      {/* Create Shopping List Drawer */}
+      <CreateShoppingListDrawer
+        open={createDrawerOpen}
+        onOpenChange={handleCreateDrawerOpenChange}
+      />
     </div>
   )
 }
