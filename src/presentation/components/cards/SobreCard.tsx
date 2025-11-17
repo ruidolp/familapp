@@ -95,9 +95,9 @@ export function SobreCard({
       className="overflow-hidden cursor-pointer transition-all duration-300 flex flex-col"
       style={{
         backgroundColor: bgColor,
-        backgroundImage: `linear-gradient(135deg, ${bgColor}cc 0%, ${bgColor}dd 100%)`,
+        backgroundImage: `linear-gradient(135deg, ${bgColor} 0%, ${bgColor}ee 50%, ${bgColor}dd 100%)`,
         backdropFilter: 'blur(8px)',
-        boxShadow: '0 8px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
         minHeight: 'calc(100vh - 12rem)',
       }}
       onClick={onVerDetalle}
@@ -108,24 +108,18 @@ export function SobreCard({
         <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2">
           {/* Header con estado de gasto y menú */}
           <div className="flex justify-between items-start gap-2">
-            <div className="flex-1">
-              <div className="flex justify-between text-base">
-                <span className="font-medium text-white">
-                  Gastado: ${gastadoNum.toFixed(2)} ({porcentajeGastado.toFixed(1)}%)
-                </span>
-                <span className={`font-medium ${
-                  isOverspent ? 'text-yellow-100' : 'text-green-100'
-                }`}>
-                  Libre: ${presupuestoLibre.toFixed(2)}
-                </span>
+            <div className="flex-1 space-y-1">
+              {/* Línea 1: Usado */}
+              <div className="text-base text-white">
+                Usado: ${gastadoNum.toFixed(2)} <span className="text-xs">({porcentajeGastado.toFixed(1)}%)</span>
               </div>
 
-              {/* Badge de overspend */}
-              {isOverspent && (
-                <Badge className="bg-red-500/30 text-red-100 border border-red-400/50 mt-2">
-                  ⚠️ Presupuesto excedido
-                </Badge>
-              )}
+              {/* Línea 2: Libre */}
+              <div className={`text-base font-bold ${
+                presupuestoLibre < 0 ? 'text-red-300' : 'text-white'
+              }`}>
+                Libre: ${presupuestoLibre.toFixed(2)}
+              </div>
             </div>
 
             {/* Menu de 3 puntos */}

@@ -311,9 +311,19 @@ export function EditarCategoriaDrawer({
                   </div>
                 )}
               </div>
-              <p className="text-sm text-muted-foreground">
-                Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva
-              </p>
+              <Button
+                type="button"
+                onClick={async () => {
+                  if (inputValue.trim()) {
+                    await handleKeyDown({ key: 'Enter', preventDefault: () => {} } as any)
+                  }
+                }}
+                disabled={!inputValue.trim() || loading}
+                className="w-full"
+                size="sm"
+              >
+                {loading ? 'Agregando...' : 'Agregar Marca'}
+              </Button>
             </div>
           </div>
         </DrawerBody>

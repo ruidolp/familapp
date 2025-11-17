@@ -140,28 +140,8 @@ async function calcularWarningTransaccion(
       }
     }
 
-    // Verificar si el saldo de la billetera quedaría negativo
-    const billetera = await findBilleteraById(billeteraId)
-    if (billetera) {
-      const saldoAnterior = Number(billetera.saldo_real)
-      const saldoNuevo = saldoAnterior - monto
-
-      if (saldoNuevo < 0) {
-        const porcentajeExceso = saldoAnterior > 0 ? (Math.abs(saldoNuevo) / saldoAnterior) * 100 : 0
-
-        return {
-          type: 'NEGATIVE_WALLET',
-          message: `El saldo de la billetera quedará en $${saldoNuevo.toFixed(2)}`,
-          details: {
-            presupuesto_asignado: 0,
-            gastado: monto,
-            porcentajeExceso,
-            saldoAnterior,
-            saldoNuevo,
-          },
-        }
-      }
-    }
+    // NOTA: No validamos saldo de billetera porque billetera es dummy
+    // Solo validamos presupuesto del sobre
 
     return null
   } catch (error) {

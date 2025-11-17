@@ -95,6 +95,9 @@ export function CrearGastoDrawer({
   const [nuevaCategoriaName, setNuevaCategoriaName] = useState('')
   const [nuevaCategoriaEmoji, setNuevaCategoriaEmoji] = useState('')
   const [creandoCategoria, setCreandoCategoria] = useState(false)
+  const [creandoMarca, setCreandoMarca] = useState(false)
+  const [suggestionsCategoria, setSuggestionsCategoria] = useState<Categoria[]>([])
+  const [showSuggestionsCategoria, setShowSuggestionsCategoria] = useState(false)
 
   const montoRef = useRef<HTMLInputElement>(null)
   const inputMarcaRef = useRef<HTMLInputElement>(null)
@@ -484,14 +487,63 @@ export function CrearGastoDrawer({
               {/* Formulario crear categoría inline */}
               {crearCategoriaMode && (
                 <div className="space-y-2 p-3 rounded-lg border border-dashed border-primary bg-primary/5">
-                  <Input
-                    type="text"
-                    placeholder="Nombre de la categoría"
-                    value={nuevaCategoriaName}
-                    onChange={(e) => setNuevaCategoriaName(e.target.value)}
-                    className="text-base"
-                    autoFocus
-                  />
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Nombre de la categoría"
+                      value={nuevaCategoriaName}
+                      onChange={(e) => {
+                        const value = e.target.value
+                        setNuevaCategoriaName(value)
+
+                        // Filtrar categorías globales que coincidan
+                        if (value.trim()) {
+                          const filtered = categorias.filter(cat =>
+                            cat.nombre.toLowerCase().includes(value.toLowerCase())
+                          )
+                          setSuggestionsCategoria(filtered)
+                          setShowSuggestionsCategoria(filtered.length > 0)
+                        } else {
+                          setSuggestionsCategoria([])
+                          setShowSuggestionsCategoria(false)
+                        }
+                      }}
+                      onFocus={() => {
+                        if (nuevaCategoriaName && suggestionsCategoria.length > 0) {
+                          setShowSuggestionsCategoria(true)
+                        }
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => setShowSuggestionsCategoria(false), 200)
+                      }}
+                      className="text-base"
+                      autoFocus
+                    />
+
+                    {/* Sugerencias de categorías existentes */}
+                    {showSuggestionsCategoria && suggestionsCategoria.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white shadow-lg z-10">
+                        {suggestionsCategoria.map((cat) => (
+                          <button
+                            key={cat.id}
+                            type="button"
+                            onClick={() => {
+                              setCategoriaSeleccionada(cat.id)
+                              setCrearCategoriaMode(false)
+                              setNuevaCategoriaName('')
+                              setSuggestionsCategoria([])
+                              setShowSuggestionsCategoria(false)
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
+                          >
+                            <span className="text-green-600">✓</span>
+                            {cat.emoji && <span>{cat.emoji}</span>}
+                            <span>{cat.nombre}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -623,9 +675,19 @@ export function CrearGastoDrawer({
                   )}
                 </div>
 
-                <p className="text-sm text-muted-foreground">
-                  Presiona <kbd className="px-2 py-1 bg-slate-100 rounded text-sm">ENTER</kbd> para crear nueva marca
-                </p>
+                <Button
+                  type="button"
+                  onClick={async () => {
+                    if (inputMarca.trim()) {
+                      await handleKeyDownMarca({ key: 'Enter', preventDefault: () => {} } as any)
+                    }
+                  }}
+                  disabled={!inputMarca.trim() || creandoMarca}
+                  className="w-full"
+                  size="sm"
+                >
+                  {creandoMarca ? 'Creando...' : 'Agregar Marca'}
+                </Button>
               </Card>
             )}
 
