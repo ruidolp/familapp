@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface AgregarPresupuestoDrawerProps {
   open: boolean
@@ -39,6 +40,7 @@ export function AgregarPresupuestoDrawer({
   onSuccess,
 }: AgregarPresupuestoDrawerProps) {
   const t = useTranslations('common')
+  const { formatNumber } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [monto, setMonto] = useState('')
   const [observacion, setObservacion] = useState('')
@@ -124,11 +126,11 @@ export function AgregarPresupuestoDrawer({
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-base text-muted-foreground">Monto Libre</p>
-                  <p className="text-xl font-bold">${Number(montoLibre).toFixed(2)}</p>
+                  <p className="text-xl font-bold">${formatNumber(Number(montoLibre))}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-base text-muted-foreground">Presupuesto Asignado</p>
-                  <p className="text-xl font-bold">${Number(presupuestoAsignado).toFixed(2)}</p>
+                  <p className="text-xl font-bold">${formatNumber(Number(presupuestoAsignado))}</p>
                 </div>
               </div>
             </div>

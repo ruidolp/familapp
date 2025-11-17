@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { notify } from '@/infrastructure/lib/notifications'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface Transaccion {
   id: string
@@ -46,6 +47,7 @@ export function VerDetalleTransaccionesDrawer({
   sobreId,
   sobreName,
 }: VerDetalleTransaccionesDrawerProps) {
+  const { formatNumber } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [transacciones, setTransacciones] = useState<Transaccion[]>([])
   const [totalMes, setTotalMes] = useState(0)
@@ -138,7 +140,7 @@ export function VerDetalleTransaccionesDrawer({
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm text-muted-foreground">Total mes actual</p>
-                    <p className="text-2xl font-bold text-blue-600">${totalMes.toFixed(2)}</p>
+                    <p className="text-2xl font-bold text-blue-600">${formatNumber(totalMes)}</p>
                   </div>
                   <Badge variant="outline" className="text-base">
                     {transacciones.length} transacciones
@@ -185,7 +187,7 @@ export function VerDetalleTransaccionesDrawer({
 
                           {/* Monto */}
                           <p className="text-base font-semibold text-foreground ml-2">
-                            -${Number(transaccion.monto).toFixed(2)}
+                            -${formatNumber(Number(transaccion.monto))}
                           </p>
                         </Card>
                       ))}

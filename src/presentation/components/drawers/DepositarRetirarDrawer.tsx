@@ -2,6 +2,8 @@
  * DepositarRetirarDrawer - Depositar o Retirar dinero
  */
 
+'use client'
+
 import { useTranslations } from 'next-intl'
 import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
@@ -27,6 +29,7 @@ import {
 import { useBilleteras } from '@/presentation/hooks/useBilleteras'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 import { Loader2 } from 'lucide-react'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 type OperationType = 'DEPOSITO' | 'RETIRO'
 
@@ -40,6 +43,7 @@ export function DepositarRetirarDrawer({
   onOpenChange,
 }: DepositarRetirarDrawerProps) {
   const t = useTranslations('billeteras')
+  const { formatNumber } = useCurrency()
   const { billeteras, handleDeposito } = useBilleteras()
 
   // Refs para inputs
@@ -146,7 +150,7 @@ export function DepositarRetirarDrawer({
               {billeteraId && billeteras.find(b => b.id === billeteraId) && (
                 <div className="text-base text-muted-foreground">
                   {t('balance.projected')}: <span className="font-semibold text-foreground">
-                    ${Number(billeteras.find(b => b.id === billeteraId)?.saldo_proyectado || 0).toFixed(2)}
+                    ${formatNumber(Number(billeteras.find(b => b.id === billeteraId)?.saldo_proyectado || 0))}
                   </span>
                 </div>
               )}

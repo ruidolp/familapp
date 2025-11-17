@@ -2,6 +2,8 @@
  * CardsList - Lista de billeteras
  */
 
+'use client'
+
 import { useTranslations } from 'next-intl'
 import { Plus, ArrowRightLeft, MoreVertical } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 import type { Billetera } from '@/presentation/hooks/useBilleteras'
 
 interface CardsListProps {
@@ -29,6 +32,7 @@ export function CardsList({
   onInfo,
 }: CardsListProps) {
   const t = useTranslations('billeteras')
+  const { formatNumber } = useCurrency()
 
   if (billeteras.length === 0) {
     return (
@@ -90,7 +94,7 @@ export function CardsList({
                 {t('balance.real')}
               </p>
               <p className={`text-lg font-bold ${Number(billetera.saldo_real) < 0 ? 'text-red-600' : 'text-foreground'}`}>
-                ${Number(billetera.saldo_real).toFixed(2)}
+                {formatNumber(Number(billetera.saldo_real))}
               </p>
             </div>
             <div>
@@ -98,7 +102,7 @@ export function CardsList({
                 {t('balance.projected')}
               </p>
               <p className={`text-lg font-bold ${Number(billetera.saldo_proyectado) < 0 ? 'text-red-600' : 'text-foreground'}`}>
-                ${Number(billetera.saldo_proyectado).toFixed(2)}
+                {formatNumber(Number(billetera.saldo_proyectado))}
               </p>
             </div>
           </div>

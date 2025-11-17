@@ -2,6 +2,7 @@
 
 import { Zap } from 'lucide-react'
 import { Card } from '@/components/ui/card'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface CategoriaCardProps {
   id: string
@@ -26,6 +27,7 @@ export function CategoriaCard({
   onClick,
   onFlashGasto,
 }: CategoriaCardProps) {
+  const { formatNumber } = useCurrency()
   const gastadoNum = Number(gastado) || 0
   const porcentajeNum = Number(porcentaje) || 0
   const isOverspent = gastadoNum > presupuestoAsignado
@@ -47,7 +49,7 @@ export function CategoriaCard({
           </div>
           <div className="text-right flex items-center gap-1 whitespace-nowrap flex-shrink-0">
             <p className="text-sm font-bold text-white">
-              ${gastadoNum.toFixed(2)}
+              {formatNumber(gastadoNum)}
             </p>
             {/* Flash gasto button */}
             <button

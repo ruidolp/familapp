@@ -2,6 +2,8 @@
  * CardInfoDrawer - Información detallada de billetera
  */
 
+'use client'
+
 import { useTranslations } from 'next-intl'
 import { Pencil, ArrowRightLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -15,6 +17,7 @@ import {
   DrawerBody,
 } from '@/components/ui/drawer'
 import type { Billetera } from '@/presentation/hooks/useBilleteras'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface CardInfoDrawerProps {
   open: boolean
@@ -32,6 +35,7 @@ export function CardInfoDrawer({
   onTransfer,
 }: CardInfoDrawerProps) {
   const t = useTranslations('billeteras')
+  const { formatNumber } = useCurrency()
 
   if (!billetera) return null
 
@@ -58,7 +62,7 @@ export function CardInfoDrawer({
                 {t('balance.real')}
               </p>
               <p className={`text-2xl font-bold ${Number(billetera.saldo_real) < 0 ? 'text-red-600' : 'text-foreground'}`}>
-                ${Number(billetera.saldo_real).toFixed(2)}
+                ${formatNumber(Number(billetera.saldo_real))}
               </p>
             </div>
 
@@ -68,7 +72,7 @@ export function CardInfoDrawer({
                 {t('balance.projected')}
               </p>
               <p className={`text-2xl font-bold ${Number(billetera.saldo_proyectado) < 0 ? 'text-red-600' : 'text-foreground'}`}>
-                ${Number(billetera.saldo_proyectado).toFixed(2)}
+                ${formatNumber(Number(billetera.saldo_proyectado))}
               </p>
             </div>
 

@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { apiClient, getErrorMessage } from '@/infrastructure/lib/api-client'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface UpgradeFormProps {
   currentPlanSlug: string
@@ -23,6 +24,7 @@ interface UpgradeFormProps {
 
 export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
   const t = useTranslations('dashboard.upgrade')
+  const { formatNumber } = useCurrency()
   const router = useRouter()
   const { toast } = useToast()
 
@@ -273,7 +275,7 @@ export function UpgradeForm({ currentPlanSlug, locale }: UpgradeFormProps) {
               className="w-full"
               size="lg"
             >
-              {isLoading ? t('processing.button') : t('confirmUpgrade', { price: price.toFixed(2) })}
+              {isLoading ? t('processing.button') : t('confirmUpgrade', { price: formatNumber(price) })}
             </Button>
           </div>
           <Button

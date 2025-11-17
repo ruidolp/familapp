@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface OverspendWarning {
   type: 'OVERSPEND_SOBRE' | 'NEGATIVE_WALLET'
@@ -45,6 +46,7 @@ export function OverspendWarningModal({
   onAddBudget,
   loading = false,
 }: OverspendWarningModalProps) {
+  const { formatNumber } = useCurrency()
   const [showDetails, setShowDetails] = useState(false)
 
   if (!warning) return null
@@ -74,13 +76,13 @@ export function OverspendWarningModal({
                   <div>
                     <p className="text-muted-foreground">Presupuesto</p>
                     <p className="font-bold">
-                      ${warning.details.presupuesto_asignado.toFixed(2)}
+                      ${formatNumber(warning.details.presupuesto_asignado)}
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Gastado</p>
                     <p className="font-bold text-red-600">
-                      ${warning.details.gastado.toFixed(2)}
+                      ${formatNumber(warning.details.gastado)}
                     </p>
                   </div>
                 </div>
@@ -100,13 +102,13 @@ export function OverspendWarningModal({
                   <div>
                     <p className="text-muted-foreground">Saldo Actual</p>
                     <p className="font-bold">
-                      ${warning.details.saldoAnterior?.toFixed(2)}
+                      ${formatNumber(warning.details.saldoAnterior ?? 0)}
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Saldo Después</p>
                     <p className="font-bold text-red-600">
-                      ${warning.details.saldoNuevo?.toFixed(2)}
+                      ${formatNumber(warning.details.saldoNuevo ?? 0)}
                     </p>
                   </div>
                 </div>
@@ -149,8 +151,8 @@ export function OverspendWarningModal({
               {warning.details.sobreNombre && (
                 <p>sobre: {warning.details.sobreNombre}</p>
               )}
-              <p>presupuesto: ${warning.details.presupuesto_asignado.toFixed(2)}</p>
-              <p>gastado: ${warning.details.gastado.toFixed(2)}</p>
+              <p>presupuesto: ${formatNumber(warning.details.presupuesto_asignado)}</p>
+              <p>gastado: ${formatNumber(warning.details.gastado)}</p>
               <p>exceso: {warning.details.porcentajeExceso.toFixed(2)}%</p>
             </div>
           )}
