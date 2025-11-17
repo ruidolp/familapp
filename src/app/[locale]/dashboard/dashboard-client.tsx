@@ -5,6 +5,7 @@ import { AppShell } from '@/presentation/components/layout/AppShell'
 import { Header } from '@/presentation/components/layout/Header'
 import { BottomNav, type TabType } from '@/presentation/components/layout/BottomNav'
 import { DotIndicator } from '@/presentation/components/layout/DotIndicator'
+import { ListasScreen } from '@/presentation/components/screens/ListasScreen'
 import { SobresScreen } from '@/presentation/components/screens/SobresScreen'
 import { MetricasScreen } from '@/presentation/components/screens/MetricasScreen'
 import { ConfigScreen } from '@/presentation/components/screens/ConfigScreen'
@@ -97,13 +98,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   const renderActiveScreen = () => {
     switch (activeTab) {
       case 'listas':
-        return (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-muted-foreground">Listas próximamente</p>
-            </div>
-          </div>
-        )
+        return <ListasScreen userId={user.id} />
       case 'sobres':
         return (
           <SobresScreen
@@ -119,13 +114,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
       case 'config':
         return <ConfigScreen />
       default:
-        return (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <p className="text-muted-foreground">Listas próximamente</p>
-            </div>
-          </div>
-        )
+        return <ListasScreen userId={user.id} />
     }
   }
 
