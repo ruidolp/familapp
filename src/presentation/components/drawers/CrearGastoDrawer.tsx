@@ -483,7 +483,7 @@ export function CrearGastoDrawer({
 
               {/* Formulario crear categoría inline */}
               {crearCategoriaMode && (
-                <form onSubmit={handleCreateCategoria} className="space-y-2 p-3 rounded-lg border border-dashed border-primary bg-primary/5">
+                <div className="space-y-2 p-3 rounded-lg border border-dashed border-primary bg-primary/5">
                   <Input
                     type="text"
                     placeholder="Nombre de la categoría"
@@ -492,17 +492,10 @@ export function CrearGastoDrawer({
                     className="text-base"
                     autoFocus
                   />
-                  <Input
-                    type="text"
-                    placeholder="Emoji (opcional)"
-                    value={nuevaCategoriaEmoji}
-                    onChange={(e) => setNuevaCategoriaEmoji(e.target.value)}
-                    className="text-base w-20"
-                    maxLength={2}
-                  />
                   <div className="flex gap-2">
                     <Button
-                      type="submit"
+                      type="button"
+                      onClick={(e) => handleCreateCategoria(e)}
                       disabled={creandoCategoria || !nuevaCategoriaName.trim()}
                       className="flex-1 text-base"
                       size="sm"
@@ -523,7 +516,7 @@ export function CrearGastoDrawer({
                       Cancelar
                     </Button>
                   </div>
-                </form>
+                </div>
               )}
 
               {/* Chips de categorías */}

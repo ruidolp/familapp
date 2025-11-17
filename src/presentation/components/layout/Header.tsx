@@ -64,10 +64,10 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
         if (sobreNombre) {
           return (
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <Mail size={20} className="text-foreground/80 flex-shrink-0" />
-              <span className="font-semibold truncate">{sobreNombre}</span>
+              <Mail size={20} className="flex-shrink-0" />
+              <span className="truncate">{sobreNombre}</span>
               {sobrePresupuesto !== undefined && (
-                <span className="text-sm text-muted-foreground ml-auto whitespace-nowrap">
+                <span className="text-sm ml-auto whitespace-nowrap">
                   Presupuesto: ${Number(sobrePresupuesto).toFixed(2)}
                 </span>
               )}
@@ -87,9 +87,9 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
   return (
     <div className="h-full flex items-center justify-between px-4 border-b bg-card">
       {/* Título dinámico */}
-      <div className="flex-1 min-w-0 mr-4">
+      <div className="flex-1 min-w-0 mr-4 text-lg font-semibold text-foreground">
         {typeof getTitulo() === 'string' ? (
-          <h1 className="text-lg font-semibold text-foreground truncate">
+          <h1 className="truncate">
             {getTitulo()}
           </h1>
         ) : (

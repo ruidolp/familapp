@@ -109,39 +109,23 @@ export function SobreCard({
           {/* Header con estado de gasto y menú */}
           <div className="flex justify-between items-start gap-2">
             <div className="flex-1">
-              <div className="flex justify-between text-base mb-2">
+              <div className="flex justify-between text-base">
                 <span className="font-medium text-white">
-                  Gastado: ${gastadoNum.toFixed(2)}
+                  Gastado: ${gastadoNum.toFixed(2)} ({porcentajeGastado.toFixed(1)}%)
                 </span>
                 <span className={`font-medium ${
                   isOverspent ? 'text-yellow-100' : 'text-green-100'
                 }`}>
-                  {isOverspent
-                    ? `Exceso: $${(gastadoNum - presupuesto).toFixed(2)}`
-                    : `Libre: $${presupuestoLibre.toFixed(2)}`}
+                  Libre: ${presupuestoLibre.toFixed(2)}
                 </span>
               </div>
 
               {/* Badge de overspend */}
               {isOverspent && (
-                <Badge className="bg-red-500/30 text-red-100 border border-red-400/50 mb-2">
+                <Badge className="bg-red-500/30 text-red-100 border border-red-400/50 mt-2">
                   ⚠️ Presupuesto excedido
                 </Badge>
               )}
-
-              <div className={`h-2 rounded-full overflow-hidden ${
-                isOverspent ? 'bg-white/20' : 'bg-white/20'
-              }`}>
-                <div
-                  className={`h-full ${
-                    isOverspent ? 'bg-yellow-300' : 'bg-green-300'
-                  }`}
-                  style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
-                />
-              </div>
-              <p className="text-sm text-white/75 mt-1">
-                {porcentajeGastado.toFixed(1)}% del presupuesto
-              </p>
             </div>
 
             {/* Menu de 3 puntos */}
