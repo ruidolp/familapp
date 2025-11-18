@@ -6,7 +6,7 @@
 
 import { db } from '../kysely'
 
-import type { IngresosRecurrentesTable } from '../types'
+import type { IngresosRecurrentes } from '../types'
 import type { FrecuenciaIngreso, EstadoIngresoRecurrente } from '../custom-enums'
 
 /**

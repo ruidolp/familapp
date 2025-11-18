@@ -5,7 +5,7 @@
  */
 
 import { db } from '../kysely'
-import type { UserSubscriptionsTable, SubscriptionStatus, SubscriptionPlatform, SubscriptionPeriod } from '../types'
+import type { UserSubscriptions, SubscriptionStatus, SubscriptionPlatform, SubscriptionPeriod } from '../types'
 
 export type CreateSubscriptionData = {
   user_id: string

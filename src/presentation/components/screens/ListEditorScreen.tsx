@@ -28,15 +28,15 @@ import {
 } from '@/presentation/components/execution/ConfigureExecutionDrawer'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { CreateLocalExecutionInput } from '@/domain/types/shopping-execution'
-import type { Database } from '@/infrastructure/database/types'
+import type { DB } from '@/infrastructure/database/types'
 import type { Selectable } from 'kysely'
 
-// Types - Use Database types as source of truth
-type ShoppingListItemTable = Database['shopping_list_items']
-type ShoppingListTable = Database['shopping_lists']
-type ProductCatalogTable = Database['product_catalog']
-type ProductUserCustomTable = Database['product_user_custom']
-type ProductCategoriesUserTable = Database['product_categories_user']
+// Types - Use DB types as source of truth
+type ShoppingListItemTable = DB['shopping_list_items']
+type ShoppingListTable = DB['shopping_lists']
+type ProductCatalogTable = DB['product_catalog']
+type ProductUserCustomTable = DB['product_user_custom']
+type ProductCategoriesUserTable = DB['product_categories_user']
 
 // Selectable types for application use (not for queries)
 type ShoppingListItem = Selectable<ShoppingListItemTable>
@@ -400,7 +400,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
     const cantidadDecimal = quantityToDecimal(quantity)
 
-    const newItem: Omit<ListItemWithProduct, 'id'> & { _productName: string } = {
+    const newItem = {
       shopping_list_id: listId,
       product_id: finalIsCatalog ? (finalProductId ?? null) : null,
       product_custom_id: !finalIsCatalog ? (finalProductId ?? null) : null,
@@ -408,11 +408,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       cantidad: cantidadDecimal,
       unidad_medida: unidad ?? null,
       categoria_producto_id: null,
+      categoria_global_id: null,
       marca: null,
       comentario: null,
       item_order: items.length,
       _productName: productName,
-    }
+    } as unknown as Omit<ListItemWithProduct, 'id'> & { _productName: string }
 
     await createNewItem(newItem)
   }

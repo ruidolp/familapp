@@ -6,7 +6,7 @@
 
 import { db } from '../kysely'
 
-import type { UserConfigTable } from '../types'
+import type { UserConfig } from '../types'
 import type { TipoPeriodo } from '../custom-enums'
 
 /**

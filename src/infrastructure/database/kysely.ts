@@ -7,7 +7,7 @@
 
 import { Kysely, PostgresDialect } from 'kysely'
 import { Pool } from 'pg'
-import type { Database } from './types'
+import type { DB } from './types'
 
 /**
  * Configuración del connection pool
@@ -28,10 +28,10 @@ const dialect = new PostgresDialect({
 })
 
 /**
- * Instancia de Kysely con tipo Database
+ * Instancia de Kysely con tipo DB
  * Esta es la instancia principal que se usa en toda la app
  */
-export const db = new Kysely<Database>({
+export const db = new Kysely<DB>({
   dialect,
   log:
     process.env.NODE_ENV === 'development'
@@ -49,4 +49,4 @@ export async function disconnectDatabase() {
 /**
  * Re-exportar tipos para conveniencia
  */
-export type { Database }
+export type { DB }

@@ -5,7 +5,7 @@
  */
 
 import { db } from '../kysely'
-import type { PeriodosTable } from '../types'
+import type { Periodos } from '../types'
 import type { TipoPeriodo } from '../custom-enums'
 
 /**
