@@ -123,6 +123,22 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }, [])
 
+  // Keep selectedItem in sync with items array
+  // When items changes and selectedItem exists, update selectedItem to latest from items
+  useEffect(() => {
+    if (selectedItem && items) {
+      const updatedItem = items.find((i) => i.id === selectedItem.id)
+      if (updatedItem && updatedItem !== selectedItem) {
+        console.log('🔄 SYNCING SELECTED ITEM:', {
+          itemId: selectedItem.id,
+          oldCantidad: selectedItem.cantidad,
+          newCantidad: updatedItem.cantidad,
+        })
+        setSelectedItem(updatedItem)
+      }
+    }
+  }, [items, selectedItem?.id])
+
   const loadEditorData = async () => {
     setLoading(true)
     try {
