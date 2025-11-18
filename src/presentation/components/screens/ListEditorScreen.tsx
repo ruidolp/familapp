@@ -15,7 +15,7 @@ import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { notify } from '@/infrastructure/lib/notifications'
-import { adjustQty, quantityToDecimal } from '@/infrastructure/utils/quantity'
+import { adjustQty, quantityToDecimal, decimalToFraction } from '@/infrastructure/utils/quantity'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { EditShoppingListItemDrawer } from '@/components/drawers/EditShoppingListItemDrawer'
 
@@ -262,16 +262,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       const responseData = await response.json()
       console.log('✅ SERVER RESPONSE:', responseData)
 
-      // Sync with server response to ensure consistency
-      if (responseData.item) {
-        setItems((prev) =>
-          prev.map((i) =>
-            i.id === itemId
-              ? { ...i, cantidad: responseData.item.cantidad }
-              : i
-          )
-        )
-      }
+      // Don't overwrite local state with server response to avoid race conditions
+      // Local state is the source of truth during editing
+      // Server response is used only for confirmation
 
       setItemSaveState((prev) => ({
         ...prev,
@@ -406,7 +399,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     const item = items.find((i) => i.id === itemId)
     if (!item) return
 
-    const currentQuantity = item.cantidad.toString()
+    // Convert decimal to fraction string if applicable
+    // This handles cases where cantidad is 0.25, 0.5, 0.75 from database
+    const currentDecimal = item.cantidad
+    const fractionStr = decimalToFraction(currentDecimal)
+    const currentQuantity = fractionStr || currentDecimal.toString()
+
     const newQuantityStr = adjustQty(currentQuantity, direction)
     const newQuantity = quantityToDecimal(newQuantityStr)
 
@@ -414,6 +412,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       itemId,
       itemName: item.nombre || item._productName,
       direction,
+      currentDecimal,
+      fractionStr,
       currentQuantity,
       newQuantityStr,
       newQuantity,
