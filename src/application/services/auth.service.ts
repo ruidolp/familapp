@@ -36,7 +36,6 @@ import type {
   ResetPasswordRequest,
   VerifyAccountRequest,
 } from '@/domain/types/auth.types'
-import type { UsersTable } from '@/infrastructure/database/types'
 
 /**
  * Registrar un nuevo usuario
