@@ -414,6 +414,15 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const handleSaveItemEdit = (cantidad: number, comentario?: string) => {
     if (!selectedItem) return
 
+    console.log('✏️ EDIT ITEM DRAWER:', {
+      itemId: selectedItem.id,
+      itemName: selectedItem.nombre || selectedItem._productName,
+      oldCantidad: selectedItem.cantidad,
+      newCantidad: cantidad,
+      oldComentario: selectedItem.comentario,
+      newComentario: comentario,
+    })
+
     // Update local state immediately
     setItems(
       items.map((i) =>
