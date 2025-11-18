@@ -10,18 +10,34 @@ ALTER TABLE shopping_execution_items
 ALTER TABLE shopping_execution_items
   ADD COLUMN IF NOT EXISTS categoria_global_id TEXT;
 
--- Add foreign key constraints
-ALTER TABLE shopping_execution_items
-  ADD CONSTRAINT shopping_execution_items_categoria_producto_fk
-    FOREIGN KEY (categoria_producto_id)
-    REFERENCES product_categories_user(id)
-    ON DELETE SET NULL;
+-- Add foreign key constraints (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'shopping_execution_items_categoria_producto_fk'
+  ) THEN
+    ALTER TABLE shopping_execution_items
+      ADD CONSTRAINT shopping_execution_items_categoria_producto_fk
+        FOREIGN KEY (categoria_producto_id)
+        REFERENCES product_categories_user(id)
+        ON DELETE SET NULL;
+  END IF;
+END $$;
 
-ALTER TABLE shopping_execution_items
-  ADD CONSTRAINT shopping_execution_items_categoria_global_fk
-    FOREIGN KEY (categoria_global_id)
-    REFERENCES product_categories_global(id)
-    ON DELETE SET NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'shopping_execution_items_categoria_global_fk'
+  ) THEN
+    ALTER TABLE shopping_execution_items
+      ADD CONSTRAINT shopping_execution_items_categoria_global_fk
+        FOREIGN KEY (categoria_global_id)
+        REFERENCES product_categories_global(id)
+        ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Create indexes for faster lookups
 CREATE INDEX IF NOT EXISTS idx_shopping_execution_items_categoria_producto_id
