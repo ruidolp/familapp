@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   Drawer,
   DrawerClose,
@@ -38,8 +38,12 @@ export function CreateShoppingListDrawer({
   onOpenChange,
 }: CreateShoppingListDrawerProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Extract locale from pathname (e.g., "/es/..." -> "es")
+  const locale = pathname.split('/')[1] || 'es'
 
   const handleCreate = async () => {
     try {
@@ -72,8 +76,8 @@ export function CreateShoppingListDrawer({
       onOpenChange(false)
       setName('')
 
-      // Navigate to the editor
-      router.push(`/shopping-lists/${listId}`)
+      // Navigate to the editor with correct locale
+      router.push(`/${locale}/shopping-lists/${listId}`)
     } catch (error: any) {
       console.error('Error creating shopping list:', error)
       notify.error(error.message || 'Error al crear la lista')
