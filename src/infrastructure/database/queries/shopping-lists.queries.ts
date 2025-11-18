@@ -655,22 +655,25 @@ export async function getUserProductCategories(userId: string) {
 // ============================================
 // GLOBAL PRODUCT CATEGORIES
 // ============================================
+// NOTE: Temporarily disabled until migration is executed
+// Run: psql -U user -d database -f src/infrastructure/database/migrations/011_add_global_product_categories.sql
+// Then: npm run db:types
 
-export async function getGlobalProductCategories() {
-  return db
-    .selectFrom('product_categories_global')
-    .selectAll()
-    .where('deleted_at', 'is', null)
-    .orderBy('nombre', 'asc')
-    .execute()
-}
+// export async function getGlobalProductCategories() {
+//   return db
+//     .selectFrom('product_categories_global')
+//     .selectAll()
+//     .where('deleted_at', 'is', null)
+//     .orderBy('nombre', 'asc')
+//     .execute()
+// }
 
-export async function getGlobalProductCategoryById(id: string) {
-  return db
-    .selectFrom('product_categories_global')
-    .selectAll()
-    .where('id', '=', id)
-    .where('deleted_at', 'is', null)
-    .executeTakeFirst()
-}
+// export async function getGlobalProductCategoryById(id: string) {
+//   return db
+//     .selectFrom('product_categories_global')
+//     .selectAll()
+//     .where('id', '=', id)
+//     .where('deleted_at', 'is', null)
+//     .executeTakeFirst()
+// }
 
