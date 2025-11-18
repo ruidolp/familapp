@@ -188,6 +188,8 @@ export async function getShoppingListItems(listId: string) {
       'shopping_list_items.deleted_at',
       // Product names
       sql<string>`COALESCE(product_catalog.nombre, product_user_custom.nombre)`.as('nombre'),
+      // Product category - prioritize user-assigned category, fallback to catalog category
+      sql<string | null>`COALESCE(shopping_list_items.categoria_producto_id, product_catalog.category_id)`.as('final_category_id'),
     ])
     .where('shopping_list_items.shopping_list_id', '=', listId)
     .where('shopping_list_items.deleted_at', 'is', null)
