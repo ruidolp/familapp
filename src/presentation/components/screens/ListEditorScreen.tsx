@@ -9,6 +9,7 @@ import {
   Minus,
   AlertCircle,
   Loader2,
+  ShoppingCart,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -18,6 +19,12 @@ import { notify } from '@/infrastructure/lib/notifications'
 import { adjustQty, quantityToDecimal, decimalToFraction } from '@/infrastructure/utils/quantity'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { EditShoppingListItemDrawer } from '@/components/drawers/EditShoppingListItemDrawer'
+import {
+  ConfigureExecutionDrawer,
+  type ExecutionConfig,
+} from '@/presentation/components/execution/ConfigureExecutionDrawer'
+import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
+import type { CreateLocalExecutionInput } from '@/domain/types/shopping-execution'
 
 // Types
 interface Product {
@@ -91,6 +98,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // Edit drawer state
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
+
+  // Execute purchase drawer state
+  const [configureExecutionOpen, setConfigureExecutionOpen] = useState(false)
+  const [userId, setUserId] = useState<string>('')
 
   // Save state per item
   const [itemSaveState, setItemSaveState] = useState<ItemSaveState>({})
@@ -493,6 +504,83 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }
 
+  // Fetch current user ID
+  useEffect(() => {
+    const fetchUserId = async () => {
+      try {
+        const response = await fetch('/api/auth/session')
+        if (response.ok) {
+          const session = await response.json()
+          if (session?.user?.id) {
+            setUserId(session.user.id)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user ID:', error)
+      }
+    }
+    fetchUserId()
+  }, [])
+
+  const handleExecutePurchase = async (config: ExecutionConfig) => {
+    if (!data || items.length === 0) {
+      notify.error('No hay productos en la lista')
+      return
+    }
+
+    if (!userId) {
+      notify.error('Usuario no identificado')
+      return
+    }
+
+    try {
+      // Create local execution
+      const input: CreateLocalExecutionInput = {
+        shopping_list_id: listId,
+        user_id: userId,
+        items: items.map((item, index) => ({
+          shopping_list_item_id: item.id.startsWith('temp-') ? undefined : item.id,
+          product_id: item.product_id,
+          product_custom_id: item.product_custom_id,
+          is_catalog: item.is_catalog,
+          product_name: item.nombre || item._productName || 'Producto',
+          categoria_producto_id: item.categoria_producto_id,
+          categoria_producto_nombre: data.categories.find(c => c.id === item.categoria_producto_id)?.nombre,
+          cantidad_planeada: item.cantidad,
+          unidad_medida: item.unidad_medida,
+          marca: item.marca,
+          item_order: item.item_order || index,
+        })),
+        registration: {
+          registerInBudget: config.registerInBudget,
+          sobre_id: config.sobre_id,
+          categoria_sobre_id: config.categoria_id,
+          subcategoria_id: config.subcategoria_id,
+          store_name: config.store_name,
+        },
+        budget: {
+          enabled: config.budgetEnabled,
+          amount: config.budgetAmount,
+        },
+        settings: {
+          showTimer: config.showTimer,
+          enablePrices: config.enablePrices,
+          showCategories: config.showCategories,
+        },
+      }
+
+      const execution = await ExecutionStorage.createLocal(input)
+
+      notify.success('¡Compra iniciada!')
+
+      // Redirect to execution screen
+      router.push(`/shopping-executions/${execution.localId}`)
+    } catch (error) {
+      console.error('Error starting execution:', error)
+      notify.error('Error al iniciar compra')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -531,6 +619,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               </p>
             )}
           </div>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setConfigureExecutionOpen(true)}
+            disabled={items.length === 0}
+            className="flex items-center gap-2"
+          >
+            <ShoppingCart size={16} />
+            <span className="hidden sm:inline">Ejecutar Compra</span>
+          </Button>
         </div>
 
         {/* Preferences */}
@@ -682,6 +780,14 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           onSave={handleSaveItemEdit}
         />
       )}
+
+      {/* Configure Execution Drawer */}
+      <ConfigureExecutionDrawer
+        open={configureExecutionOpen}
+        onOpenChange={setConfigureExecutionOpen}
+        userId={userId}
+        onConfirm={handleExecutePurchase}
+      />
     </div>
   )
 }
