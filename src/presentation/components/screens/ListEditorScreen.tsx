@@ -29,13 +29,17 @@ import {
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { CreateLocalExecutionInput } from '@/domain/types/shopping-execution'
 import type { Database } from '@/infrastructure/database/types'
+import type { Selectable } from 'kysely'
 
 // Types - Use Database types as source of truth
-type ShoppingListItem = Database['shopping_list_items']
+type ShoppingListItemTable = Database['shopping_list_items']
 type ShoppingListTable = Database['shopping_lists']
 type ProductCatalogTable = Database['product_catalog']
 type ProductUserCustomTable = Database['product_user_custom']
 type ProductCategoriesUserTable = Database['product_categories_user']
+
+// Selectable types for application use (not for queries)
+type ShoppingListItem = Selectable<ShoppingListItemTable>
 
 // Extended type for list items with joined product names
 interface ListItemWithProduct extends Omit<ShoppingListItem, 'created_at' | 'updated_at' | 'deleted_at' | 'created_by' | 'item_type'> {
@@ -394,11 +398,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
     const newItem: Omit<ListItemWithProduct, 'id'> & { _productName: string } = {
       shopping_list_id: listId,
-      product_id: finalIsCatalog ? finalProductId : null,
-      product_custom_id: !finalIsCatalog ? finalProductId : null,
+      product_id: finalIsCatalog ? (finalProductId ?? null) : null,
+      product_custom_id: !finalIsCatalog ? (finalProductId ?? null) : null,
       is_catalog: finalIsCatalog,
       cantidad: cantidadDecimal,
-      unidad_medida: unidad || null,
+      unidad_medida: unidad ?? null,
       categoria_producto_id: null,
       marca: null,
       comentario: null,
@@ -500,7 +504,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     setItems(
       items.map((i) =>
         i.id === selectedItem.id
-          ? { ...i, cantidad, comentario }
+          ? { ...i, cantidad, comentario: comentario ?? null }
           : i
       )
     )
@@ -547,15 +551,15 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         user_id: userId,
         items: items.map((item, index) => ({
           shopping_list_item_id: item.id.startsWith('temp-') ? undefined : item.id,
-          product_id: item.product_id,
-          product_custom_id: item.product_custom_id,
+          product_id: item.product_id ?? undefined,
+          product_custom_id: item.product_custom_id ?? undefined,
           is_catalog: item.is_catalog,
           product_name: item.nombre || item._productName || 'Producto',
-          categoria_producto_id: item.categoria_producto_id,
+          categoria_producto_id: item.categoria_producto_id ?? undefined,
           categoria_producto_nombre: data.categories.find(c => c.id === item.categoria_producto_id)?.nombre,
           cantidad_planeada: item.cantidad,
-          unidad_medida: item.unidad_medida,
-          marca: item.marca,
+          unidad_medida: item.unidad_medida ?? undefined,
+          marca: item.marca ?? undefined,
           item_order: item.item_order || index,
         })),
         registration: {
