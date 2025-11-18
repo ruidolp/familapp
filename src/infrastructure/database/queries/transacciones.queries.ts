@@ -6,7 +6,8 @@
 
 import { db } from '../kysely'
 
-import type { TransaccionesTable, TipoTransaccion } from '../types'
+import type { TransaccionesTable } from '../types'
+import type { TipoTransaccion } from '../custom-enums'
 
 /**
  * Tipo para creación de transacción

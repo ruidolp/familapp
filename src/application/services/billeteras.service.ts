@@ -20,7 +20,7 @@ import {
 import { findMonedaById } from '@/infrastructure/database/queries/monedas.queries'
 import { findUserConfig } from '@/infrastructure/database/queries/user-config.queries'
 import { createTransaccion } from '@/infrastructure/database/queries/transacciones.queries'
-import type { TipoBilletera, TipoBilleteraTransaccion } from '@/infrastructure/database/types'
+import type { TipoBilletera, TipoBilleteraTransaccion } from '@/infrastructure/database/custom-enums'
 import { appConfig } from '@/config/app.config'
 
 /**

@@ -5,7 +5,8 @@
  */
 
 import { db } from '../kysely'
-import type { SobresTable, SobresUsuariosTable, TipoSobre, RolSobreUsuario } from '../types'
+import type { SobresTable, SobresUsuariosTable } from '../types'
+import type { TipoSobre, RolSobreUsuario } from '../custom-enums'
 
 /**
  * Tipo para creación de sobre

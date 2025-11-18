@@ -25,7 +25,7 @@ import {
   unlinkCategoriaFromSobre,
   findCategoriasBySobre,
 } from '@/infrastructure/database/queries/categorias.queries'
-import type { TipoSobre, RolSobreUsuario } from '@/infrastructure/database/types'
+import type { TipoSobre, RolSobreUsuario } from '@/infrastructure/database/custom-enums'
 
 /**
  * Datos para crear un sobre

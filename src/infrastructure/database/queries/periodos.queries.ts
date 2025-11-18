@@ -5,7 +5,8 @@
  */
 
 import { db } from '../kysely'
-import type { PeriodosTable, TipoPeriodo } from '../types'
+import type { PeriodosTable } from '../types'
+import type { TipoPeriodo } from '../custom-enums'
 
 /**
  * Tipo para crear período

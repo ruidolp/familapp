@@ -6,7 +6,8 @@
 
 import { db } from '../kysely'
 
-import type { IngresosRecurrentesTable, FrecuenciaIngreso, EstadoIngresoRecurrente } from '../types'
+import type { IngresosRecurrentesTable } from '../types'
+import type { FrecuenciaIngreso, EstadoIngresoRecurrente } from '../custom-enums'
 
 /**
  * Tipo para creación de ingreso recurrente

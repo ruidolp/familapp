@@ -3,7 +3,7 @@
  * Plain object types sin ColumnType de Kysely
  */
 
-import type { TipoSobre } from '@/infrastructure/database/types'
+import type { TipoSobre } from '@/infrastructure/database/custom-enums'
 
 /**
  * Sobre - Objeto plano para frontend

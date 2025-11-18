@@ -5,7 +5,8 @@
  */
 
 import { db } from '../kysely'
-import type { BilleterasTable, TipoBilletera } from '../types'
+import type { BilleterasTable } from '../types'
+import type { TipoBilletera } from '../custom-enums'
 
 /**
  * Tipo para creación de billetera
