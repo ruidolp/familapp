@@ -346,6 +346,8 @@ export interface Sessions {
 export interface ShoppingExecutionItems {
   agregado_por: string | null;
   cantidad_comprada: Numeric | null;
+  categoria_global_id: string | null;
+  categoria_producto_id: string | null;
   created_at: Generated<Timestamp | null>;
   es_agregado_vuelo: Generated<boolean>;
   es_comprado: Generated<boolean>;
