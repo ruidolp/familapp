@@ -74,36 +74,39 @@ export function quantityToDecimal(quantity: string): number {
  * - n → n+1
  */
 export function adjustQty(current: string, direction: 'up' | 'down'): string {
-  if (!isValidQuantity(current)) {
-    current = '1' // Default to 1 if invalid
-  }
+  // Normalize: remove whitespace and ensure clean string
+  const normalized = String(current).trim()
 
   if (direction === 'down') {
     // Going down
-    if (current === '1') return '3/4'
-    if (current === '3/4') return '1/2'
-    if (current === '1/2') return '1/4'
-    if (current === '1/4') return '1/4' // Can't go lower
+    if (normalized === '1') return '3/4'
+    if (normalized === '3/4') return '1/2'
+    if (normalized === '1/2') return '1/4'
+    if (normalized === '1/4') return '1/4' // Can't go lower
 
     // For whole numbers > 1
-    const num = parseInt(current, 10)
+    const num = parseInt(normalized, 10)
     if (!isNaN(num) && num > 1) {
       return String(num - 1)
     }
+
+    // If invalid, return "1"
+    return '1'
   } else {
     // Going up
-    if (current === '1/4') return '1'
-    if (current === '1/2') return '1'
-    if (current === '3/4') return '1'
+    if (normalized === '1/4') return '1'
+    if (normalized === '1/2') return '1'
+    if (normalized === '3/4') return '1'
 
     // For whole numbers
-    const num = parseInt(current, 10)
+    const num = parseInt(normalized, 10)
     if (!isNaN(num) && num >= 1) {
       return String(num + 1)
     }
-  }
 
-  return current
+    // If invalid, start at 2
+    return '2'
+  }
 }
 
 /**

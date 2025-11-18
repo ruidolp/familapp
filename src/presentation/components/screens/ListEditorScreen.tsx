@@ -397,27 +397,48 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   const handleUpdateQuantity = (itemId: string, direction: 'up' | 'down') => {
     const item = items.find((i) => i.id === itemId)
-    if (!item) return
+    if (!item) {
+      console.error('❌ Item not found:', itemId)
+      return
+    }
 
-    // Convert decimal to fraction string if applicable
-    // This handles cases where cantidad is 0.25, 0.5, 0.75 from database
+    // CRITICAL: Get current cantidad and convert to proper string format
     const currentDecimal = item.cantidad
+
+    console.log('🔍 BEFORE ADJUSTMENT:', {
+      itemId,
+      itemName: item.nombre || item._productName,
+      direction,
+      'currentDecimal (typeof)': typeof currentDecimal,
+      'currentDecimal (value)': currentDecimal,
+      'currentDecimal (JSON)': JSON.stringify(currentDecimal),
+    })
+
+    // Convert decimal to fraction string if applicable (0.25, 0.5, 0.75)
+    // Otherwise use the number as string
+    let currentQuantity: string
     const fractionStr = decimalToFraction(currentDecimal)
-    const currentQuantity = fractionStr || currentDecimal.toString()
+    if (fractionStr) {
+      currentQuantity = fractionStr
+    } else {
+      // For whole numbers or other decimals, use Math.round to ensure integer
+      const rounded = Math.round(currentDecimal)
+      currentQuantity = String(rounded)
+    }
+
+    console.log('🔍 READY TO ADJUST:', {
+      currentQuantity,
+      'typeof currentQuantity': typeof currentQuantity,
+      direction,
+    })
 
     const newQuantityStr = adjustQty(currentQuantity, direction)
     const newQuantity = quantityToDecimal(newQuantityStr)
 
-    console.log('📊 UPDATE QUANTITY:', {
-      itemId,
-      itemName: item.nombre || item._productName,
-      direction,
-      currentDecimal,
-      fractionStr,
-      currentQuantity,
+    console.log('✅ AFTER ADJUSTMENT:', {
       newQuantityStr,
       newQuantity,
-      itemBeforeUpdate: item,
+      'typeof newQuantity': typeof newQuantity,
     })
 
     // Update local state
@@ -644,6 +665,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
         <ProductQuantityInput
           onAddProduct={(name, qty) => handleAddItem(name, false, undefined, qty)}
+          availableProducts={[
+            // Combine catalog and custom products for autocomplete
+            ...(data?.catalog || []).map((p) => ({ ...p, is_catalog: true })),
+            ...(data?.customProducts || []).map((p) => ({ ...p, is_catalog: false })),
+          ]}
         />
       </div>
 
