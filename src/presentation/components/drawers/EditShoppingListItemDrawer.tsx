@@ -10,6 +10,13 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -23,30 +30,42 @@ interface ListItem {
   nombre?: string
   cantidad: number
   comentario?: string | null
+  categoria_producto_id?: string | null
+}
+
+interface Category {
+  id: string
+  nombre: string
+  color?: string
+  emoji?: string
 }
 
 interface EditShoppingListItemDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   item: ListItem | null
-  onSave: (cantidad: number, comentario?: string) => void
+  categories?: Category[]
+  onSave: (cantidad: number, comentario?: string, categoriaId?: string | null) => void
 }
 
 export function EditShoppingListItemDrawer({
   open,
   onOpenChange,
   item,
+  categories = [],
   onSave,
 }: EditShoppingListItemDrawerProps) {
   const [cantidad, setCantidad] = useState<number>(1)
   const [comentario, setComentario] = useState('')
+  const [categoriaId, setCategoriaId] = useState<string | null>(null)
 
   useEffect(() => {
     if (item) {
       setCantidad(item.cantidad)
       setComentario(item.comentario || '')
+      setCategoriaId(item.categoria_producto_id || null)
     }
-  }, [item, item?.cantidad, item?.comentario])
+  }, [item, item?.cantidad, item?.comentario, item?.categoria_producto_id])
 
   const handleAdjustQuantity = (direction: 'up' | 'down') => {
     // Convert current decimal to string for adjustQty
@@ -59,7 +78,7 @@ export function EditShoppingListItemDrawer({
   }
 
   const handleSave = () => {
-    onSave(cantidad, comentario || undefined)
+    onSave(cantidad, comentario || undefined, categoriaId)
     onOpenChange(false)
   }
 
@@ -101,6 +120,29 @@ export function EditShoppingListItemDrawer({
               </Button>
             </div>
           </div>
+
+          {/* Category Selector */}
+          {categories.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="categoria">Categoría (opcional)</Label>
+              <Select
+                value={categoriaId || 'sin-categoria'}
+                onValueChange={(value) => setCategoriaId(value === 'sin-categoria' ? null : value)}
+              >
+                <SelectTrigger id="categoria">
+                  <SelectValue placeholder="Selecciona una categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sin-categoria">Sin categoría</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.emoji ? `${cat.emoji} ` : ''}{cat.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Comentario */}
           <div className="space-y-2">

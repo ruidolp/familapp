@@ -257,7 +257,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   const updateItemOnServer = async (
     itemId: string,
-    updates: { cantidad?: number; comentario?: string }
+    updates: { cantidad?: number; comentario?: string; categoria_producto_id?: string | null }
   ) => {
     console.log('💾 SAVING TO SERVER:', { itemId, updates })
 
@@ -488,7 +488,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     setEditDrawerOpen(true)
   }
 
-  const handleSaveItemEdit = (cantidad: number, comentario?: string) => {
+  const handleSaveItemEdit = (cantidad: number, comentario?: string, categoriaId?: string | null) => {
     if (!selectedItem) return
 
     console.log('✏️ EDIT ITEM DRAWER:', {
@@ -498,20 +498,22 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       newCantidad: cantidad,
       oldComentario: selectedItem.comentario,
       newComentario: comentario,
+      oldCategoria: selectedItem.categoria_producto_id,
+      newCategoria: categoriaId,
     })
 
     // Update local state immediately
     setItems(
       items.map((i) =>
         i.id === selectedItem.id
-          ? { ...i, cantidad, comentario: comentario ?? null }
+          ? { ...i, cantidad, comentario: comentario ?? null, categoria_producto_id: categoriaId ?? null }
           : i
       )
     )
 
     // Save to server immediately
     if (!selectedItem.id.startsWith('temp-')) {
-      updateItemOnServer(selectedItem.id, { cantidad, comentario })
+      updateItemOnServer(selectedItem.id, { cantidad, comentario, categoria_producto_id: categoriaId ?? null })
     }
   }
 
@@ -556,7 +558,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           is_catalog: item.is_catalog,
           product_name: item.nombre || item._productName || 'Producto',
           categoria_producto_id: item.categoria_producto_id ?? undefined,
-          categoria_producto_nombre: data.categories.find(c => c.id === item.categoria_producto_id)?.nombre,
+          categoria_producto_nombre: data?.categories?.find(c => c.id === item.categoria_producto_id)?.nombre,
           cantidad_planeada: item.cantidad,
           unidad_medida: item.unidad_medida ?? undefined,
           marca: item.marca ?? undefined,
@@ -674,7 +676,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                       isSaving ? 'opacity-60' : ''
                     } ${hasError ? 'text-destructive' : ''}`}
                   >
-                    <Square size={14} className="flex-shrink-0 mt-0.5" />
+                    <div className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 rounded-full bg-primary/20 border-2 border-primary" />
                     <span className="font-medium flex-shrink-0">{item.cantidad}</span>
                     <span className="flex-1">
                       {item.nombre || item._productName || item.product_id || item.product_custom_id}
@@ -690,6 +692,131 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               })}
             </div>
           </Card>
+        ) : groupByCategory ? (
+          /* GROUPED BY CATEGORY MODE */
+          <div className="space-y-4">
+            {(() => {
+              // Group items by category
+              const grouped = items.reduce((acc, item) => {
+                const catId = item.categoria_producto_id || 'sin-categoria'
+                if (!acc[catId]) acc[catId] = []
+                acc[catId].push(item)
+                return acc
+              }, {} as Record<string, typeof items>)
+
+              return Object.entries(grouped).map(([catId, categoryItems]) => {
+                const category = data?.categories?.find(c => c.id === catId)
+                const categoryName = category?.nombre || 'Sin categoría'
+
+                return (
+                  <div key={catId}>
+                    {/* Category Header */}
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2 px-1">
+                      {categoryName}
+                    </h3>
+
+                    {/* Items in this category */}
+                    <div className="space-y-1.5">
+                      {categoryItems.map((item) => {
+                        const saveState = itemSaveState[item.id]
+                        const isSaving = saveState?.isSaving ?? false
+                        const hasError = !!saveState?.error
+
+                        return (
+                          <Card
+                            key={item.id}
+                            className={`p-2 transition-opacity ${
+                              isSaving ? 'opacity-60' : ''
+                            } ${hasError ? 'border-destructive/50 bg-destructive/5' : ''}`}
+                          >
+                            <div className="space-y-0.5">
+                              {/* Line 1: Quantity, Name, and buttons */}
+                              <div className="flex items-center gap-2">
+                                {/* Minus button (if show qty controls) */}
+                                {!showInlineQty && (
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handleUpdateQuantity(item.id, 'down')}
+                                    className="h-7 w-7 flex-shrink-0"
+                                    disabled={isSaving}
+                                  >
+                                    <Minus size={14} />
+                                  </Button>
+                                )}
+
+                                {/* Quantity */}
+                                <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
+                                  {item.cantidad}
+                                </div>
+
+                                {/* Plus button (if show qty controls) */}
+                                {!showInlineQty && (
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => handleUpdateQuantity(item.id, 'up')}
+                                    className="h-7 w-7 flex-shrink-0"
+                                    disabled={isSaving}
+                                  >
+                                    <Plus size={14} />
+                                  </Button>
+                                )}
+
+                                {/* Product name (clickable) */}
+                                <Button
+                                  variant="ghost"
+                                  onClick={() => handleEditItem(item)}
+                                  className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted"
+                                  disabled={isSaving}
+                                >
+                                  {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                                </Button>
+
+                                {/* Save status indicator */}
+                                {isSaving && (
+                                  <Loader2 size={14} className="animate-spin flex-shrink-0 text-blue-500" />
+                                )}
+                                {hasError && (
+                                  <AlertCircle size={14} className="flex-shrink-0 text-destructive" />
+                                )}
+
+                                {/* Delete button */}
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  className="h-7 w-7 flex-shrink-0"
+                                  disabled={isSaving}
+                                >
+                                  <X size={14} />
+                                </Button>
+                              </div>
+
+                              {/* Line 2: Comment (if exists) - indented */}
+                              {item.comentario && (
+                                <div className="text-xs text-muted-foreground pl-12 leading-tight">
+                                  {item.comentario}
+                                </div>
+                              )}
+
+                              {/* Error message */}
+                              {hasError && (
+                                <div className="flex items-center gap-2 text-xs text-destructive pl-12">
+                                  <AlertCircle size={12} />
+                                  <span>Error al guardar. Intenta de nuevo.</span>
+                                </div>
+                              )}
+                            </div>
+                          </Card>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })
+            })()}
+          </div>
         ) : (
           /* NORMAL CARD MODE */
           <div className="space-y-1.5">
@@ -705,7 +832,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                     isSaving ? 'opacity-60' : ''
                   } ${hasError ? 'border-destructive/50 bg-destructive/5' : ''}`}
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     {/* Line 1: Quantity, Name, and buttons */}
                     <div className="flex items-center gap-2">
                       {/* Minus button (if show qty controls) */}
@@ -743,7 +870,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                       <Button
                         variant="ghost"
                         onClick={() => handleEditItem(item)}
-                        className="flex-1 h-auto justify-start text-left px-2 py-1 font-medium hover:bg-muted"
+                        className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted"
                         disabled={isSaving}
                       >
                         {item.nombre || item._productName || item.product_id || item.product_custom_id}
@@ -769,16 +896,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                       </Button>
                     </div>
 
-                    {/* Line 2: Comment (if exists) */}
+                    {/* Line 2: Comment (if exists) - indented under product name */}
                     {item.comentario && (
-                      <div className="text-xs text-muted-foreground px-1">
+                      <div className="text-xs text-muted-foreground pl-12 leading-tight">
                         {item.comentario}
                       </div>
                     )}
 
                     {/* Error message */}
                     {hasError && (
-                      <div className="flex items-center gap-2 text-xs text-destructive px-1">
+                      <div className="flex items-center gap-2 text-xs text-destructive pl-12">
                         <AlertCircle size={12} />
                         <span>Error al guardar. Intenta de nuevo.</span>
                       </div>
@@ -821,6 +948,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           open={editDrawerOpen}
           onOpenChange={setEditDrawerOpen}
           item={selectedItem}
+          categories={data?.categories || []}
           onSave={handleSaveItemEdit}
         />
       )}
