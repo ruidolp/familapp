@@ -115,6 +115,87 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     router.push(`/shopping-lists/${listId}`)
   }
 
+  // Separate lists into pending and executed
+  const pendingLists = lists.filter(list => list.purchase_count === 0)
+  const executedLists = lists.filter(list => list.purchase_count > 0)
+
+  // Helper to render a list card
+  const renderListCard = (list: ShoppingList) => (
+    <Card
+      key={list.id}
+      className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+      onClick={() => handleOpenList(list.id)}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-base truncate">
+            {list.nombre}
+          </h3>
+          {list.descripcion && (
+            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+              {list.descripcion}
+            </p>
+          )}
+          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+            <span>
+              {list._itemCount !== undefined
+                ? `${list._itemCount} items`
+                : 'Sin items'}
+            </span>
+            <span>•</span>
+            <span>
+              {list.purchase_count > 0
+                ? `Usada ${list.purchase_count} veces`
+                : 'Sin usar'}
+            </span>
+          </div>
+        </div>
+
+        {/* Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+            >
+              <MoreVertical size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpenList(list.id)
+              }}
+            >
+              Abrir
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCloneList(list.id, list.nombre)
+              }}
+            >
+              <Copy size={14} className="mr-2" />
+              Clonar
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDeleteList(list.id, list.nombre)
+              }}
+              className="text-destructive"
+            >
+              <Trash2 size={14} className="mr-2" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </Card>
+  )
+
   if (loading && lists.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -154,82 +235,30 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {lists.map((list) => (
-              <Card
-                key={list.id}
-                className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
-                onClick={() => handleOpenList(list.id)}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base truncate">
-                      {list.nombre}
-                    </h3>
-                    {list.descripcion && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                        {list.descripcion}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                      <span>
-                        {list._itemCount !== undefined
-                          ? `${list._itemCount} items`
-                          : 'Sin items'}
-                      </span>
-                      <span>•</span>
-                      <span>
-                        {list.purchase_count > 0
-                          ? `Usada ${list.purchase_count} veces`
-                          : 'Sin usar'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Menu */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                      >
-                        <MoreVertical size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleOpenList(list.id)
-                        }}
-                      >
-                        Abrir
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleCloneList(list.id, list.nombre)
-                        }}
-                      >
-                        <Copy size={14} className="mr-2" />
-                        Clonar
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteList(list.id, list.nombre)
-                        }}
-                        className="text-destructive"
-                      >
-                        <Trash2 size={14} className="mr-2" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+          <div className="space-y-8">
+            {/* Pending Lists Section */}
+            {pendingLists.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 pl-1">
+                  Pendientes ({pendingLists.length})
+                </h3>
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {pendingLists.map(renderListCard)}
                 </div>
-              </Card>
-            ))}
+              </div>
+            )}
+
+            {/* Executed Lists Section */}
+            {executedLists.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-3 pl-1">
+                  ✓ Ejecutadas ({executedLists.length})
+                </h3>
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {executedLists.map(renderListCard)}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
