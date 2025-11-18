@@ -278,7 +278,7 @@ export function ConfigureExecutionDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="bottom"
+       
         className="h-[90vh] overflow-y-auto sm:max-w-[500px] sm:mx-auto"
       >
         <SheetHeader>

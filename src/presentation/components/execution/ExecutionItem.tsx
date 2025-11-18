@@ -28,7 +28,7 @@ export function ExecutionItem({
   onTap,
   onLongPress,
 }: ExecutionItemProps) {
-  const { formatCurrency } = useCurrency()
+  const { formatNumber } = useCurrency()
   const [pressing, setPressing] = useState(false)
   const longPressTimer = useRef<NodeJS.Timeout | null>(null)
 
@@ -135,10 +135,10 @@ export function ExecutionItem({
         {isPurchased && item.precio_total && (
           <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-green-700 dark:text-green-400">
             <Tag className="h-3 w-3" />
-            {formatCurrency(item.precio_total)}
+            {formatNumber(item.precio_total)}
             {item.precio_unitario && (
               <span className="text-xs font-normal text-muted-foreground">
-                ({formatCurrency(item.precio_unitario)}/un)
+                ({formatNumber(item.precio_unitario)}/un)
               </span>
             )}
           </div>
