@@ -8,12 +8,10 @@ import {
   Plus,
   Minus,
   AlertCircle,
-  RefreshCw,
   Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { notify } from '@/infrastructure/lib/notifications'
@@ -48,8 +46,8 @@ interface ListItem {
   marca?: string
   comentario?: string
   item_order: number
-  nombre?: string // From COALESCE in database query
-  _productName?: string // Enriched client-side
+  nombre?: string
+  _productName?: string
 }
 
 interface EditorData {
@@ -71,7 +69,6 @@ interface ListEditorScreenProps {
   listId: string
 }
 
-// State for tracking item save status
 interface ItemSaveState {
   [itemId: string]: {
     isSaving: boolean
@@ -98,19 +95,18 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // Save state per item
   const [itemSaveState, setItemSaveState] = useState<ItemSaveState>({})
 
-  // Track unsaved creates/deletes for batch save
-  const [pendingBatch, setPendingBatch] = useState<{
-    creates: any[]
-    deletes: string[]
-  }>({
-    creates: [],
-    deletes: [],
-  })
-
   // Load data on mount
   useEffect(() => {
     loadEditorData()
   }, [listId])
+
+  // Save to localStorage as backup (not for restoration)
+  useEffect(() => {
+    localStorage.setItem(
+      `list:${listId}:draft`,
+      JSON.stringify({ items, updatedAt: new Date().toISOString() })
+    )
+  }, [items, listId])
 
   // Listen for visibility change (tab focus)
   useEffect(() => {
@@ -127,19 +123,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }, [])
 
-  // Flush pending creates/deletes on unmount
-  useEffect(() => {
-    return () => {
-      if (
-        pendingBatch.creates.length > 0 ||
-        pendingBatch.deletes.length > 0
-      ) {
-        // Save batch synchronously if possible (won't work due to async)
-        // This is why we need to save immediately
-      }
-    }
-  }, [pendingBatch])
-
   const loadEditorData = async () => {
     setLoading(true)
     try {
@@ -148,6 +131,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         const data: EditorData = await response.json()
         setData(data)
         setItems(data.items)
+        // Clear any draft conflict indicators
+        setItemSaveState({})
       } else {
         notify.error('Error al cargar datos')
         router.back()
@@ -161,60 +146,135 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }
 
-  const saveItemUpdate = async (itemId: string, updates: { cantidad?: number; comentario?: string }) => {
+  const createNewItem = async (
+    newItem: Omit<ListItem, 'id'> & { _productName: string }
+  ) => {
+    const tempId = `temp-${Date.now()}`
+    const itemWithTempId: ListItem = {
+      ...newItem,
+      id: tempId,
+    }
+
+    // Add to local state immediately (optimistic)
+    setItems((prev) => [...prev, itemWithTempId])
+
+    // Save to server
+    setItemSaveState((prev) => ({
+      ...prev,
+      [tempId]: { isSaving: true },
+    }))
+
+    try {
+      const response = await fetch(
+        `/api/shopping-lists/${listId}/items`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            product_id: newItem.product_id,
+            product_custom_id: newItem.product_custom_id,
+            is_catalog: newItem.is_catalog,
+            cantidad: newItem.cantidad,
+            unidad_medida: newItem.unidad_medida,
+            categoria_producto_id: newItem.categoria_producto_id,
+            marca: newItem.marca,
+            comentario: newItem.comentario,
+          }),
+        }
+      )
+
+      if (!response.ok) throw new Error('Error al crear item')
+
+      const { item: realItem } = await response.json()
+
+      // Replace temp ID with real ID
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === tempId
+            ? { ...realItem, _productName: newItem._productName, nombre: realItem.nombre }
+            : i
+        )
+      )
+
+      setItemSaveState((prev) => {
+        const newState = { ...prev }
+        delete newState[tempId]
+        newState[realItem.id] = { isSaving: false }
+        return newState
+      })
+    } catch (error: any) {
+      console.error('Error creating item:', error)
+      setItemSaveState((prev) => ({
+        ...prev,
+        [tempId]: { isSaving: false, error: 'Error al crear' },
+      }))
+    }
+  }
+
+  const updateItemOnServer = async (
+    itemId: string,
+    updates: { cantidad?: number; comentario?: string }
+  ) => {
     setItemSaveState((prev) => ({
       ...prev,
       [itemId]: { isSaving: true },
     }))
 
     try {
-      const response = await fetch(`/api/shopping-lists/${listId}/items/batch`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          creates: [],
-          updates: [{ id: itemId, ...updates }],
-          deletes: [],
-        }),
-      })
+      const response = await fetch(
+        `/api/shopping-lists/${listId}/items/${itemId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates),
+        }
+      )
 
-      if (response.ok) {
-        setItemSaveState((prev) => ({
-          ...prev,
-          [itemId]: { isSaving: false },
-        }))
-      } else {
-        throw new Error('Error al guardar')
-      }
+      if (!response.ok) throw new Error('Error al actualizar')
+
+      setItemSaveState((prev) => ({
+        ...prev,
+        [itemId]: { isSaving: false },
+      }))
     } catch (error: any) {
-      console.error('Error saving item update:', error)
+      console.error('Error updating item:', error)
       setItemSaveState((prev) => ({
         ...prev,
         [itemId]: { isSaving: false, error: 'Error al guardar' },
       }))
-      // Keep local state, let user retry
     }
   }
 
-  const handleEditItem = (item: ListItem) => {
-    setSelectedItem(item)
-    setEditDrawerOpen(true)
-  }
+  const deleteItemFromServer = async (itemId: string) => {
+    setItemSaveState((prev) => ({
+      ...prev,
+      [itemId]: { isSaving: true },
+    }))
 
-  const handleSaveItemEdit = (cantidad: number, comentario?: string) => {
-    if (!selectedItem) return
-
-    // Update local state immediately (optimistic)
-    setItems(
-      items.map((i) =>
-        i.id === selectedItem.id
-          ? { ...i, cantidad, comentario }
-          : i
+    try {
+      const response = await fetch(
+        `/api/shopping-lists/${listId}/items/${itemId}`,
+        {
+          method: 'DELETE',
+        }
       )
-    )
 
-    // Save to server immediately
-    saveItemUpdate(selectedItem.id, { cantidad, comentario })
+      if (!response.ok) throw new Error('Error al eliminar')
+
+      // Remove from local state after successful delete
+      setItems((prev) => prev.filter((i) => i.id !== itemId))
+      setItemSaveState((prev) => {
+        const newState = { ...prev }
+        delete newState[itemId]
+        return newState
+      })
+    } catch (error: any) {
+      console.error('Error deleting item:', error)
+      setItemSaveState((prev) => ({
+        ...prev,
+        [itemId]: { isSaving: false, error: 'Error al eliminar' },
+      }))
+    }
   }
 
   const handleAddItem = (
@@ -283,8 +343,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
     const cantidadDecimal = quantityToDecimal(quantity)
 
-    const newItem: ListItem = {
-      id: `temp-${Date.now()}`,
+    const newItem: Omit<ListItem, 'id'> & { _productName: string } = {
       shopping_list_id: listId,
       product_id: finalIsCatalog ? finalProductId : undefined,
       product_custom_id: !finalIsCatalog ? finalProductId : undefined,
@@ -295,35 +354,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       _productName: productName,
     }
 
-    // Add to local state
-    setItems([...items, newItem])
-
-    // Add to pending creates (will be saved on unmount or manually)
-    setPendingBatch((prev) => ({
-      ...prev,
-      creates: [
-        ...prev.creates,
-        {
-          product_id: newItem.product_id,
-          product_custom_id: newItem.product_custom_id,
-          is_catalog: newItem.is_catalog,
-          cantidad: newItem.cantidad,
-          unidad_medida: newItem.unidad_medida,
-          item_order: newItem.item_order,
-        },
-      ],
-    }))
+    await createNewItem(newItem)
   }
 
   const handleDeleteItem = (itemId: string) => {
-    setItems(items.filter((i) => i.id !== itemId))
-
-    if (!itemId.startsWith('temp-')) {
-      setPendingBatch((prev) => ({
-        ...prev,
-        deletes: [...prev.deletes, itemId],
-      }))
-    }
+    deleteItemFromServer(itemId)
   }
 
   const handleUpdateQuantity = (itemId: string, direction: 'up' | 'down') => {
@@ -343,7 +378,30 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
     // Save to server immediately
     if (!itemId.startsWith('temp-')) {
-      saveItemUpdate(itemId, { cantidad: newQuantity })
+      updateItemOnServer(itemId, { cantidad: newQuantity })
+    }
+  }
+
+  const handleEditItem = (item: ListItem) => {
+    setSelectedItem(item)
+    setEditDrawerOpen(true)
+  }
+
+  const handleSaveItemEdit = (cantidad: number, comentario?: string) => {
+    if (!selectedItem) return
+
+    // Update local state immediately
+    setItems(
+      items.map((i) =>
+        i.id === selectedItem.id
+          ? { ...i, cantidad, comentario }
+          : i
+      )
+    )
+
+    // Save to server immediately
+    if (!selectedItem.id.startsWith('temp-')) {
+      updateItemOnServer(selectedItem.id, { cantidad, comentario })
     }
   }
 
@@ -432,7 +490,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                   <div className="space-y-2">
                     {/* Line 1: Quantity, Name, and buttons */}
                     <div className="flex items-center gap-2">
-                      {/* Minus button (if inline qty disabled) */}
+                      {/* Minus button (if show qty controls) */}
                       {!showInlineQty && (
                         <Button
                           variant="outline"
@@ -450,7 +508,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                         {item.cantidad}
                       </div>
 
-                      {/* Plus button (if inline qty disabled) */}
+                      {/* Plus button (if show qty controls) */}
                       {!showInlineQty && (
                         <Button
                           variant="outline"
