@@ -59,13 +59,52 @@ export async function PUT(
       body,
       cantidad,
       currentCantidadInDB: item.cantidad,
+      categoriaProductoId: categoria_producto_id,
     })
+
+    // Validate and determine which category table the ID belongs to
+    let categoria_usuario_id: string | null = null
+    let categoria_global_id: string | null = null
+
+    if (categoria_producto_id) {
+      // Check if category exists in user categories
+      const userCategory = await db
+        .selectFrom('product_categories_user')
+        .select('id')
+        .where('id', '=', categoria_producto_id)
+        .where('deleted_at', 'is', null)
+        .executeTakeFirst()
+
+      if (userCategory) {
+        categoria_usuario_id = categoria_producto_id
+        console.log('✅ Category is user category:', categoria_usuario_id)
+      } else {
+        // Check if category exists in global categories
+        const globalCategory = await db
+          .selectFrom('product_categories_global')
+          .select('id')
+          .where('id', '=', categoria_producto_id)
+          .where('deleted_at', 'is', null)
+          .executeTakeFirst()
+
+        if (globalCategory) {
+          categoria_global_id = categoria_producto_id
+          console.log('✅ Category is global category:', categoria_global_id)
+        } else {
+          console.warn('⚠️ Category not found in either table:', categoria_producto_id)
+          return NextResponse.json(
+            { error: 'La categoría especificada no existe' },
+            { status: 400 }
+          )
+        }
+      }
+    }
 
     const updatedItem = await updateShoppingListItem(itemId, {
       cantidad: cantidad !== undefined ? cantidad : undefined,
       unidad_medida: unidad_medida !== undefined ? unidad_medida : undefined,
-      categoria_producto_id:
-        categoria_producto_id !== undefined ? categoria_producto_id : undefined,
+      categoria_producto_id: categoria_usuario_id !== undefined ? categoria_usuario_id : undefined,
+      categoria_global_id: categoria_global_id !== undefined ? categoria_global_id : undefined,
       marca: marca !== undefined ? marca : undefined,
       comentario: comentario !== undefined ? comentario : undefined,
     })

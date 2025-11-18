@@ -178,6 +178,7 @@ export async function getShoppingListItems(listId: string) {
       'shopping_list_items.cantidad',
       'shopping_list_items.unidad_medida',
       'shopping_list_items.categoria_producto_id',
+      'shopping_list_items.categoria_global_id',
       'shopping_list_items.marca',
       'shopping_list_items.comentario',
       'shopping_list_items.item_order',
@@ -188,8 +189,8 @@ export async function getShoppingListItems(listId: string) {
       'shopping_list_items.deleted_at',
       // Product names
       sql<string>`COALESCE(product_catalog.nombre, product_user_custom.nombre)`.as('nombre'),
-      // Product category - prioritize user-assigned category, fallback to catalog category
-      sql<string | null>`COALESCE(shopping_list_items.categoria_producto_id, product_catalog.category_id)`.as('final_category_id'),
+      // Product category - Priority: user-assigned > global assigned > catalog category
+      sql<string | null>`COALESCE(shopping_list_items.categoria_producto_id, shopping_list_items.categoria_global_id, product_catalog.category_id)`.as('final_category_id'),
     ])
     .where('shopping_list_items.shopping_list_id', '=', listId)
     .where('shopping_list_items.deleted_at', 'is', null)
@@ -202,7 +203,8 @@ export async function updateShoppingListItem(
   updates: {
     cantidad?: number
     unidad_medida?: string
-    categoria_producto_id?: string
+    categoria_producto_id?: string | null
+    categoria_global_id?: string | null
     marca?: string
     comentario?: string
     item_order?: number

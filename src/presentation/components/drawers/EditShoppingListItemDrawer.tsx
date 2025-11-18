@@ -31,6 +31,7 @@ interface ListItem {
   cantidad: number
   comentario?: string | null
   categoria_producto_id?: string | null
+  final_category_id?: string | null  // The effective category (prioritized)
 }
 
 interface Category {
@@ -38,6 +39,7 @@ interface Category {
   nombre: string
   color?: string
   emoji?: string
+  _type?: 'user' | 'global'  // Indicates category type
 }
 
 interface EditShoppingListItemDrawerProps {
@@ -63,9 +65,10 @@ export function EditShoppingListItemDrawer({
     if (item) {
       setCantidad(item.cantidad)
       setComentario(item.comentario || '')
-      setCategoriaId(item.categoria_producto_id || null)
+      // Use final_category_id which includes both user and global categories
+      setCategoriaId(item.final_category_id || null)
     }
-  }, [item, item?.cantidad, item?.comentario, item?.categoria_producto_id])
+  }, [item, item?.cantidad, item?.comentario, item?.final_category_id])
 
   const handleAdjustQuantity = (direction: 'up' | 'down') => {
     // Convert current decimal to string for adjustQty
@@ -134,13 +137,21 @@ export function EditShoppingListItemDrawer({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sin-categoria">Sin categoría</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.emoji ? `${cat.emoji} ` : ''}{cat.nombre}
-                    </SelectItem>
-                  ))}
+                  {categories.map((cat) => {
+                    const typeLabel = cat._type === 'global' ? ' (Global)' : cat._type === 'user' ? ' (Personal)' : ''
+                    return (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.emoji ? `${cat.emoji} ` : ''}{cat.nombre}{typeLabel}
+                      </SelectItem>
+                    )
+                  })}
                 </SelectContent>
               </Select>
+              {categoriaId && (
+                <p className="text-xs text-muted-foreground">
+                  {categories.find(c => c.id === categoriaId)?._type === 'global' ? '🌍 Categoría global' : '👤 Categoría personal'}
+                </p>
+              )}
             </div>
           )}
 
