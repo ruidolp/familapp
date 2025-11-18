@@ -48,7 +48,7 @@ export function FinalizeExecutionDrawer({
   timerFormatted,
   onConfirm,
 }: FinalizeExecutionDrawerProps) {
-  const { formatCurrency } = useCurrency()
+  const { formatNumber } = useCurrency()
   const [manualTotal, setManualTotal] = useState('')
   const [syncing, setSyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -73,7 +73,7 @@ export function FinalizeExecutionDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-        side="bottom"
+       
         className="h-[600px] sm:max-w-[500px] sm:mx-auto"
       >
         <SheetHeader>
@@ -141,7 +141,7 @@ export function FinalizeExecutionDrawer({
           <div className="space-y-2">
             <Label className="text-sm font-medium">Total calculado</Label>
             <div className="text-3xl font-bold text-primary">
-              {totalCalculated > 0 ? formatCurrency(totalCalculated) : 'No disponible'}
+              {totalCalculated > 0 ? formatNumber(totalCalculated) : 'No disponible'}
             </div>
             <p className="text-xs text-muted-foreground">
               Suma de todos los productos con precio
@@ -160,7 +160,7 @@ export function FinalizeExecutionDrawer({
               type="number"
               inputMode="decimal"
               step="0.01"
-              placeholder={totalCalculated > 0 ? formatCurrency(totalCalculated) : 'Ingresa el total'}
+              placeholder={totalCalculated > 0 ? formatNumber(totalCalculated) : 'Ingresa el total'}
               value={manualTotal}
               onChange={(e) => setManualTotal(e.target.value)}
               className="text-lg h-12"

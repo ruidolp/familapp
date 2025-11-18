@@ -133,7 +133,7 @@ export function PriceInputDrawer({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="h-[500px] sm:max-w-[425px] sm:mx-auto">
+        <SheetContent className="h-[500px] sm:max-w-[425px] sm:mx-auto">
           <SheetHeader>
             <SheetTitle className="text-left">
               Precio: {item.product_name}

@@ -41,7 +41,7 @@ export function ExecutionHeader({
   onMenuClick,
   onCalculatorClick,
 }: ExecutionHeaderProps) {
-  const { formatCurrency } = useCurrency()
+  const { formatNumber } = useCurrency()
 
   const isOverBudget = budgetEnabled && budgetAmount && totalSpent > budgetAmount
 
@@ -91,10 +91,10 @@ export function ExecutionHeader({
         <div className="px-4 pb-3 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className={isOverBudget ? 'text-destructive font-semibold' : ''}>
-              Gastado: {formatCurrency(totalSpent)}
+              Gastado: {formatNumber(totalSpent)}
             </span>
             <span className="text-muted-foreground">
-              Presupuesto: {formatCurrency(budgetAmount)}
+              Presupuesto: {formatNumber(budgetAmount)}
             </span>
           </div>
 
@@ -106,7 +106,7 @@ export function ExecutionHeader({
 
           {isOverBudget && (
             <p className="text-xs text-destructive font-medium">
-              ¡Has excedido el presupuesto en {formatCurrency(totalSpent - budgetAmount)}!
+              ¡Has excedido el presupuesto en {formatNumber(totalSpent - budgetAmount)}!
             </p>
           )}
         </div>

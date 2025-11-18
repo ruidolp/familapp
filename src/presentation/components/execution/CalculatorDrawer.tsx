@@ -129,7 +129,7 @@ export function CalculatorDrawer({ open, onOpenChange }: CalculatorDrawerProps) 
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[600px] sm:max-w-[425px] sm:mx-auto">
+      <SheetContent className="h-[600px] sm:max-w-[425px] sm:mx-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />

@@ -37,7 +37,7 @@ export function SettingsSheet({
 }: SettingsSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-80">
+      <SheetContent className="w-80">
         <SheetHeader>
           <SheetTitle>Configuración</SheetTitle>
         </SheetHeader>
