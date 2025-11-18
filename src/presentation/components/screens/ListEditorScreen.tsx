@@ -129,6 +129,15 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       const response = await fetch(`/api/shopping-lists/${listId}/editor-data`)
       if (response.ok) {
         const data: EditorData = await response.json()
+        console.log('📥 LOADED FROM SERVER:', {
+          listId,
+          itemCount: data.items.length,
+          items: data.items.map(i => ({
+            id: i.id,
+            nombre: i.nombre || i._productName,
+            cantidad: i.cantidad,
+          })),
+        })
         setData(data)
         setItems(data.items)
         // Clear any draft conflict indicators
@@ -215,6 +224,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     itemId: string,
     updates: { cantidad?: number; comentario?: string }
   ) => {
+    console.log('💾 SAVING TO SERVER:', { itemId, updates })
+
     setItemSaveState((prev) => ({
       ...prev,
       [itemId]: { isSaving: true },
@@ -232,12 +243,15 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
       if (!response.ok) throw new Error('Error al actualizar')
 
+      const responseData = await response.json()
+      console.log('✅ SERVER RESPONSE:', responseData)
+
       setItemSaveState((prev) => ({
         ...prev,
         [itemId]: { isSaving: false },
       }))
     } catch (error: any) {
-      console.error('Error updating item:', error)
+      console.error('❌ Error updating item:', error)
       setItemSaveState((prev) => ({
         ...prev,
         [itemId]: { isSaving: false, error: 'Error al guardar' },
@@ -368,6 +382,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     const currentQuantity = item.cantidad.toString()
     const newQuantityStr = adjustQty(currentQuantity, direction)
     const newQuantity = quantityToDecimal(newQuantityStr)
+
+    console.log('📊 UPDATE QUANTITY:', {
+      itemId,
+      itemName: item.nombre || item._productName,
+      direction,
+      currentQuantity,
+      newQuantityStr,
+      newQuantity,
+      itemBeforeUpdate: item,
+    })
 
     // Update local state
     setItems(
