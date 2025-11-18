@@ -73,7 +73,7 @@ export function CreateShoppingListDrawer({
       setName('')
 
       // Navigate to the editor
-      router.push(`/dashboard/shopping-lists/${listId}`)
+      router.push(`/shopping-lists/${listId}`)
     } catch (error: any) {
       console.error('Error creating shopping list:', error)
       notify.error(error.message || 'Error al crear la lista')
