@@ -178,7 +178,7 @@ export async function getShoppingListItems(listId: string) {
       'shopping_list_items.cantidad',
       'shopping_list_items.unidad_medida',
       'shopping_list_items.categoria_producto_id',
-      'shopping_list_items.categoria_global_id',
+      sql<string | null>`shopping_list_items.categoria_global_id`.as('categoria_global_id'),
       'shopping_list_items.marca',
       'shopping_list_items.comentario',
       'shopping_list_items.item_order',
