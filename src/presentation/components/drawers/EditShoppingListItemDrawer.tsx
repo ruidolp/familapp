@@ -45,7 +45,7 @@ export function EditShoppingListItemDrawer({
       setCantidad(item.cantidad)
       setComentario(item.comentario || '')
     }
-  }, [item])
+  }, [item, item?.cantidad, item?.comentario])
 
   const handleSave = () => {
     onSave(cantidad, comentario || undefined)
