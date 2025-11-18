@@ -365,6 +365,10 @@ export async function createExecutionItem(data: {
   cantidad_comprada?: number
   unidad_medida?: string | null
   marca?: string | null
+  precio_unitario?: number | null
+  precio_total?: number | null
+  es_comprado?: boolean
+  razon_no_comprado?: 'SIN_STOCK' | 'NO_DISPONIBLE' | 'DESCARTADO' | null
   es_agregado_vuelo?: boolean
   agregado_por?: string | null
 }) {
@@ -372,7 +376,7 @@ export async function createExecutionItem(data: {
     .insertInto('shopping_execution_items')
     .values({
       ...data,
-      es_comprado: false,
+      es_comprado: data.es_comprado ?? false,
       created_at: new Date(),
       updated_at: new Date(),
     })
