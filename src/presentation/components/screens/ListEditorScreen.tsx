@@ -28,8 +28,14 @@ import {
 } from '@/presentation/components/execution/ConfigureExecutionDrawer'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { CreateLocalExecutionInput } from '@/domain/types/shopping-execution'
+import type { Database } from '@/infrastructure/database/types'
 
-// Types
+// Types - Use Database types as source of truth
+type ShoppingListItem = Database['shopping_list_items']
+type ProductCatalog = Database['product_catalog']
+type ProductUserCustom = Database['product_user_custom']
+type ProductCategories = Database['product_categories']
+
 interface Product {
   id: string
   nombre: string
@@ -44,20 +50,10 @@ interface Category {
   emoji?: string
 }
 
-interface ListItem {
-  id: string
-  shopping_list_id: string
-  product_id?: string
-  product_custom_id?: string
-  is_catalog: boolean
-  cantidad: number
-  unidad_medida?: string
-  categoria_producto_id?: string
-  marca?: string
-  comentario?: string
-  item_order: number
-  nombre?: string
-  _productName?: string
+// Extended type for list items with joined product names
+interface ListItemWithProduct extends Omit<ShoppingListItem, keyof { created_at: any; updated_at: any; deleted_at: any; created_by: any; item_type: any }> {
+  nombre?: string  // From joined product_catalog or product_user_custom
+  _productName?: string  // Fallback product name
 }
 
 interface EditorData {
@@ -67,7 +63,7 @@ interface EditorData {
     descripcion?: string
     purchase_count: number
   }
-  items: ListItem[]
+  items: ListItemWithProduct[]
   catalog: Product[]
   customProducts: Product[]
   categories: Category[]
@@ -91,7 +87,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   // Data state
   const [data, setData] = useState<EditorData | null>(null)
-  const [items, setItems] = useState<ListItem[]>([])
+  const [items, setItems] = useState<ListItemWithProduct[]>([])
   const [loading, setLoading] = useState(true)
 
   // UI preferences
@@ -102,7 +98,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // Drawers state
   const [optionsDrawerOpen, setOptionsDrawerOpen] = useState(false)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
+  const [selectedItem, setSelectedItem] = useState<ListItemWithProduct | null>(null)
 
   // Execute purchase drawer state
   const [configureExecutionOpen, setConfigureExecutionOpen] = useState(false)
@@ -188,10 +184,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   }
 
   const createNewItem = async (
-    newItem: Omit<ListItem, 'id'> & { _productName: string }
+    newItem: Omit<ListItemWithProduct, 'id'> & { _productName: string }
   ) => {
     const tempId = `temp-${Date.now()}`
-    const itemWithTempId: ListItem = {
+    const itemWithTempId: ListItemWithProduct = {
       ...newItem,
       id: tempId,
     }
@@ -393,13 +389,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
     const cantidadDecimal = quantityToDecimal(quantity)
 
-    const newItem: Omit<ListItem, 'id'> & { _productName: string } = {
+    const newItem: Omit<ListItemWithProduct, 'id'> & { _productName: string } = {
       shopping_list_id: listId,
-      product_id: finalIsCatalog ? finalProductId : undefined,
-      product_custom_id: !finalIsCatalog ? finalProductId : undefined,
+      product_id: finalIsCatalog ? finalProductId : null,
+      product_custom_id: !finalIsCatalog ? finalProductId : null,
       is_catalog: finalIsCatalog,
       cantidad: cantidadDecimal,
-      unidad_medida: unidad,
+      unidad_medida: unidad || null,
+      categoria_producto_id: null,
+      marca: null,
+      comentario: null,
       item_order: items.length,
       _productName: productName,
     }
@@ -470,7 +469,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }
 
-  const handleEditItem = (item: ListItem) => {
+  const handleEditItem = (item: ListItemWithProduct) => {
     // Ensure we have the latest version of this item from the current items array
     const latestItem = items.find((i) => i.id === item.id) || item
     console.log('📝 OPEN EDIT DRAWER:', {
