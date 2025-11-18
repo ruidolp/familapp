@@ -107,25 +107,28 @@ export async function cloneShoppingList(
     .orderBy('item_order', 'asc')
     .execute()
 
-  for (const item of items) {
+  // Bulk insert all items in a single query (performance optimization)
+  if (items.length > 0) {
     await db
       .insertInto('shopping_list_items')
-      .values({
-        shopping_list_id: newList.id,
-        product_id: item.product_id,
-        product_custom_id: item.product_custom_id,
-        is_catalog: item.is_catalog,
-        cantidad: item.cantidad,
-        unidad_medida: item.unidad_medida,
-        categoria_producto_id: item.categoria_producto_id,
-        marca: item.marca,
-        comentario: item.comentario,
-        item_order: item.item_order,
-        item_type: 'NORMAL',
-        created_by: userId,
-        created_at: new Date(),
-        updated_at: new Date(),
-      })
+      .values(
+        items.map((item) => ({
+          shopping_list_id: newList.id,
+          product_id: item.product_id,
+          product_custom_id: item.product_custom_id,
+          is_catalog: item.is_catalog,
+          cantidad: item.cantidad,
+          unidad_medida: item.unidad_medida,
+          categoria_producto_id: item.categoria_producto_id,
+          marca: item.marca,
+          comentario: item.comentario,
+          item_order: item.item_order,
+          item_type: 'NORMAL' as const,
+          created_by: userId,
+          created_at: new Date(),
+          updated_at: new Date(),
+        }))
+      )
       .execute()
   }
 
