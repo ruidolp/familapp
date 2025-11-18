@@ -5,7 +5,7 @@
  */
 
 import { db } from '../kysely'
-import type { BilleterasTable } from '../types'
+import type { Billeteras } from '../types'
 import type { TipoBilletera } from '../custom-enums'
 
 /**

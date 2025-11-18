@@ -6,7 +6,7 @@
  */
 
 import { db } from '../kysely'
-import type { VerificationCodesTable, VerificationCodeType, VerificationCodeStatus } from '../types'
+import type { VerificationCodes, VerificationCodeType, VerificationCodeStatus } from '../types'
 
 /**
  * Tipo para creación de código de verificación

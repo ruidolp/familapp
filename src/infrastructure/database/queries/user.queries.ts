@@ -6,7 +6,7 @@
  */
 
 import { db } from '../kysely'
-import type { UsersTable } from '../types'
+import type { Users } from '../types'
 
 /**
  * Tipo para creación de usuario (sin campos generados)

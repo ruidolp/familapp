@@ -5,7 +5,7 @@
  */
 
 import { db } from '../kysely'
-import type { SobresTable, SobresUsuariosTable } from '../types'
+import type { Sobres, SobresUsuarios } from '../types'
 import type { TipoSobre, RolSobreUsuario } from '../custom-enums'
 
 /**
@@ -173,7 +173,7 @@ export async function incrementarSobreGastado(sobreId: string, monto: number) {
   const sobre = await findSobreById(sobreId)
   if (!sobre) return null
 
-  const nuevoGastado = (sobre.gastado || 0) + monto
+  const nuevoGastado = (Number(sobre.gastado) || 0) + monto
   return await updateSobreGastado(sobreId, nuevoGastado)
 }
 
@@ -256,7 +256,7 @@ export async function incrementarParticipanteGastado(sobreId: string, userId: st
   const participante = await findParticipanteInSobre(sobreId, userId)
   if (!participante) return null
 
-  const nuevoGastado = participante.gastado + monto
+  const nuevoGastado = Number(participante.gastado) + monto
   return await updateParticipanteTracking(sobreId, userId, undefined, nuevoGastado)
 }
 
@@ -388,7 +388,7 @@ export async function getPresupuestoLibreUsuarioInSobre(sobreId: string, userId:
   return {
     presupuesto_asignado: participante.presupuesto_asignado,
     gastado: participante.gastado,
-    libre: participante.presupuesto_asignado - participante.gastado,
+    libre: Number(participante.presupuesto_asignado) - Number(participante.gastado),
   }
 }
 
@@ -403,10 +403,10 @@ export async function getResumenAsignacionesBySobre(sobreId: string) {
     usuario_id: p.usuario_id,
     presupuesto_asignado: p.presupuesto_asignado,
     gastado: p.gastado,
-    libre: p.presupuesto_asignado - p.gastado,
+    libre: Number(p.presupuesto_asignado) - Number(p.gastado),
     porcentaje_gasto:
-      p.presupuesto_asignado > 0
-        ? Math.round((p.gastado / p.presupuesto_asignado) * 100)
+      Number(p.presupuesto_asignado) > 0
+        ? Math.round((Number(p.gastado) / Number(p.presupuesto_asignado)) * 100)
         : 0,
   }))
 }

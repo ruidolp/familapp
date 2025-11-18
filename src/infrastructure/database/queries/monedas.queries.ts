@@ -6,7 +6,7 @@
 
 import { db } from '../kysely'
 
-import type { MonedasTable } from '../types'
+import type { Monedas } from '../types'
 
 /**
  * Obtener todas las monedas activas

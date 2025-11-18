@@ -6,7 +6,7 @@
 
 import { db } from '../kysely'
 
-import type { SubcategoriasTable } from '../types'
+import type { Subcategorias } from '../types'
 
 /**
  * Tipo para creación de subcategoría

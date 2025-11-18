@@ -5,7 +5,7 @@
  */
 
 import { db } from '../kysely'
-import type { SubscriptionPlansTable, PlanCapabilitiesTable, PlanLimitsTable } from '../types'
+import type { SubscriptionPlans, PlanCapabilities, PlanLimits } from '../types'
 
 /**
  * Obtener todos los planes activos
