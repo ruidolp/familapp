@@ -262,6 +262,17 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       const responseData = await response.json()
       console.log('✅ SERVER RESPONSE:', responseData)
 
+      // Sync with server response to ensure consistency
+      if (responseData.item) {
+        setItems((prev) =>
+          prev.map((i) =>
+            i.id === itemId
+              ? { ...i, cantidad: responseData.item.cantidad }
+              : i
+          )
+        )
+      }
+
       setItemSaveState((prev) => ({
         ...prev,
         [itemId]: { isSaving: false },
@@ -423,7 +434,14 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   }
 
   const handleEditItem = (item: ListItem) => {
-    setSelectedItem(item)
+    // Ensure we have the latest version of this item from the current items array
+    const latestItem = items.find((i) => i.id === item.id) || item
+    console.log('📝 OPEN EDIT DRAWER:', {
+      itemId: item.id,
+      itemName: item.nombre || item._productName,
+      cantidad: latestItem.cantidad,
+    })
+    setSelectedItem(latestItem)
     setEditDrawerOpen(true)
   }
 
