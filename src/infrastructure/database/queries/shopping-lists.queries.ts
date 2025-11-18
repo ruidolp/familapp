@@ -291,18 +291,41 @@ export async function removeCollaborator(listId: string, userId: string) {
 export async function createShoppingExecution(data: {
   shopping_list_id: string
   user_id: string
-  store_name: string
-  sobre_id?: string
+  status?: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  store_name?: string | null
+  sobre_id?: string | null
+  categoria_sobre_id?: string | null
+  subcategoria_id?: string | null
+  total_estimado?: number | null
+  total_calculated?: number | null
+  total_manual?: number | null
+  tiempo_transcurrido?: number | null
+  started_at?: Date
+  completed_at?: Date | null
 }) {
+  const values: any = {
+    shopping_list_id: data.shopping_list_id,
+    user_id: data.user_id,
+    status: data.status || 'IN_PROGRESS',
+    started_at: data.started_at || new Date(),
+    created_at: new Date(),
+    updated_at: new Date(),
+  }
+
+  // Add optional fields only if they are not undefined
+  if (data.store_name !== undefined) values.store_name = data.store_name
+  if (data.sobre_id !== undefined) values.sobre_id = data.sobre_id
+  if (data.categoria_sobre_id !== undefined) values.categoria_sobre_id = data.categoria_sobre_id
+  if (data.subcategoria_id !== undefined) values.subcategoria_id = data.subcategoria_id
+  if (data.total_estimado !== undefined) values.total_estimado = data.total_estimado
+  if (data.total_calculated !== undefined) values.total_calculated = data.total_calculated
+  if (data.total_manual !== undefined) values.total_manual = data.total_manual
+  if (data.tiempo_transcurrido !== undefined) values.tiempo_transcurrido = data.tiempo_transcurrido
+  if (data.completed_at !== undefined) values.completed_at = data.completed_at
+
   return db
     .insertInto('shopping_executions')
-    .values({
-      ...data,
-      status: 'IN_PROGRESS',
-      started_at: new Date(),
-      created_at: new Date(),
-      updated_at: new Date(),
-    })
+    .values(values)
     .returning(['id', 'shopping_list_id', 'user_id', 'status', 'started_at'])
     .executeTakeFirstOrThrow()
 }
@@ -365,6 +388,10 @@ export async function createExecutionItem(data: {
   cantidad_comprada?: number
   unidad_medida?: string | null
   marca?: string | null
+  precio_unitario?: number | null
+  precio_total?: number | null
+  es_comprado?: boolean
+  razon_no_comprado?: 'SIN_STOCK' | 'NO_DISPONIBLE' | 'DESCARTADO' | null
   es_agregado_vuelo?: boolean
   agregado_por?: string | null
 }) {
@@ -372,7 +399,7 @@ export async function createExecutionItem(data: {
     .insertInto('shopping_execution_items')
     .values({
       ...data,
-      es_comprado: false,
+      es_comprado: data.es_comprado ?? false,
       created_at: new Date(),
       updated_at: new Date(),
     })
