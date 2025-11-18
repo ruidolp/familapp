@@ -32,10 +32,18 @@ import type { Database } from '@/infrastructure/database/types'
 
 // Types - Use Database types as source of truth
 type ShoppingListItem = Database['shopping_list_items']
-type ProductCatalog = Database['product_catalog']
-type ProductUserCustom = Database['product_user_custom']
-type ProductCategories = Database['product_categories']
+type ShoppingListTable = Database['shopping_lists']
+type ProductCatalogTable = Database['product_catalog']
+type ProductUserCustomTable = Database['product_user_custom']
+type ProductCategoriesUserTable = Database['product_categories_user']
 
+// Extended type for list items with joined product names
+interface ListItemWithProduct extends Omit<ShoppingListItem, 'created_at' | 'updated_at' | 'deleted_at' | 'created_by' | 'item_type'> {
+  nombre?: string  // From joined product_catalog or product_user_custom
+  _productName?: string  // Fallback product name
+}
+
+// Simplified Product type for UI (combines catalog + custom)
 interface Product {
   id: string
   nombre: string
@@ -43,17 +51,12 @@ interface Product {
   is_catalog?: boolean
 }
 
+// Simplified Category type for UI
 interface Category {
   id: string
   nombre: string
   color?: string
   emoji?: string
-}
-
-// Extended type for list items with joined product names
-interface ListItemWithProduct extends Omit<ShoppingListItem, keyof { created_at: any; updated_at: any; deleted_at: any; created_by: any; item_type: any }> {
-  nombre?: string  // From joined product_catalog or product_user_custom
-  _productName?: string  // Fallback product name
 }
 
 interface EditorData {
