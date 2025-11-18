@@ -92,6 +92,9 @@ export async function GET(
     // TODO: Enable after migration
     const categoriesGlobal: any[] = []
 
+    // Combine categories for easier use in frontend
+    const categories = [...categoriesGlobal, ...categoriesUser]
+
     // Build response with all data
     const response = {
       success: true,
@@ -115,6 +118,9 @@ export async function GET(
       // User's custom products
       customProducts,
 
+      // Combined categories (global + user) - for easier frontend use
+      categories,
+
       // Global product categories (admin-created, read-only)
       categoriesGlobal,
 
@@ -133,6 +139,7 @@ export async function GET(
         totalCustomProducts: customProducts.length,
         totalGlobalCategories: categoriesGlobal.length,
         totalUserCategories: categoriesUser.length,
+        totalCategories: categories.length,
         totalItems: items.length,
         totalFavorites: favorites.length,
         totalFrequent: frequent.length,

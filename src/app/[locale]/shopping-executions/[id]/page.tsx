@@ -1,7 +1,6 @@
 import { auth } from '@/infrastructure/lib/auth'
 import { redirect } from 'next/navigation'
 import { ExecutionScreen } from '@/presentation/components/screens/ExecutionScreen'
-import { getShoppingListById } from '@/infrastructure/database/queries/shopping-lists.queries'
 
 interface ExecutionPageProps {
   params: Promise<{
@@ -16,25 +15,13 @@ export default async function ExecutionPage({ params }: ExecutionPageProps) {
     redirect('/auth/login')
   }
 
-  const { id: listId } = await params
+  const { id: executionId } = await params
 
-  // Get list info
-  const list = await getShoppingListById(listId)
-
-  if (!list) {
-    redirect('/shopping-lists')
-  }
-
-  // Verify ownership
-  if (list.user_id !== session.user.id) {
-    // TODO: Check collaborator permissions
-    redirect('/shopping-lists')
-  }
-
+  // ExecutionScreen will load the execution from IndexedDB
+  // and get the shopping_list_id from there
   return (
     <ExecutionScreen
-      listId={listId}
-      listName={list.nombre}
+      executionId={executionId}
       userId={session.user.id}
     />
   )

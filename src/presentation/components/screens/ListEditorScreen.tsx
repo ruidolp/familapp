@@ -676,7 +676,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                       isSaving ? 'opacity-60' : ''
                     } ${hasError ? 'text-destructive' : ''}`}
                   >
-                    <div className="flex-shrink-0 mt-0.5 w-3.5 h-3.5 rounded-full bg-primary/20 border-2 border-primary" />
+                    <div className="flex-shrink-0 mt-1 w-2 h-2 rounded-full bg-muted-foreground/40" />
                     <span className="font-medium flex-shrink-0">{item.cantidad}</span>
                     <span className="flex-1">
                       {item.nombre || item._productName || item.product_id || item.product_custom_id}
