@@ -6,7 +6,7 @@
 
 import { db } from '../kysely'
 
-import type { UserConfigTable, TipoPeriodo } from '../types'
+import type { UserConfig, TipoPeriodo } from '../types'
 
 /**
  * Tipo para actualización de configuración

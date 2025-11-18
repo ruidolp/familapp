@@ -6,7 +6,7 @@
 
 import { db } from '../kysely'
 
-import type { CategoriasTable } from '../types'
+import type { Categorias } from '../types'
 
 /**
  * Tipo para creación de categoría

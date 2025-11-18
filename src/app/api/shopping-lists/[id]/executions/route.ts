@@ -105,7 +105,7 @@ export async function POST(
         product_id: item.product_id,
         product_custom_id: item.product_custom_id,
         is_catalog: item.is_catalog,
-        cantidad_comprada: item.cantidad,
+        cantidad_comprada: parseFloat(item.cantidad),
         unidad_medida: item.unidad_medida,
         marca: item.marca,
       })

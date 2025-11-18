@@ -5,7 +5,8 @@
  */
 
 import { db } from '../kysely'
-import type { BilleterasTable, TipoBilletera } from '../types'
+import type { Billeteras } from '../types'
+import type { TipoBilletera } from '@/domain/types/core'
 
 /**
  * Tipo para creación de billetera

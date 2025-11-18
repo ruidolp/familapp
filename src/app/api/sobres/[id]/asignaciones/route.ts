@@ -54,15 +54,18 @@ export async function GET(
     // Obtener asignaciones
     const asignaciones = await findAsignacionesBySobre(sobreId)
 
+    const presupuesto = parseFloat(sobre.presupuesto_asignado || '0')
+    const gastado = parseFloat(sobre.gastado || '0')
+
     return NextResponse.json({
       success: true,
       asignaciones,
       sobre: {
         id: sobre.id,
         nombre: sobre.nombre,
-        presupuesto_asignado: sobre.presupuesto_asignado,
-        gastado: sobre.gastado,
-        libre: sobre.presupuesto_asignado - (sobre.gastado || 0),
+        presupuesto_asignado: presupuesto,
+        gastado: gastado,
+        libre: presupuesto - gastado,
       },
     })
   } catch (error: any) {
@@ -208,7 +211,7 @@ export async function POST(
       'ASIGNACION_SOBRE',
       monto,
       billetera.moneda_principal_id,
-      billetera.saldo_real, // No cambia, solo se reserva
+      parseFloat(billetera.saldo_real), // No cambia, solo se reserva
       null,
       null,
       `Asignado a sobre: ${sobre.nombre}`

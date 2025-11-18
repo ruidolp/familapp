@@ -20,7 +20,7 @@ import {
 import { findMonedaById } from '@/infrastructure/database/queries/monedas.queries'
 import { findUserConfig } from '@/infrastructure/database/queries/user-config.queries'
 import { createTransaccion } from '@/infrastructure/database/queries/transacciones.queries'
-import type { TipoBilletera, TipoBilleteraTransaccion } from '@/infrastructure/database/types'
+import { TipoBilletera, TipoTransaccion } from '@/domain/types/core'
 import { appConfig } from '@/config/app.config'
 
 /**
@@ -29,7 +29,7 @@ import { appConfig } from '@/config/app.config'
 async function registrarBilleteraTransaccion(data: {
   billetera_id: string
   usuario_id: string
-  tipo: TipoBilleteraTransaccion
+  tipo: string
   monto: number
   moneda_id: string
   billetera_origen_id?: string | null
@@ -164,12 +164,13 @@ export async function crearBilletera(
 
     // Validar tipo de billetera
     const tiposValidos: TipoBilletera[] = [
-      'DEBITO',
-      'CREDITO',
-      'EFECTIVO',
-      'AHORRO',
-      'INVERSION',
-      'PRESTAMO',
+      TipoBilletera.DEBITO,
+      TipoBilletera.EFECTIVO,
+      TipoBilletera.AHORRO,
+      TipoBilletera.CUENTA_VISTA,
+      TipoBilletera.TARJETA_CREDITO,
+      TipoBilletera.LINEA_CREDITO,
+      TipoBilletera.SOBREGIRO,
     ]
     if (!tiposValidos.includes(input.tipo)) {
       return {
@@ -200,7 +201,7 @@ export async function crearBilletera(
         monto: Math.abs(saldoInicial),
         moneda_id: monedaPrincipalId,
         billetera_id: billetera.id,
-        tipo: saldoInicial > 0 ? 'DEPOSITO' : 'AJUSTE',
+        tipo: saldoInicial > 0 ? TipoTransaccion.DEPOSITO : TipoTransaccion.AJUSTE,
         descripcion: 'Saldo inicial',
         fecha: new Date(),
         usuario_id: input.userId,
@@ -454,7 +455,7 @@ export async function transferirEntreBilleteras(
         monto: monto,
         moneda_id: monedaId,
         billetera_id: billeteraOrigenId,
-        tipo: 'TRANSFERENCIA',
+        tipo: TipoTransaccion.TRANSFERENCIA,
         descripcion: descripcion || (billeteraDestino ? `Transferencia a ${billeteraDestino.nombre}` : 'Transferencia a destino no declarado'),
         fecha: new Date(),
         usuario_id: userId,
@@ -479,7 +480,7 @@ export async function transferirEntreBilleteras(
         monto: monto,
         moneda_id: monedaId,
         billetera_id: billeteraDestinoId,
-        tipo: billeteraOrigenId === 'UNDECLARED' ? 'DEPOSITO' : 'DEPOSITO',
+        tipo: billeteraOrigenId === 'UNDECLARED' ? TipoTransaccion.DEPOSITO : TipoTransaccion.DEPOSITO,
         descripcion: descripcion || (billeteraOrigen ? `Transferencia desde ${billeteraOrigen.nombre}` : 'Transferencia desde origen no declarado'),
         fecha: new Date(),
         usuario_id: userId,

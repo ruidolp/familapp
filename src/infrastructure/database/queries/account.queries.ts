@@ -6,7 +6,7 @@
  */
 
 import { db } from '../kysely'
-import type { AccountsTable } from '../types'
+import type { Accounts } from '../types'
 
 /**
  * Tipo para creación de cuenta OAuth

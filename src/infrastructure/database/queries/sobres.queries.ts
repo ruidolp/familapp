@@ -5,7 +5,8 @@
  */
 
 import { db } from '../kysely'
-import type { SobresTable, SobresUsuariosTable, TipoSobre, RolSobreUsuario } from '../types'
+import type { Sobres, SobresUsuarios } from '../types'
+import { TipoSobre, RolSobreUsuario } from '@/domain/types/core'
 
 /**
  * Tipo para creación de sobre
@@ -172,7 +173,8 @@ export async function incrementarSobreGastado(sobreId: string, monto: number) {
   const sobre = await findSobreById(sobreId)
   if (!sobre) return null
 
-  const nuevoGastado = (sobre.gastado || 0) + monto
+  const gastadoActual = parseFloat(sobre.gastado || '0')
+  const nuevoGastado = gastadoActual + monto
   return await updateSobreGastado(sobreId, nuevoGastado)
 }
 
@@ -186,7 +188,7 @@ export async function incrementarSobreGastado(sobreId: string, monto: number) {
 export async function addParticipanteToSobre(
   sobreId: string,
   userId: string,
-  rol: RolSobreUsuario = 'CONTRIBUTOR',
+  rol: RolSobreUsuario = RolSobreUsuario.CONTRIBUTOR,
   presupuestoAsignado: number = 0
 ) {
   return await db
@@ -255,7 +257,8 @@ export async function incrementarParticipanteGastado(sobreId: string, userId: st
   const participante = await findParticipanteInSobre(sobreId, userId)
   if (!participante) return null
 
-  const nuevoGastado = participante.gastado + monto
+  const gastadoActual = parseFloat(participante.gastado || '0')
+  const nuevoGastado = gastadoActual + monto
   return await updateParticipanteTracking(sobreId, userId, undefined, nuevoGastado)
 }
 
@@ -384,10 +387,13 @@ export async function getPresupuestoLibreUsuarioInSobre(sobreId: string, userId:
   const participante = await findParticipanteInSobre(sobreId, userId)
   if (!participante) return null
 
+  const presupuesto = parseFloat(participante.presupuesto_asignado || '0')
+  const gastado = parseFloat(participante.gastado || '0')
+
   return {
-    presupuesto_asignado: participante.presupuesto_asignado,
-    gastado: participante.gastado,
-    libre: participante.presupuesto_asignado - participante.gastado,
+    presupuesto_asignado: presupuesto,
+    gastado: gastado,
+    libre: presupuesto - gastado,
   }
 }
 

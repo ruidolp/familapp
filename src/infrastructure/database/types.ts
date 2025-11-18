@@ -722,3 +722,5 @@ export interface DB {
   verification_codes: VerificationCodes;
   verification_tokens: VerificationTokens;
 }
+
+export type Database = DB

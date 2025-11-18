@@ -6,7 +6,8 @@
 
 import { db } from '../kysely'
 
-import type { TransaccionesTable, TipoTransaccion } from '../types'
+import type { Transacciones } from '../types'
+import type { TipoTransaccion } from '@/domain/types/core'
 
 /**
  * Tipo para creación de transacción
