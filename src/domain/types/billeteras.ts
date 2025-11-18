@@ -3,7 +3,7 @@
  * Plain object types sin ColumnType de Kysely
  */
 
-import type { TipoBilletera } from '@/infrastructure/database/types'
+import type { TipoBilletera } from '@/infrastructure/database/custom-enums'
 
 /**
  * Billetera - Objeto plano para frontend

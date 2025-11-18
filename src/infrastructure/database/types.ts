@@ -39,6 +39,7 @@ export type ThemeCategory = 'preestablished' | 'custom'
 
 /**
  * Enums CORE - Financial System
+ * NOTE: Also defined in custom-enums.ts for imports to avoid being overwritten by npm run db:types
  */
 export type TipoMoneda = 'FIAT' | 'INDICE' | 'CRYPTO'
 export type TipoBilletera = 'DEBITO' | 'CREDITO' | 'EFECTIVO' | 'AHORRO' | 'INVERSION' | 'PRESTAMO'

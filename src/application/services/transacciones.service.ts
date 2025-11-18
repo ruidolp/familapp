@@ -25,7 +25,7 @@ import {
 import { findBilleteraById, updateBilleteraSaldos } from '@/infrastructure/database/queries/billeteras.queries'
 import { findSobreById, findAsignacionesByUsuarioInSobre } from '@/infrastructure/database/queries/sobres.queries'
 import { findCategoriaById } from '@/infrastructure/database/queries/categorias.queries'
-import type { TipoTransaccion } from '@/infrastructure/database/types'
+import type { TipoTransaccion } from '@/infrastructure/database/custom-enums'
 
 /**
  * Interfaz para warnings de transacción
