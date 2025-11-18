@@ -32,12 +32,11 @@ import type { LocalExecutionItem } from '@/domain/types/shopping-execution'
 import { notify } from '@/infrastructure/lib/notifications'
 
 interface ExecutionScreenProps {
-  listId: string
-  listName: string
+  executionId: string
   userId: string
 }
 
-export function ExecutionScreen({ listId, listName, userId }: ExecutionScreenProps) {
+export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
   const router = useRouter()
 
   // Main state
@@ -57,7 +56,7 @@ export function ExecutionScreen({ listId, listName, userId }: ExecutionScreenPro
     discardedItems,
     budgetRemaining,
     budgetPercentage,
-  } = useExecutionState(listId)
+  } = useExecutionState(executionId)
 
   // Timer
   const timer = useTimer(execution?.localId || null)
@@ -69,12 +68,13 @@ export function ExecutionScreen({ listId, listName, userId }: ExecutionScreenPro
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
 
-  // Redirect if no execution
+  // Redirect if no execution found
   useEffect(() => {
-    if (!loading && !execution) {
-      router.push(`/shopping-lists/${listId}`)
+    if (!loading && (!execution || error)) {
+      notify.error('Ejecución no encontrada')
+      router.push('/shopping-lists')
     }
-  }, [loading, execution, listId, router])
+  }, [loading, execution, error, router])
 
   // Handle item tap
   const handleItemTap = (item: LocalExecutionItem) => {
@@ -134,7 +134,7 @@ export function ExecutionScreen({ listId, listName, userId }: ExecutionScreenPro
       await finalizeExecution()
 
       notify.success('¡Compra finalizada!')
-      router.push(`/shopping-lists/${listId}`)
+      router.push(`/shopping-lists/${execution.shopping_list_id}`)
     } catch (error: any) {
       console.error('Error finalizing:', error)
       notify.error(error.message || 'Error al finalizar compra')
@@ -163,7 +163,7 @@ export function ExecutionScreen({ listId, listName, userId }: ExecutionScreenPro
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
       <ExecutionHeader
-        listName={listName}
+        listName="Ejecutando compra"
         storeName={execution.registration.store_name}
         showTimer={execution.settings.showTimer}
         timerFormatted={timer.formattedTime}

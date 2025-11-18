@@ -54,7 +54,7 @@ export interface UseExecutionStateReturn {
   budgetPercentage: number
 }
 
-export function useExecutionState(listId: string): UseExecutionStateReturn {
+export function useExecutionState(executionId: string): UseExecutionStateReturn {
   const router = useRouter()
   const [execution, setExecution] = useState<LocalShoppingExecution | null>(null)
   const [loading, setLoading] = useState(true)
@@ -94,19 +94,23 @@ export function useExecutionState(listId: string): UseExecutionStateReturn {
     const loadExecution = async () => {
       try {
         setLoading(true)
-        const data = await ExecutionStorage.getInProgress(listId)
+        const data = await ExecutionStorage.getById(executionId)
+        if (!data) {
+          setError('Ejecución no encontrada')
+          return
+        }
         setExecution(data)
         setError(null)
       } catch (err) {
         console.error('Failed to load execution:', err)
-        setError('Failed to load execution')
+        setError('Error al cargar ejecución')
       } finally {
         setLoading(false)
       }
     }
 
     loadExecution()
-  }, [listId])
+  }, [executionId])
 
   // Mark item with new status
   const markItemAs = useCallback(async (itemLocalId: string, status: ItemStatus) => {

@@ -141,12 +141,7 @@ export function ProductQuantityInput({
                   index === selectedIndex ? 'bg-muted' : ''
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">{product.nombre}</span>
-                  {product.is_catalog && (
-                    <span className="text-xs text-muted-foreground">Catálogo</span>
-                  )}
-                </div>
+                <span className="text-sm">{product.nombre}</span>
               </div>
             ))}
           </Card>
