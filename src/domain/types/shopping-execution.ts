@@ -58,6 +58,7 @@ export interface LocalExecutionItem {
   // Category info (denormalized)
   categoria_producto_id?: string
   categoria_producto_nombre?: string
+  categoria_global_id?: string
 
   // Item status
   status: ItemStatus
@@ -145,6 +146,7 @@ export interface CreateLocalExecutionInput {
     product_name: string
     categoria_producto_id?: string
     categoria_producto_nombre?: string
+    categoria_global_id?: string
     cantidad_planeada: number
     unidad_medida?: string
     marca?: string
@@ -214,6 +216,8 @@ export interface SyncExecutionItemPayload {
   es_comprado: boolean
   razon_no_comprado?: NoCompraReason
   es_agregado_vuelo: boolean
+  categoria_producto_id?: string
+  categoria_global_id?: string
 }
 
 export interface CreateTransactionPayload {

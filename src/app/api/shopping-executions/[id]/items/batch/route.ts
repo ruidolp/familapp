@@ -76,6 +76,8 @@ export async function POST(
           razon_no_comprado: item.razon_no_comprado,
           es_agregado_vuelo: item.es_agregado_vuelo ?? false,
           agregado_por: item.es_agregado_vuelo ? session.user.id : undefined,
+          categoria_producto_id: item.categoria_producto_id,
+          categoria_global_id: item.categoria_global_id,
         })
         createdItems.push(created)
       } catch (error: any) {

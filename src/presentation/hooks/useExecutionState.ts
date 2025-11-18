@@ -217,6 +217,7 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
         product_name: item.product_name,
         categoria_producto_id: item.categoria_producto_id,
         categoria_producto_nombre: item.categoria_producto_nombre,
+        categoria_global_id: item.categoria_global_id,
         status: 'pending',
         cantidad_planeada: item.cantidad_planeada,
         unidad_medida: item.unidad_medida,
@@ -314,7 +315,7 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
       const serverExecutionId = await syncExecutionToServer(finalized)
 
       // 3. Redirect to success page or back to list
-      router.push(`/${execution.shopping_list_id}`)
+      router.push(`/shopping-lists/${execution.shopping_list_id}`)
 
       return serverExecutionId
     } catch (err) {
