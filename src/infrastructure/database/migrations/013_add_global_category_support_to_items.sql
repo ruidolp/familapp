@@ -7,12 +7,21 @@
 ALTER TABLE shopping_list_items
   ADD COLUMN IF NOT EXISTS categoria_global_id TEXT;
 
--- Add foreign key constraint for global categories
-ALTER TABLE shopping_list_items
-  ADD CONSTRAINT shopping_list_items_categoria_global_fk
-    FOREIGN KEY (categoria_global_id)
-    REFERENCES product_categories_global(id)
-    ON DELETE SET NULL;
+-- Add foreign key constraint for global categories (idempotent)
+DO $$
+BEGIN
+  -- Check if constraint already exists, if not create it
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints
+    WHERE constraint_name = 'shopping_list_items_categoria_global_fk'
+  ) THEN
+    ALTER TABLE shopping_list_items
+      ADD CONSTRAINT shopping_list_items_categoria_global_fk
+        FOREIGN KEY (categoria_global_id)
+        REFERENCES product_categories_global(id)
+        ON DELETE SET NULL;
+  END IF;
+END $$;
 
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_shopping_list_items_categoria_global_id
