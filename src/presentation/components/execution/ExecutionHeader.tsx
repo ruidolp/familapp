@@ -47,29 +47,39 @@ export function ExecutionHeader({
 
   return (
     <div className="sticky top-0 z-10 bg-background border-b">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex-1">
-          <h1 className="text-lg font-bold truncate">{listName}</h1>
+      {/* Top Bar - Clean and minimal */}
+      <div className="flex items-start justify-between p-4 gap-4">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-base font-semibold truncate text-foreground/80">{listName}</h1>
           {storeName && (
-            <p className="text-sm text-muted-foreground">{storeName}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{storeName}</p>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Total Display - Prominent */}
+        <div className="flex flex-col items-end gap-0">
+          <span className="text-xs text-muted-foreground font-medium">Total</span>
+          <span className="text-2xl font-bold text-primary">
+            {formatNumber(totalSpent)}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="icon"
+            className="h-9 w-9"
             onClick={onCalculatorClick}
           >
-            <Calculator className="h-5 w-5" />
+            <Calculator className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
+            className="h-9 w-9"
             onClick={onMenuClick}
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-4 w-4" />
           </Button>
         </div>
       </div>

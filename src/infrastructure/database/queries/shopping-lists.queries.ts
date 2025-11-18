@@ -398,6 +398,8 @@ export async function createExecutionItem(data: {
   razon_no_comprado?: 'SIN_STOCK' | 'NO_DISPONIBLE' | 'DESCARTADO' | null
   es_agregado_vuelo?: boolean
   agregado_por?: string | null
+  categoria_producto_id?: string | null
+  categoria_global_id?: string | null
 }) {
   return db
     .insertInto('shopping_execution_items')

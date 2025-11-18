@@ -4,28 +4,22 @@
  * FinalizeExecutionDrawer Component
  *
  * Final drawer to confirm purchase and sync to server
- * Shows:
- * - Calculated total
- * - Manual total input
- * - Summary of items (purchased/discarded)
- * - Confirm and sync button
+ * Clean, modern design with proper scrolling and fixed buttons
  */
 
 import { useState } from 'react'
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
 } from '@/presentation/components/ui/sheet'
 import { Button } from '@/presentation/components/ui/button'
 import { Input } from '@/presentation/components/ui/input'
 import { Label } from '@/presentation/components/ui/label'
 import { Separator } from '@/presentation/components/ui/separator'
-import { Check, X, Loader2, AlertCircle } from 'lucide-react'
+import { Check, X, Loader2, AlertCircle, Clock } from 'lucide-react'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 import { Alert, AlertDescription } from '@/presentation/components/ui/alert'
+import { cn } from '@/infrastructure/lib/utils'
 
 interface FinalizeExecutionDrawerProps {
   open: boolean
@@ -72,124 +66,150 @@ export function FinalizeExecutionDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-       
-        className="h-[600px] sm:max-w-[500px] sm:mx-auto"
-      >
-        <SheetHeader>
-          <SheetTitle>Finalizar Compra</SheetTitle>
-          <SheetDescription>
-            Revisa el resumen y confirma la compra
-          </SheetDescription>
-        </SheetHeader>
+      <SheetContent className="sm:max-w-[500px] flex flex-col p-0">
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Header - No SheetHeader to avoid fixed height issues */}
+          <div className="p-6 pb-4">
+            <h2 className="text-xl font-bold">Resumen de Compra</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Verifica los detalles antes de finalizar
+            </p>
+          </div>
 
-        <div className="mt-6 space-y-6">
-          {/* Summary Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-green-50 dark:bg-green-950/20 p-3 rounded-lg text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Check className="h-4 w-4 text-green-600" />
-                <span className="text-2xl font-bold text-green-700 dark:text-green-400">
+          <div className="px-6 space-y-6">
+            {/* Summary Stats - More prominent */}
+            <div className="grid grid-cols-3 gap-3">
+              {/* Comprados */}
+              <div className="bg-emerald-50/50 dark:bg-emerald-950/30 p-4 rounded-lg text-center border border-emerald-200/60 dark:border-emerald-800/60">
+                <div className="flex items-center justify-center mb-1">
+                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
                   {purchasedCount}
-                </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Comprados</p>
               </div>
-              <p className="text-xs text-muted-foreground">Comprados</p>
-            </div>
 
-            <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <X className="h-4 w-4 text-slate-600" />
-                <span className="text-2xl font-bold text-slate-700 dark:text-slate-400">
+              {/* Descartados */}
+              <div className="bg-muted border border-border p-4 rounded-lg text-center opacity-75">
+                <div className="flex items-center justify-center mb-1">
+                  <X className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="text-2xl font-bold text-foreground/70">
                   {discardedCount}
-                </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Descartados</p>
               </div>
-              <p className="text-xs text-muted-foreground">Descartados</p>
-            </div>
 
-            <div className="bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <span className="text-2xl font-bold text-amber-700 dark:text-amber-400">
+              {/* Pendientes */}
+              <div className={cn(
+                'p-4 rounded-lg text-center border',
+                hasPendingItems
+                  ? 'bg-amber-50/50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/60'
+                  : 'bg-muted border-border opacity-50'
+              )}>
+                <div className="flex items-center justify-center mb-1">
+                  <span className={cn(
+                    'text-lg',
+                    hasPendingItems && 'text-amber-700 dark:text-amber-400 font-bold'
+                  )}>
+                    ⏳
+                  </span>
+                </div>
+                <div className={cn(
+                  'text-2xl font-bold',
+                  hasPendingItems
+                    ? 'text-amber-700 dark:text-amber-400'
+                    : 'text-foreground/70'
+                )}>
                   {pendingCount}
-                </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Pendientes</p>
               </div>
-              <p className="text-xs text-muted-foreground">Pendientes</p>
             </div>
-          </div>
 
-          {/* Warning for pending items */}
-          {hasPendingItems && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Tienes {pendingCount} producto{pendingCount > 1 ? 's' : ''} pendiente
-                {pendingCount > 1 ? 's' : ''}. Considera marcarlos como comprados o descartados.
-              </AlertDescription>
-            </Alert>
-          )}
+            {/* Warning for pending items */}
+            {hasPendingItems && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-xs sm:text-sm">
+                  Tienes {pendingCount} producto{pendingCount > 1 ? 's' : ''} sin definir.
+                  Considera marcarlos como comprados o descartados.
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <Separator />
+            <Separator className="my-2" />
 
-          {/* Timer */}
-          <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">Tiempo total</Label>
-            <span className="font-mono font-bold text-lg">{timerFormatted}</span>
-          </div>
-
-          <Separator />
-
-          {/* Calculated Total */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Total calculado</Label>
-            <div className="text-3xl font-bold text-primary">
-              {totalCalculated > 0 ? formatNumber(totalCalculated) : 'No disponible'}
+            {/* Tiempo total */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">Tiempo total</span>
+              </div>
+              <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Suma de todos los productos con precio
-            </p>
+
+            <Separator className="my-2" />
+
+            {/* Calculated Total - Highlighted */}
+            <div className="bg-primary/5 dark:bg-primary/10 p-4 rounded-lg border border-primary/20">
+              <p className="text-xs text-muted-foreground mb-2">Total Calculado</p>
+              <div className="text-3xl font-bold text-primary">
+                {totalCalculated > 0 ? formatNumber(totalCalculated) : '—'}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Suma de todos los precios registrados
+              </p>
+            </div>
+
+            {/* Manual Total Input */}
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="manual-total" className="text-sm font-medium">
+                  Total Pagado (opcional)
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Ingresa el monto real del ticket si es diferente
+                </p>
+              </div>
+              <Input
+                id="manual-total"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                placeholder={totalCalculated > 0 ? formatNumber(totalCalculated) : '0.00'}
+                value={manualTotal}
+                onChange={(e) => setManualTotal(e.target.value)}
+                className="text-lg h-11"
+              />
+            </div>
+
+            {/* Error message */}
+            {error && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Spacer for bottom buttons */}
+            <div className="h-4" />
           </div>
-
-          <Separator />
-
-          {/* Manual Total Input */}
-          <div className="space-y-2">
-            <Label htmlFor="manual-total" className="text-sm font-medium">
-              Total pagado (opcional)
-            </Label>
-            <Input
-              id="manual-total"
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              placeholder={totalCalculated > 0 ? formatNumber(totalCalculated) : 'Ingresa el total'}
-              value={manualTotal}
-              onChange={(e) => setManualTotal(e.target.value)}
-              className="text-lg h-12"
-            />
-            <p className="text-xs text-muted-foreground">
-              Si es diferente al calculado, ingresa el monto real del ticket
-            </p>
-          </div>
-
-          {/* Error message */}
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
         </div>
 
-        {/* Footer Buttons */}
-        <div className="absolute bottom-6 left-6 right-6 flex flex-col gap-3">
+        {/* Fixed Footer Buttons */}
+        <div className="border-t bg-background p-6 space-y-3">
           <Button
             onClick={handleConfirm}
             disabled={syncing || (totalCalculated === 0 && !manualTotal)}
-            className="w-full h-14 text-lg font-semibold"
+            className="w-full h-12 text-base font-semibold"
           >
             {syncing ? (
               <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Sincronizando...
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Finalizando...
               </>
             ) : (
               'Finalizar y Sincronizar'

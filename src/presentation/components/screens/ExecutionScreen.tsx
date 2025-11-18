@@ -191,7 +191,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
       )}
 
       {/* Items List */}
-      <div className="flex-1 overflow-y-auto px-4 pb-24">
+      <div className="flex-1 overflow-y-auto px-4 pb-28">
         {execution.settings.showCategories && itemsByCategory ? (
           // Grouped by category
           <div className="space-y-6 mt-4">
@@ -255,21 +255,10 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         )}
       </div>
 
-      {/* Bottom Actions */}
-      <div className="absolute bottom-0 left-0 right-0 bg-background border-t p-4 space-y-2">
-        {/* Add item button (future feature) */}
-        {/* <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => {}}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Agregar producto al vuelo
-        </Button> */}
-
-        {/* Finalize button */}
+      {/* Bottom Actions - Fixed footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 safe-area-inset-bottom">
         <Button
-          className="w-full h-14 text-lg font-semibold"
+          className="w-full h-12 text-base font-semibold"
           onClick={() => setFinalizeOpen(true)}
         >
           Finalizar Compra

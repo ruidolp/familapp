@@ -563,6 +563,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           product_name: item.nombre || item._productName || 'Producto',
           categoria_producto_id: item.categoria_producto_id ?? undefined,
           categoria_producto_nombre: data?.categories?.find(c => c.id === item.categoria_producto_id)?.nombre,
+          categoria_global_id: item.categoria_global_id ?? undefined,
           cantidad_planeada: item.cantidad,
           unidad_medida: item.unidad_medida ?? undefined,
           marca: item.marca ?? undefined,

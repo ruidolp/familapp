@@ -123,6 +123,8 @@ export async function syncExecutionToServer(
       es_comprado: item.status === 'purchased',
       razon_no_comprado: item.status === 'discarded' ? item.razon_no_comprado : undefined,
       es_agregado_vuelo: item.addedOnTheFly,
+      categoria_producto_id: item.categoria_producto_id,
+      categoria_global_id: item.categoria_global_id,
     }))
 
     const createItemsResponse = await fetchWithRetry(

@@ -68,8 +68,8 @@ export function ExecutionItem({
       className={cn(
         'flex items-center gap-3 p-3 border rounded-lg transition-all',
         isPending && 'bg-background border-border hover:border-primary cursor-pointer',
-        isPurchased && 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900',
-        isDiscarded && 'bg-slate-100 dark:bg-slate-900 border-slate-300 dark:border-slate-700 opacity-60',
+        isPurchased && 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/60',
+        isDiscarded && 'bg-muted border-border opacity-70',
         pressing && 'scale-95 bg-destructive/10'
       )}
       onTouchStart={handleTouchStart}
@@ -88,13 +88,13 @@ export function ExecutionItem({
       {/* Status Icon */}
       <div className="flex-shrink-0">
         {isPurchased && (
-          <div className="w-8 h-8 rounded-full bg-green-500 dark:bg-green-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-emerald-600 dark:bg-emerald-700 flex items-center justify-center">
             <Check className="h-5 w-5 text-white" />
           </div>
         )}
         {isDiscarded && (
-          <div className="w-8 h-8 rounded-full bg-slate-400 dark:bg-slate-600 flex items-center justify-center">
-            <X className="h-5 w-5 text-white" />
+          <div className="w-8 h-8 rounded-full bg-muted-foreground/60 dark:bg-muted-foreground/50 flex items-center justify-center">
+            <X className="h-5 w-5 text-muted" />
           </div>
         )}
         {isPending && (
@@ -133,7 +133,7 @@ export function ExecutionItem({
 
         {/* Price info */}
         {isPurchased && item.precio_total && (
-          <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-green-700 dark:text-green-400">
+          <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
             <Tag className="h-3 w-3" />
             {formatNumber(item.precio_total)}
             {item.precio_unitario && (
