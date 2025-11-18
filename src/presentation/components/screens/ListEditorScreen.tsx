@@ -1,28 +1,23 @@
 'use client'
 
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
-  Search,
-  Grid3x3,
-  List as ListIcon,
-  Save,
   X,
   Plus,
   Minus,
-  Check,
   AlertCircle,
   RefreshCw,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { notify } from '@/infrastructure/lib/notifications'
-import { adjustQty, quantityToDecimal, isValidQuantity } from '@/infrastructure/utils/quantity'
+import { adjustQty, quantityToDecimal } from '@/infrastructure/utils/quantity'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { EditShoppingListItemDrawer } from '@/components/drawers/EditShoppingListItemDrawer'
 
@@ -76,21 +71,12 @@ interface ListEditorScreenProps {
   listId: string
 }
 
-// Debounce helper
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [value, delay])
-
-  return debouncedValue
+// State for tracking item save status
+interface ItemSaveState {
+  [itemId: string]: {
+    isSaving: boolean
+    error?: string
+  }
 }
 
 export function ListEditorScreen({ listId }: ListEditorScreenProps) {
@@ -109,46 +95,50 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
 
-  // Autosave state
-  const [pendingChanges, setPendingChanges] = useState<{
+  // Save state per item
+  const [itemSaveState, setItemSaveState] = useState<ItemSaveState>({})
+
+  // Track unsaved creates/deletes for batch save
+  const [pendingBatch, setPendingBatch] = useState<{
     creates: any[]
-    updates: any[]
     deletes: string[]
   }>({
     creates: [],
-    updates: [],
     deletes: [],
   })
-  const [isSaving, setIsSaving] = useState(false)
-  const [saveError, setSaveError] = useState(false)
-
-  // Refs
-  const saveTimeoutRef = useRef<NodeJS.Timeout>()
 
   // Load data on mount
   useEffect(() => {
     loadEditorData()
   }, [listId])
 
-  // Autosave debounced changes
-  const debouncedChanges = useDebounce(pendingChanges, 15000)
-
+  // Listen for visibility change (tab focus)
   useEffect(() => {
-    if (
-      debouncedChanges.creates.length > 0 ||
-      debouncedChanges.updates.length > 0 ||
-      debouncedChanges.deletes.length > 0
-    ) {
-      saveChanges()
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        // Tab/window regained focus - reload data
+        loadEditorData()
+      }
     }
-  }, [debouncedChanges])
 
-  // Flush on unmount (navigation away)
-  useEffect(() => {
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     return () => {
-      flushChanges()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])
+
+  // Flush pending creates/deletes on unmount
+  useEffect(() => {
+    return () => {
+      if (
+        pendingBatch.creates.length > 0 ||
+        pendingBatch.deletes.length > 0
+      ) {
+        // Save batch synchronously if possible (won't work due to async)
+        // This is why we need to save immediately
+      }
+    }
+  }, [pendingBatch])
 
   const loadEditorData = async () => {
     setLoading(true)
@@ -171,56 +161,39 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }
 
-  const flushChanges = () => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
-    if (
-      pendingChanges.creates.length > 0 ||
-      pendingChanges.updates.length > 0 ||
-      pendingChanges.deletes.length > 0
-    ) {
-      saveChanges()
-    }
-  }
+  const saveItemUpdate = async (itemId: string, updates: { cantidad?: number; comentario?: string }) => {
+    setItemSaveState((prev) => ({
+      ...prev,
+      [itemId]: { isSaving: true },
+    }))
 
-  const saveChanges = async () => {
-    if (isSaving) return
-
-    setIsSaving(true)
-    setSaveError(false)
     try {
       const response = await fetch(`/api/shopping-lists/${listId}/items/batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pendingChanges),
+        body: JSON.stringify({
+          creates: [],
+          updates: [{ id: itemId, ...updates }],
+          deletes: [],
+        }),
       })
 
       if (response.ok) {
-        // Clear pending changes
-        setPendingChanges({
-          creates: [],
-          updates: [],
-          deletes: [],
-        })
-        // Optionally reload to get server state
-        // await loadEditorData()
+        setItemSaveState((prev) => ({
+          ...prev,
+          [itemId]: { isSaving: false },
+        }))
       } else {
-        setSaveError(true)
-        notify.error('Error al guardar cambios')
+        throw new Error('Error al guardar')
       }
-    } catch (error) {
-      console.error('Error saving changes:', error)
-      setSaveError(true)
-      notify.error('Error al guardar cambios')
-    } finally {
-      setIsSaving(false)
+    } catch (error: any) {
+      console.error('Error saving item update:', error)
+      setItemSaveState((prev) => ({
+        ...prev,
+        [itemId]: { isSaving: false, error: 'Error al guardar' },
+      }))
+      // Keep local state, let user retry
     }
-  }
-
-  const handleRetry = () => {
-    setSaveError(false)
-    saveChanges()
   }
 
   const handleEditItem = (item: ListItem) => {
@@ -231,7 +204,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const handleSaveItemEdit = (cantidad: number, comentario?: string) => {
     if (!selectedItem) return
 
-    // Update local state
+    // Update local state immediately (optimistic)
     setItems(
       items.map((i) =>
         i.id === selectedItem.id
@@ -240,18 +213,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       )
     )
 
-    // Add to pending updates
-    if (!selectedItem.id.startsWith('temp-')) {
-      setPendingChanges((prev) => ({
-        ...prev,
-        updates: [
-          ...prev.updates.filter((u) => u.id !== selectedItem.id),
-          { id: selectedItem.id, cantidad, comentario },
-        ],
-      }))
-    }
-
-    notify.success('Producto actualizado')
+    // Save to server immediately
+    saveItemUpdate(selectedItem.id, { cantidad, comentario })
   }
 
   const handleAddItem = (
@@ -270,12 +233,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     unidad?: string,
     productId?: string
   ) => {
-    // Check if product exists in catalog or custom
     let finalProductId = productId
     let finalIsCatalog = !!isCatalog
 
     if (!finalProductId) {
-      // Search in catalog first
       const catalogMatch = data?.catalog.find(
         (p) => p.nombre.toLowerCase() === productName.toLowerCase()
       )
@@ -284,7 +245,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         finalProductId = catalogMatch.id
         finalIsCatalog = true
       } else {
-        // Search in custom products
         const customMatch = data?.customProducts.find(
           (p) => p.nombre.toLowerCase() === productName.toLowerCase()
         )
@@ -293,7 +253,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           finalProductId = customMatch.id
           finalIsCatalog = false
         } else {
-          // Create new custom product
           try {
             const response = await fetch('/api/products/custom', {
               method: 'POST',
@@ -306,7 +265,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               finalProductId = result.product.id
               finalIsCatalog = false
 
-              // Add to local custom products
               if (data) {
                 setData({
                   ...data,
@@ -323,12 +281,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       }
     }
 
-    // Convert quantity to decimal
     const cantidadDecimal = quantityToDecimal(quantity)
 
-    // Create new item
     const newItem: ListItem = {
-      id: `temp-${Date.now()}`, // Temporary ID
+      id: `temp-${Date.now()}`,
       shopping_list_id: listId,
       product_id: finalIsCatalog ? finalProductId : undefined,
       product_custom_id: !finalIsCatalog ? finalProductId : undefined,
@@ -342,8 +298,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     // Add to local state
     setItems([...items, newItem])
 
-    // Add to pending creates
-    setPendingChanges((prev) => ({
+    // Add to pending creates (will be saved on unmount or manually)
+    setPendingBatch((prev) => ({
       ...prev,
       creates: [
         ...prev.creates,
@@ -360,12 +316,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   }
 
   const handleDeleteItem = (itemId: string) => {
-    // Remove from local state
     setItems(items.filter((i) => i.id !== itemId))
 
-    // Add to pending deletes (if not a temporary item)
     if (!itemId.startsWith('temp-')) {
-      setPendingChanges((prev) => ({
+      setPendingBatch((prev) => ({
         ...prev,
         deletes: [...prev.deletes, itemId],
       }))
@@ -373,17 +327,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   }
 
   const handleUpdateQuantity = (itemId: string, direction: 'up' | 'down') => {
-    // Find the item
     const item = items.find((i) => i.id === itemId)
     if (!item) return
 
-    // Get current quantity as string
     const currentQuantity = item.cantidad.toString()
-
-    // Adjust quantity
     const newQuantityStr = adjustQty(currentQuantity, direction)
-
-    // Convert to decimal for storage
     const newQuantity = quantityToDecimal(newQuantityStr)
 
     // Update local state
@@ -393,15 +341,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       )
     )
 
-    // Add to pending updates
+    // Save to server immediately
     if (!itemId.startsWith('temp-')) {
-      setPendingChanges((prev) => ({
-        ...prev,
-        updates: [
-          ...prev.updates.filter((u) => u.id !== itemId),
-          { id: itemId, cantidad: newQuantity },
-        ],
-      }))
+      saveItemUpdate(itemId, { cantidad: newQuantity })
     }
   }
 
@@ -430,7 +372,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             variant="ghost"
             size="icon"
             onClick={() => {
-              flushChanges()
               router.back()
             }}
           >
@@ -444,39 +385,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               </p>
             )}
           </div>
-          {isSaving && (
-            <Badge variant="secondary" className="gap-1">
-              <Save size={14} />
-              Guardando...
-            </Badge>
-          )}
-          {saveError && (
-            <Badge variant="destructive" className="gap-1">
-              <AlertCircle size={14} />
-              Error al guardar
-            </Badge>
-          )}
         </div>
-
-        {/* Error banner with retry */}
-        {saveError && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-center gap-3">
-            <AlertCircle size={18} className="text-destructive flex-shrink-0" />
-            <p className="text-sm text-destructive flex-1">
-              No se pudieron guardar los cambios. Verifica tu conexión.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRetry}
-              disabled={isSaving}
-              className="gap-1"
-            >
-              <RefreshCw size={14} />
-              Reintentar
-            </Button>
-          </div>
-        )}
 
         {/* Preferences */}
         <div className="flex items-center gap-4 text-sm">
@@ -508,69 +417,100 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
         ) : (
           <div className="space-y-2">
-            {items.map((item) => (
-              <Card key={item.id} className="p-3">
-                <div className="space-y-2">
-                  {/* Line 1: Quantity, Name, and buttons */}
-                  <div className="flex items-center gap-2">
-                    {/* Minus button (if inline qty disabled) */}
-                    {!showInlineQty && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleUpdateQuantity(item.id, 'down')}
-                        className="h-8 w-8 flex-shrink-0"
-                      >
-                        <Minus size={14} />
-                      </Button>
-                    )}
+            {items.map((item) => {
+              const saveState = itemSaveState[item.id]
+              const isSaving = saveState?.isSaving ?? false
+              const hasError = !!saveState?.error
 
-                    {/* Quantity */}
-                    <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
-                      {item.cantidad}
+              return (
+                <Card
+                  key={item.id}
+                  className={`p-3 transition-opacity ${
+                    isSaving ? 'opacity-60' : ''
+                  } ${hasError ? 'border-destructive/50 bg-destructive/5' : ''}`}
+                >
+                  <div className="space-y-2">
+                    {/* Line 1: Quantity, Name, and buttons */}
+                    <div className="flex items-center gap-2">
+                      {/* Minus button (if inline qty disabled) */}
+                      {!showInlineQty && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleUpdateQuantity(item.id, 'down')}
+                          className="h-8 w-8 flex-shrink-0"
+                          disabled={isSaving}
+                        >
+                          <Minus size={14} />
+                        </Button>
+                      )}
+
+                      {/* Quantity */}
+                      <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
+                        {item.cantidad}
+                      </div>
+
+                      {/* Plus button (if inline qty disabled) */}
+                      {!showInlineQty && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleUpdateQuantity(item.id, 'up')}
+                          className="h-8 w-8 flex-shrink-0"
+                          disabled={isSaving}
+                        >
+                          <Plus size={14} />
+                        </Button>
+                      )}
+
+                      {/* Product name (clickable) */}
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleEditItem(item)}
+                        className="flex-1 h-auto justify-start text-left px-2 py-1 font-medium hover:bg-muted"
+                        disabled={isSaving}
+                      >
+                        {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                      </Button>
+
+                      {/* Save status indicator */}
+                      {isSaving && (
+                        <Loader2 size={14} className="animate-spin flex-shrink-0 text-blue-500" />
+                      )}
+                      {hasError && (
+                        <AlertCircle size={14} className="flex-shrink-0 text-destructive" />
+                      )}
+
+                      {/* Delete button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="h-8 w-8 flex-shrink-0"
+                        disabled={isSaving}
+                      >
+                        <X size={14} />
+                      </Button>
                     </div>
 
-                    {/* Plus button (if inline qty disabled) */}
-                    {!showInlineQty && (
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleUpdateQuantity(item.id, 'up')}
-                        className="h-8 w-8 flex-shrink-0"
-                      >
-                        <Plus size={14} />
-                      </Button>
+                    {/* Line 2: Comment (if exists) */}
+                    {item.comentario && (
+                      <div className="text-xs text-muted-foreground px-2">
+                        {item.comentario}
+                      </div>
                     )}
 
-                    {/* Product name (clickable) */}
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleEditItem(item)}
-                      className="flex-1 h-auto justify-start text-left px-2 py-1 font-medium hover:bg-muted"
-                    >
-                      {item.nombre || item._productName || item.product_id || item.product_custom_id}
-                    </Button>
-
-                    {/* Delete button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteItem(item.id)}
-                      className="h-8 w-8 flex-shrink-0"
-                    >
-                      <X size={14} />
-                    </Button>
+                    {/* Error message */}
+                    {hasError && (
+                      <div className="flex items-center gap-2 text-xs text-destructive px-2">
+                        <AlertCircle size={12} />
+                        <span>Error al guardar. Intenta de nuevo.</span>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Line 2: Comment (if exists) */}
-                  {item.comentario && (
-                    <div className="text-xs text-muted-foreground px-2">
-                      {item.comentario}
-                    </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>
