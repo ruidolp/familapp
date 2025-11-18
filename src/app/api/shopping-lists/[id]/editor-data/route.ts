@@ -6,7 +6,7 @@ import {
   searchProductCatalog,
   searchUserCustomProducts,
   getUserProductCategories,
-  // getGlobalProductCategories, // TODO: Enable after migration
+  getGlobalProductCategories,
   getFavorites,
   getFrequentProducts,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
@@ -62,7 +62,7 @@ export async function GET(
       catalog,
       customProducts,
       categoriesUser,
-      // categoriesGlobal, // TODO: Enable after migration
+      categoriesGlobal,
       favorites,
       frequent,
     ] = await Promise.all([
@@ -80,7 +80,7 @@ export async function GET(
       getUserProductCategories(userId),
 
       // Global product categories (admin-created, read-only)
-      // getGlobalProductCategories(), // TODO: Enable after migration
+      getGlobalProductCategories(),
 
       // User's favorites
       getFavorites(userId),
@@ -88,9 +88,6 @@ export async function GET(
       // Most frequently used products
       getFrequentProducts(userId, 50),
     ])
-
-    // TODO: Enable after migration
-    const categoriesGlobal: any[] = []
 
     // Combine categories for easier use in frontend
     const categories = [...categoriesGlobal, ...categoriesUser]

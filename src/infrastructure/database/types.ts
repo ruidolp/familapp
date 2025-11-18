@@ -572,6 +572,19 @@ export interface ProductUserCustomTable {
 }
 
 /**
+ * Tabla: product_categories_global (Categorías globales de productos)
+ */
+export interface ProductCategoriesGlobalTable {
+  id: Generated<string>
+  nombre: string
+  color: string | null
+  emoji: string | null
+  created_at: Generated<Timestamp>
+  updated_at: Timestamp
+  deleted_at: Timestamp | null
+}
+
+/**
  * Tabla: product_categories_user (Categorías personales de productos)
  */
 export interface ProductCategoriesUserTable {
@@ -764,6 +777,7 @@ export interface Database {
   product_catalog: ProductCatalogTable
   product_user_custom: ProductUserCustomTable
   product_categories_user: ProductCategoriesUserTable
+  product_categories_global: ProductCategoriesGlobalTable
   product_favorites: ProductFavoritesTable
   product_frequency: ProductFrequencyTable
   product_prices_history: ProductPricesHistoryTable
