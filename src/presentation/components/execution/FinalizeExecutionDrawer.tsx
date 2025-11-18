@@ -11,6 +11,7 @@ import { useState } from 'react'
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
 } from '@/presentation/components/ui/sheet'
 import { Button } from '@/presentation/components/ui/button'
 import { Input } from '@/presentation/components/ui/input'
@@ -71,7 +72,7 @@ export function FinalizeExecutionDrawer({
         <div className="flex-1 overflow-y-auto">
           {/* Header - No SheetHeader to avoid fixed height issues */}
           <div className="p-6 pb-4">
-            <h2 className="text-xl font-bold">Resumen de Compra</h2>
+            <SheetTitle className="text-xl font-bold">Resumen de Compra</SheetTitle>
             <p className="text-sm text-muted-foreground mt-1">
               Verifica los detalles antes de finalizar
             </p>
