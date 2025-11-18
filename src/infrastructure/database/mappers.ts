@@ -9,15 +9,16 @@ import type {
   TransaccionesTable,
 } from './types'
 import type { Billetera, Sobre, Transaccion } from '@/domain/types'
+import type { TipoBilletera, TipoSobre, TipoTransaccion } from './custom-enums'
 
 /**
- * Convierte BilleterasTable (Kysely) a Billetera (Domain)
+ * Convierte Billeteras (Kysely) a Billetera (Domain)
  */
 export function toBilletera(row: BilleterasTable): Billetera {
   return {
     id: row.id as unknown as string,
     nombre: row.nombre,
-    tipo: row.tipo,
+    tipo: row.tipo as TipoBilletera,
     moneda_principal_id: row.moneda_principal_id as unknown as string,
     saldo_real: Number(row.saldo_real),
     saldo_proyectado: Number(row.saldo_proyectado),
@@ -33,7 +34,7 @@ export function toBilletera(row: BilleterasTable): Billetera {
 }
 
 /**
- * Convierte SobresTable (Kysely) a Sobre (Domain)
+ * Convierte Sobres (Kysely) a Sobre (Domain)
  */
 export function toSobre(row: SobresTable): Sobre {
   return {
@@ -56,7 +57,7 @@ export function toSobre(row: SobresTable): Sobre {
 }
 
 /**
- * Convierte TransaccionesTable (Kysely) a Transaccion (Domain)
+ * Convierte Transacciones (Kysely) a Transaccion (Domain)
  */
 export function toTransaccion(row: TransaccionesTable): Transaccion {
   return {
@@ -64,7 +65,7 @@ export function toTransaccion(row: TransaccionesTable): Transaccion {
     monto: Number(row.monto),
     moneda_id: row.moneda_id,
     billetera_id: row.billetera_id,
-    tipo: row.tipo,
+    tipo: row.tipo as TipoTransaccion,
     usuario_id: row.usuario_id,
     sobre_id: row.sobre_id,
     categoria_id: row.categoria_id,

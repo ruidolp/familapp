@@ -773,3 +773,5 @@ export interface Database {
   shopping_executions: ShoppingExecutionsTable
   shopping_execution_items: ShoppingExecutionItemsTable
 }
+
+export type Database = DB
