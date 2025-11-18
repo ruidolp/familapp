@@ -53,6 +53,14 @@ export async function PUT(
     const { cantidad, unidad_medida, categoria_producto_id, marca, comentario } =
       body
 
+    console.log('📥 SERVER RECEIVED PUT:', {
+      itemId,
+      listId,
+      body,
+      cantidad,
+      currentCantidadInDB: item.cantidad,
+    })
+
     const updatedItem = await updateShoppingListItem(itemId, {
       cantidad: cantidad !== undefined ? cantidad : undefined,
       unidad_medida: unidad_medida !== undefined ? unidad_medida : undefined,
@@ -60,6 +68,11 @@ export async function PUT(
         categoria_producto_id !== undefined ? categoria_producto_id : undefined,
       marca: marca !== undefined ? marca : undefined,
       comentario: comentario !== undefined ? comentario : undefined,
+    })
+
+    console.log('✅ SERVER SAVED ITEM:', {
+      itemId,
+      updatedItem,
     })
 
     return NextResponse.json({
