@@ -563,7 +563,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           is_catalog: item.is_catalog,
           product_name: item.nombre || item._productName || 'Producto',
           categoria_producto_id: item.categoria_producto_id ?? undefined,
-          categoria_producto_nombre: data?.categories?.find(c => c.id === item.categoria_producto_id)?.nombre,
+          categoria_producto_nombre:
+            // Try user category first, then global category
+            data?.categories?.find(c => c.id === item.categoria_producto_id)?.nombre ||
+            data?.categories?.find(c => c.id === item.categoria_global_id)?.nombre ||
+            undefined,
           categoria_global_id: item.categoria_global_id ?? undefined,
           cantidad_planeada: item.cantidad,
           unidad_medida: item.unidad_medida ?? undefined,

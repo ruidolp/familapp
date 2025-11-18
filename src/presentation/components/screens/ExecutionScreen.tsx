@@ -215,35 +215,67 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             ))}
           </div>
         ) : (
-          // Flat list
-          <div className="space-y-2 mt-4">
-            {pendingItems.map(item => (
-              <ExecutionItem
-                key={item.localId}
-                item={item}
-                enablePrices={execution.settings.enablePrices}
-                onTap={handleItemTap}
-                onLongPress={handleItemLongPress}
-              />
-            ))}
-            {purchasedItems.map(item => (
-              <ExecutionItem
-                key={item.localId}
-                item={item}
-                enablePrices={execution.settings.enablePrices}
-                onTap={handleItemTap}
-                onLongPress={handleItemLongPress}
-              />
-            ))}
-            {discardedItems.map(item => (
-              <ExecutionItem
-                key={item.localId}
-                item={item}
-                enablePrices={execution.settings.enablePrices}
-                onTap={handleItemTap}
-                onLongPress={handleItemLongPress}
-              />
-            ))}
+          // Flat list with sections
+          <div className="space-y-4 mt-4">
+            {/* Pending items section */}
+            {pendingItems.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                  Por Comprar ({pendingItems.length})
+                </h3>
+                <div className="space-y-2">
+                  {pendingItems.map(item => (
+                    <ExecutionItem
+                      key={item.localId}
+                      item={item}
+                      enablePrices={execution.settings.enablePrices}
+                      onTap={handleItemTap}
+                      onLongPress={handleItemLongPress}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Purchased items section */}
+            {purchasedItems.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-2">
+                  ✓ Comprados ({purchasedItems.length})
+                </h3>
+                <div className="space-y-2">
+                  {purchasedItems.map(item => (
+                    <ExecutionItem
+                      key={item.localId}
+                      item={item}
+                      enablePrices={execution.settings.enablePrices}
+                      onTap={handleItemTap}
+                      onLongPress={handleItemLongPress}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Discarded items section */}
+            {discardedItems.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 opacity-60">
+                  ✗ Descartados ({discardedItems.length})
+                </h3>
+                <div className="space-y-2">
+                  {discardedItems.map(item => (
+                    <ExecutionItem
+                      key={item.localId}
+                      item={item}
+                      enablePrices={execution.settings.enablePrices}
+                      onTap={handleItemTap}
+                      onLongPress={handleItemLongPress}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -302,7 +334,10 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
 // Helper function to group items by category
 function groupByCategory(items: LocalExecutionItem[]): Record<string, LocalExecutionItem[]> {
   return items.reduce((acc, item) => {
-    const category = item.categoria_producto_nombre || 'Sin categoría'
+    // Get category name: prefer user category name, then global category ID, then "Sin categoría"
+    const category = item.categoria_producto_nombre ||
+                     (item.categoria_global_id ? `Categoría ${item.categoria_global_id.substring(0, 8)}` : '') ||
+                     'Sin categoría'
     if (!acc[category]) {
       acc[category] = []
     }
