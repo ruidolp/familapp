@@ -127,11 +127,11 @@ export function ProductQuantityInput({
           autoComplete="off"
         />
 
-        {/* Autocomplete suggestions */}
+        {/* Autocomplete suggestions - positioned ABOVE input */}
         {showSuggestions && filteredProducts.length > 0 && (
           <Card
             ref={suggestionsRef}
-            className="absolute z-50 w-full mt-1 max-h-60 overflow-y-auto shadow-lg"
+            className="absolute z-50 w-full bottom-full mb-1 max-h-60 overflow-y-auto shadow-lg"
           >
             {filteredProducts.map((product, index) => (
               <div

@@ -9,6 +9,8 @@ import {
   Minus,
   AlertCircle,
   Loader2,
+  MoreVertical,
+  Square,
   ShoppingCart,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -19,14 +21,21 @@ import { notify } from '@/infrastructure/lib/notifications'
 import { adjustQty, quantityToDecimal, decimalToFraction } from '@/infrastructure/utils/quantity'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { EditShoppingListItemDrawer } from '@/components/drawers/EditShoppingListItemDrawer'
+import { ListOptionsDrawer } from '@/components/drawers/ListOptionsDrawer'
 import {
   ConfigureExecutionDrawer,
   type ExecutionConfig,
 } from '@/presentation/components/execution/ConfigureExecutionDrawer'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { CreateLocalExecutionInput } from '@/domain/types/shopping-execution'
+import type { Database } from '@/infrastructure/database/types'
 
-// Types
+// Types - Use Database types as source of truth
+type ShoppingListItem = Database['shopping_list_items']
+type ProductCatalog = Database['product_catalog']
+type ProductUserCustom = Database['product_user_custom']
+type ProductCategories = Database['product_categories']
+
 interface Product {
   id: string
   nombre: string
@@ -41,20 +50,10 @@ interface Category {
   emoji?: string
 }
 
-interface ListItem {
-  id: string
-  shopping_list_id: string
-  product_id?: string
-  product_custom_id?: string
-  is_catalog: boolean
-  cantidad: number
-  unidad_medida?: string
-  categoria_producto_id?: string
-  marca?: string
-  comentario?: string
-  item_order: number
-  nombre?: string
-  _productName?: string
+// Extended type for list items with joined product names
+interface ListItemWithProduct extends Omit<ShoppingListItem, keyof { created_at: any; updated_at: any; deleted_at: any; created_by: any; item_type: any }> {
+  nombre?: string  // From joined product_catalog or product_user_custom
+  _productName?: string  // Fallback product name
 }
 
 interface EditorData {
@@ -64,7 +63,7 @@ interface EditorData {
     descripcion?: string
     purchase_count: number
   }
-  items: ListItem[]
+  items: ListItemWithProduct[]
   catalog: Product[]
   customProducts: Product[]
   categories: Category[]
@@ -88,16 +87,18 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   // Data state
   const [data, setData] = useState<EditorData | null>(null)
-  const [items, setItems] = useState<ListItem[]>([])
+  const [items, setItems] = useState<ListItemWithProduct[]>([])
   const [loading, setLoading] = useState(true)
 
   // UI preferences
   const [groupByCategory, setGroupByCategory] = useState(false)
   const [showInlineQty, setShowInlineQty] = useState(true)
+  const [flatListMode, setFlatListMode] = useState(false)
 
-  // Edit drawer state
+  // Drawers state
+  const [optionsDrawerOpen, setOptionsDrawerOpen] = useState(false)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
+  const [selectedItem, setSelectedItem] = useState<ListItemWithProduct | null>(null)
 
   // Execute purchase drawer state
   const [configureExecutionOpen, setConfigureExecutionOpen] = useState(false)
@@ -183,10 +184,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   }
 
   const createNewItem = async (
-    newItem: Omit<ListItem, 'id'> & { _productName: string }
+    newItem: Omit<ListItemWithProduct, 'id'> & { _productName: string }
   ) => {
     const tempId = `temp-${Date.now()}`
-    const itemWithTempId: ListItem = {
+    const itemWithTempId: ListItemWithProduct = {
       ...newItem,
       id: tempId,
     }
@@ -388,13 +389,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
     const cantidadDecimal = quantityToDecimal(quantity)
 
-    const newItem: Omit<ListItem, 'id'> & { _productName: string } = {
+    const newItem: Omit<ListItemWithProduct, 'id'> & { _productName: string } = {
       shopping_list_id: listId,
-      product_id: finalIsCatalog ? finalProductId : undefined,
-      product_custom_id: !finalIsCatalog ? finalProductId : undefined,
+      product_id: finalIsCatalog ? finalProductId : null,
+      product_custom_id: !finalIsCatalog ? finalProductId : null,
       is_catalog: finalIsCatalog,
       cantidad: cantidadDecimal,
-      unidad_medida: unidad,
+      unidad_medida: unidad || null,
+      categoria_producto_id: null,
+      marca: null,
+      comentario: null,
       item_order: items.length,
       _productName: productName,
     }
@@ -465,7 +469,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }
 
-  const handleEditItem = (item: ListItem) => {
+  const handleEditItem = (item: ListItemWithProduct) => {
     // Ensure we have the latest version of this item from the current items array
     const latestItem = items.find((i) => i.id === item.id) || item
     console.log('📝 OPEN EDIT DRAWER:', {
@@ -600,7 +604,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="border-b p-4 space-y-4">
+      <div className="border-b p-4">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -627,28 +631,15 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             className="flex items-center gap-2"
           >
             <ShoppingCart size={16} />
-            <span className="hidden sm:inline">Ejecutar Compra</span>
+            <span className="hidden sm:inline">Ejecutar</span>
           </Button>
-        </div>
-
-        {/* Preferences */}
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="group-category"
-              checked={groupByCategory}
-              onCheckedChange={setGroupByCategory}
-            />
-            <Label htmlFor="group-category">Agrupar por categoría</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              id="show-qty-buttons"
-              checked={!showInlineQty}
-              onCheckedChange={(checked) => setShowInlineQty(!checked)}
-            />
-            <Label htmlFor="show-qty-buttons">Mostrar controles de cantidad</Label>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOptionsDrawerOpen(true)}
+          >
+            <MoreVertical size={20} />
+          </Button>
         </div>
       </div>
 
@@ -659,8 +650,42 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             <p>Lista vacía</p>
             <p className="text-sm">Agrega items usando el campo de abajo</p>
           </div>
+        ) : flatListMode ? (
+          /* FLAT LIST MODE */
+          <Card className="p-2">
+            <div className="space-y-0">
+              {items.map((item) => {
+                const saveState = itemSaveState[item.id]
+                const isSaving = saveState?.isSaving ?? false
+                const hasError = !!saveState?.error
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => handleEditItem(item)}
+                    className={`flex items-start gap-2 px-2 py-1 hover:bg-muted cursor-pointer transition-colors ${
+                      isSaving ? 'opacity-60' : ''
+                    } ${hasError ? 'text-destructive' : ''}`}
+                  >
+                    <Square size={14} className="flex-shrink-0 mt-0.5" />
+                    <span className="font-medium flex-shrink-0">{item.cantidad}</span>
+                    <span className="flex-1">
+                      {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                      {item.comentario && (
+                        <span className="text-muted-foreground"> - {item.comentario}</span>
+                      )}
+                    </span>
+                    {isSaving && (
+                      <Loader2 size={12} className="animate-spin flex-shrink-0 text-blue-500" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
         ) : (
-          <div className="space-y-2">
+          /* NORMAL CARD MODE */
+          <div className="space-y-1.5">
             {items.map((item) => {
               const saveState = itemSaveState[item.id]
               const isSaving = saveState?.isSaving ?? false
@@ -669,11 +694,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               return (
                 <Card
                   key={item.id}
-                  className={`p-3 transition-opacity ${
+                  className={`p-2 transition-opacity ${
                     isSaving ? 'opacity-60' : ''
                   } ${hasError ? 'border-destructive/50 bg-destructive/5' : ''}`}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {/* Line 1: Quantity, Name, and buttons */}
                     <div className="flex items-center gap-2">
                       {/* Minus button (if show qty controls) */}
@@ -682,7 +707,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                           variant="outline"
                           size="icon"
                           onClick={() => handleUpdateQuantity(item.id, 'down')}
-                          className="h-8 w-8 flex-shrink-0"
+                          className="h-7 w-7 flex-shrink-0"
                           disabled={isSaving}
                         >
                           <Minus size={14} />
@@ -700,7 +725,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                           variant="outline"
                           size="icon"
                           onClick={() => handleUpdateQuantity(item.id, 'up')}
-                          className="h-8 w-8 flex-shrink-0"
+                          className="h-7 w-7 flex-shrink-0"
                           disabled={isSaving}
                         >
                           <Plus size={14} />
@@ -730,7 +755,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteItem(item.id)}
-                        className="h-8 w-8 flex-shrink-0"
+                        className="h-7 w-7 flex-shrink-0"
                         disabled={isSaving}
                       >
                         <X size={14} />
@@ -739,14 +764,14 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                     {/* Line 2: Comment (if exists) */}
                     {item.comentario && (
-                      <div className="text-xs text-muted-foreground px-2">
+                      <div className="text-xs text-muted-foreground px-1">
                         {item.comentario}
                       </div>
                     )}
 
                     {/* Error message */}
                     {hasError && (
-                      <div className="flex items-center gap-2 text-xs text-destructive px-2">
+                      <div className="flex items-center gap-2 text-xs text-destructive px-1">
                         <AlertCircle size={12} />
                         <span>Error al guardar. Intenta de nuevo.</span>
                       </div>
@@ -770,6 +795,18 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           ]}
         />
       </div>
+
+      {/* Options Drawer */}
+      <ListOptionsDrawer
+        open={optionsDrawerOpen}
+        onOpenChange={setOptionsDrawerOpen}
+        groupByCategory={groupByCategory}
+        onGroupByCategoryChange={setGroupByCategory}
+        showInlineQty={showInlineQty}
+        onShowInlineQtyChange={setShowInlineQty}
+        flatListMode={flatListMode}
+        onFlatListModeChange={setFlatListMode}
+      />
 
       {/* Edit Item Drawer */}
       {selectedItem && (

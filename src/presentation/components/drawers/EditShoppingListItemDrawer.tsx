@@ -13,9 +13,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Minus, Plus } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
-import { quantityToDecimal } from '@/infrastructure/utils/quantity'
+import { quantityToDecimal, adjustQty, decimalToFraction } from '@/infrastructure/utils/quantity'
 
 interface ListItem {
   id: string
@@ -47,6 +48,16 @@ export function EditShoppingListItemDrawer({
     }
   }, [item, item?.cantidad, item?.comentario])
 
+  const handleAdjustQuantity = (direction: 'up' | 'down') => {
+    // Convert current decimal to string for adjustQty
+    const fractionStr = decimalToFraction(cantidad)
+    const currentStr = fractionStr || String(Math.round(cantidad))
+
+    const newStr = adjustQty(currentStr, direction)
+    const newDecimal = quantityToDecimal(newStr)
+    setCantidad(newDecimal)
+  }
+
   const handleSave = () => {
     onSave(cantidad, comentario || undefined)
     onOpenChange(false)
@@ -63,20 +74,32 @@ export function EditShoppingListItemDrawer({
         </DrawerHeader>
 
         <div className="px-4 py-6 space-y-6">
-          {/* Cantidad */}
-          <div className="space-y-2">
-            <Label htmlFor="cantidad">Cantidad</Label>
-            <Input
-              id="cantidad"
-              type="text"
-              placeholder="Ej: 1, 1/2, 2.5"
-              value={cantidad.toString()}
-              onChange={(e) => {
-                const val = quantityToDecimal(e.target.value)
-                setCantidad(val)
-              }}
-              className="text-base"
-            />
+          {/* Cantidad with large +/- buttons */}
+          <div className="space-y-3">
+            <Label>Cantidad</Label>
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleAdjustQuantity('down')}
+                className="h-16 w-16 text-2xl"
+              >
+                <Minus size={28} />
+              </Button>
+
+              <div className="text-5xl font-bold min-w-[120px] text-center">
+                {cantidad}
+              </div>
+
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => handleAdjustQuantity('up')}
+                className="h-16 w-16 text-2xl"
+              >
+                <Plus size={28} />
+              </Button>
+            </div>
           </div>
 
           {/* Comentario */}
