@@ -167,10 +167,13 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         console.log('📥 LOADED FROM SERVER:', {
           listId,
           itemCount: data.items.length,
+          categoriesCount: data.categories?.length || 0,
+          categories: data.categories,
           items: data.items.map(i => ({
             id: i.id,
             nombre: i.nombre || i._productName,
             cantidad: i.cantidad,
+            categoria_producto_id: i.categoria_producto_id,
           })),
         })
         setData(data)
