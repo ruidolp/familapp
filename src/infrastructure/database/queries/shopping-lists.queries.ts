@@ -651,3 +651,26 @@ export async function getUserProductCategories(userId: string) {
     .orderBy('nombre', 'asc')
     .execute()
 }
+
+// ============================================
+// GLOBAL PRODUCT CATEGORIES
+// ============================================
+
+export async function getGlobalProductCategories() {
+  return db
+    .selectFrom('product_categories_global')
+    .selectAll()
+    .where('deleted_at', 'is', null)
+    .orderBy('nombre', 'asc')
+    .execute()
+}
+
+export async function getGlobalProductCategoryById(id: string) {
+  return db
+    .selectFrom('product_categories_global')
+    .selectAll()
+    .where('id', '=', id)
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst()
+}
+
