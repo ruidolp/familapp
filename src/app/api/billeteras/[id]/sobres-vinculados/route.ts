@@ -48,7 +48,7 @@ export async function GET(
 
     // Calcular impacto (cuánto presupuesto total se vería afectado)
     const totalPresupuestoAfectado = sobresVinculados.reduce(
-      (sum, sobre) => sum + (parseFloat(sobre.presupuesto_asignado || '0')),
+      (sum, sobre) => sum + (typeof sobre.presupuesto_asignado === 'number' ? sobre.presupuesto_asignado : parseFloat(sobre.presupuesto_asignado || '0')),
       0
     )
 

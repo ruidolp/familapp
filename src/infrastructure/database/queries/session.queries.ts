@@ -6,7 +6,7 @@
  */
 
 import { db } from '../kysely'
-import type { Sessions } from '../types'
+import type { SessionsTable } from '../types'
 
 /**
  * Tipo para creación de sesión
