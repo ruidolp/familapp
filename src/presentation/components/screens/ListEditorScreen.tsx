@@ -9,6 +9,8 @@ import {
   Minus,
   AlertCircle,
   Loader2,
+  MoreVertical,
+  Square,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -18,6 +20,7 @@ import { notify } from '@/infrastructure/lib/notifications'
 import { adjustQty, quantityToDecimal, decimalToFraction } from '@/infrastructure/utils/quantity'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { EditShoppingListItemDrawer } from '@/components/drawers/EditShoppingListItemDrawer'
+import { ListOptionsDrawer } from '@/components/drawers/ListOptionsDrawer'
 
 // Types
 interface Product {
@@ -87,8 +90,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // UI preferences
   const [groupByCategory, setGroupByCategory] = useState(false)
   const [showInlineQty, setShowInlineQty] = useState(true)
+  const [flatListMode, setFlatListMode] = useState(false)
 
-  // Edit drawer state
+  // Drawers state
+  const [optionsDrawerOpen, setOptionsDrawerOpen] = useState(false)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItem | null>(null)
 
@@ -512,7 +517,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="border-b p-4 space-y-4">
+      <div className="border-b p-4">
         <div className="flex items-center gap-3">
           <Button
             variant="ghost"
@@ -531,26 +536,13 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               </p>
             )}
           </div>
-        </div>
-
-        {/* Preferences */}
-        <div className="flex items-center gap-4 text-sm">
-          <div className="flex items-center gap-2">
-            <Switch
-              id="group-category"
-              checked={groupByCategory}
-              onCheckedChange={setGroupByCategory}
-            />
-            <Label htmlFor="group-category">Agrupar por categoría</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              id="show-qty-buttons"
-              checked={!showInlineQty}
-              onCheckedChange={(checked) => setShowInlineQty(!checked)}
-            />
-            <Label htmlFor="show-qty-buttons">Mostrar controles de cantidad</Label>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setOptionsDrawerOpen(true)}
+          >
+            <MoreVertical size={20} />
+          </Button>
         </div>
       </div>
 
@@ -561,8 +553,42 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             <p>Lista vacía</p>
             <p className="text-sm">Agrega items usando el campo de abajo</p>
           </div>
+        ) : flatListMode ? (
+          /* FLAT LIST MODE */
+          <Card className="p-2">
+            <div className="space-y-0">
+              {items.map((item) => {
+                const saveState = itemSaveState[item.id]
+                const isSaving = saveState?.isSaving ?? false
+                const hasError = !!saveState?.error
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => handleEditItem(item)}
+                    className={`flex items-start gap-2 px-2 py-1 hover:bg-muted cursor-pointer transition-colors ${
+                      isSaving ? 'opacity-60' : ''
+                    } ${hasError ? 'text-destructive' : ''}`}
+                  >
+                    <Square size={14} className="flex-shrink-0 mt-0.5" />
+                    <span className="font-medium flex-shrink-0">{item.cantidad}</span>
+                    <span className="flex-1">
+                      {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                      {item.comentario && (
+                        <span className="text-muted-foreground"> - {item.comentario}</span>
+                      )}
+                    </span>
+                    {isSaving && (
+                      <Loader2 size={12} className="animate-spin flex-shrink-0 text-blue-500" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </Card>
         ) : (
-          <div className="space-y-2">
+          /* NORMAL CARD MODE */
+          <div className="space-y-1.5">
             {items.map((item) => {
               const saveState = itemSaveState[item.id]
               const isSaving = saveState?.isSaving ?? false
@@ -571,11 +597,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               return (
                 <Card
                   key={item.id}
-                  className={`p-3 transition-opacity ${
+                  className={`p-2 transition-opacity ${
                     isSaving ? 'opacity-60' : ''
                   } ${hasError ? 'border-destructive/50 bg-destructive/5' : ''}`}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {/* Line 1: Quantity, Name, and buttons */}
                     <div className="flex items-center gap-2">
                       {/* Minus button (if show qty controls) */}
@@ -584,7 +610,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                           variant="outline"
                           size="icon"
                           onClick={() => handleUpdateQuantity(item.id, 'down')}
-                          className="h-8 w-8 flex-shrink-0"
+                          className="h-7 w-7 flex-shrink-0"
                           disabled={isSaving}
                         >
                           <Minus size={14} />
@@ -602,7 +628,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                           variant="outline"
                           size="icon"
                           onClick={() => handleUpdateQuantity(item.id, 'up')}
-                          className="h-8 w-8 flex-shrink-0"
+                          className="h-7 w-7 flex-shrink-0"
                           disabled={isSaving}
                         >
                           <Plus size={14} />
@@ -632,7 +658,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteItem(item.id)}
-                        className="h-8 w-8 flex-shrink-0"
+                        className="h-7 w-7 flex-shrink-0"
                         disabled={isSaving}
                       >
                         <X size={14} />
@@ -641,14 +667,14 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                     {/* Line 2: Comment (if exists) */}
                     {item.comentario && (
-                      <div className="text-xs text-muted-foreground px-2">
+                      <div className="text-xs text-muted-foreground px-1">
                         {item.comentario}
                       </div>
                     )}
 
                     {/* Error message */}
                     {hasError && (
-                      <div className="flex items-center gap-2 text-xs text-destructive px-2">
+                      <div className="flex items-center gap-2 text-xs text-destructive px-1">
                         <AlertCircle size={12} />
                         <span>Error al guardar. Intenta de nuevo.</span>
                       </div>
@@ -672,6 +698,18 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           ]}
         />
       </div>
+
+      {/* Options Drawer */}
+      <ListOptionsDrawer
+        open={optionsDrawerOpen}
+        onOpenChange={setOptionsDrawerOpen}
+        groupByCategory={groupByCategory}
+        onGroupByCategoryChange={setGroupByCategory}
+        showInlineQty={showInlineQty}
+        onShowInlineQtyChange={setShowInlineQty}
+        flatListMode={flatListMode}
+        onFlatListModeChange={setFlatListMode}
+      />
 
       {/* Edit Item Drawer */}
       {selectedItem && (
