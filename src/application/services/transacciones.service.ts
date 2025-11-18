@@ -25,7 +25,7 @@ import {
 import { findBilleteraById, updateBilleteraSaldos } from '@/infrastructure/database/queries/billeteras.queries'
 import { findSobreById, findAsignacionesByUsuarioInSobre } from '@/infrastructure/database/queries/sobres.queries'
 import { findCategoriaById } from '@/infrastructure/database/queries/categorias.queries'
-import { TipoTransaccion } from '@/domain/types/core'
+import type { TipoTransaccion } from '@/infrastructure/database/custom-enums'
 
 /**
  * Interfaz para warnings de transacción
@@ -118,7 +118,7 @@ async function calcularWarningTransaccion(
     // Obtener gastos totales en el sobre
     const gastosBySobre = await findTransaccionesBySobre(sobreId)
     const gastadoActual = gastosBySobre
-      .filter((t: any) => t.tipo === TipoTransaccion.GASTO)
+      .filter((t: any) => t.tipo === 'GASTO')
       .reduce((sum: number, t: any) => sum + Number(t.monto || 0), 0)
 
     const nuevoGastado = gastadoActual + monto
@@ -180,12 +180,12 @@ export async function crearTransaccion(
 
     // Validar tipo de transacción
     const tiposValidos: TipoTransaccion[] = [
-      TipoTransaccion.GASTO,
-      TipoTransaccion.INGRESO,
-      TipoTransaccion.TRANSFERENCIA,
-      TipoTransaccion.DEPOSITO,
-      TipoTransaccion.PAGO_TC,
-      TipoTransaccion.AJUSTE,
+      'GASTO',
+      'INGRESO',
+      'TRANSFERENCIA',
+      'DEPOSITO',
+      'PAGO_TC',
+      'AJUSTE',
     ]
     if (!tiposValidos.includes(tipo)) {
       return {
@@ -253,7 +253,7 @@ export async function crearTransaccion(
     // Solo se actualiza en operaciones administrativas
 
     // Actualizar gastado del sobre si es un GASTO
-    if (tipo === TipoTransaccion.GASTO && sobreId) {
+    if (tipo === 'GASTO' && sobreId) {
       await actualizarGastadoSobre(sobreId)
     }
 
@@ -288,13 +288,13 @@ async function actualizarSaldoBilletera(
   let nuevoSaldoProyectado = Number(billetera.saldo_proyectado)
 
   // Tipos que aumentan el saldo
-  if (tipo === TipoTransaccion.INGRESO || tipo === TipoTransaccion.DEPOSITO) {
+  if (tipo === 'INGRESO' || tipo === 'DEPOSITO') {
     nuevoSaldoReal += monto
     nuevoSaldoProyectado += monto
   }
 
   // Tipos que disminuyen el saldo
-  if (tipo === TipoTransaccion.GASTO || tipo === TipoTransaccion.TRANSFERENCIA || tipo === TipoTransaccion.PAGO_TC) {
+  if (tipo === 'GASTO' || tipo === 'TRANSFERENCIA' || tipo === 'PAGO_TC') {
     nuevoSaldoReal -= monto
     nuevoSaldoProyectado -= monto
   }
@@ -314,7 +314,7 @@ async function actualizarGastadoSobre(sobreId: string) {
   // Calcular total gastado del sobre
   const transacciones = await findTransaccionesBySobre(sobreId)
   const totalGastado = transacciones
-    .filter((t: any) => t.tipo === TipoTransaccion.GASTO)
+    .filter((t: any) => t.tipo === 'GASTO')
     .reduce((sum: number, t: any) => sum + Number(t.monto || 0), 0)
 
   // Actualizar campo gastado del sobre
@@ -495,13 +495,13 @@ async function revertirSaldoBilletera(
   let nuevoSaldoProyectado = Number(billetera.saldo_proyectado)
 
   // Revertir tipos que aumentan el saldo
-  if (tipo === TipoTransaccion.INGRESO || tipo === TipoTransaccion.DEPOSITO) {
+  if (tipo === 'INGRESO' || tipo === 'DEPOSITO') {
     nuevoSaldoReal -= monto
     nuevoSaldoProyectado -= monto
   }
 
   // Revertir tipos que disminuyen el saldo
-  if (tipo === TipoTransaccion.GASTO || tipo === TipoTransaccion.TRANSFERENCIA || tipo === TipoTransaccion.PAGO_TC) {
+  if (tipo === 'GASTO' || tipo === 'TRANSFERENCIA' || tipo === 'PAGO_TC') {
     nuevoSaldoReal += monto
     nuevoSaldoProyectado += monto
   }
@@ -535,7 +535,7 @@ export async function eliminarTransaccion(
     await softDeleteTransaccion(transaccionId)
 
     // Actualizar gastado del sobre si era un GASTO
-    if (transaccion.tipo === TipoTransaccion.GASTO && transaccion.sobre_id) {
+    if (transaccion.tipo === 'GASTO' && transaccion.sobre_id) {
       await actualizarGastadoSobre(transaccion.sobre_id)
     }
 

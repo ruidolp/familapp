@@ -3,7 +3,7 @@
  * Plain object types sin ColumnType de Kysely
  */
 
-import type { TipoTransaccion } from '@/domain/types/core'
+import type { TipoTransaccion } from '@/infrastructure/database/custom-enums'
 
 /**
  * Transaccion - Objeto plano para frontend

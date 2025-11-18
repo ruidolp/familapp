@@ -5,8 +5,8 @@
  */
 
 import { db } from '../kysely'
-import type { Sobres, SobresUsuarios } from '../types'
-import { TipoSobre, RolSobreUsuario } from '@/domain/types/core'
+import type { SobresTable, SobresUsuariosTable } from '../types'
+import type { TipoSobre, RolSobreUsuario } from '../custom-enums'
 
 /**
  * Tipo para creación de sobre
@@ -173,8 +173,7 @@ export async function incrementarSobreGastado(sobreId: string, monto: number) {
   const sobre = await findSobreById(sobreId)
   if (!sobre) return null
 
-  const gastadoActual = parseFloat(sobre.gastado || '0')
-  const nuevoGastado = gastadoActual + monto
+  const nuevoGastado = (sobre.gastado || 0) + monto
   return await updateSobreGastado(sobreId, nuevoGastado)
 }
 
@@ -188,7 +187,7 @@ export async function incrementarSobreGastado(sobreId: string, monto: number) {
 export async function addParticipanteToSobre(
   sobreId: string,
   userId: string,
-  rol: RolSobreUsuario = RolSobreUsuario.CONTRIBUTOR,
+  rol: RolSobreUsuario = 'CONTRIBUTOR',
   presupuestoAsignado: number = 0
 ) {
   return await db
@@ -257,8 +256,7 @@ export async function incrementarParticipanteGastado(sobreId: string, userId: st
   const participante = await findParticipanteInSobre(sobreId, userId)
   if (!participante) return null
 
-  const gastadoActual = parseFloat(participante.gastado || '0')
-  const nuevoGastado = gastadoActual + monto
+  const nuevoGastado = participante.gastado + monto
   return await updateParticipanteTracking(sobreId, userId, undefined, nuevoGastado)
 }
 
@@ -387,13 +385,10 @@ export async function getPresupuestoLibreUsuarioInSobre(sobreId: string, userId:
   const participante = await findParticipanteInSobre(sobreId, userId)
   if (!participante) return null
 
-  const presupuesto = parseFloat(participante.presupuesto_asignado || '0')
-  const gastado = parseFloat(participante.gastado || '0')
-
   return {
-    presupuesto_asignado: presupuesto,
-    gastado: gastado,
-    libre: presupuesto - gastado,
+    presupuesto_asignado: participante.presupuesto_asignado,
+    gastado: participante.gastado,
+    libre: participante.presupuesto_asignado - participante.gastado,
   }
 }
 

@@ -5,14 +5,15 @@
  */
 
 import { db } from '../kysely'
-import type { Periodos } from '../types'
+import type { PeriodosTable } from '../types'
+import type { TipoPeriodo } from '../custom-enums'
 
 /**
  * Tipo para crear período
  */
 export type CreatePeriodoData = {
   user_id: string
-  tipo: string
+  tipo: TipoPeriodo
   dia_inicio?: number
   fecha_inicio: Date
   fecha_fin: Date

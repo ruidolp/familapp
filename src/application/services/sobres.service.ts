@@ -25,7 +25,7 @@ import {
   unlinkCategoriaFromSobre,
   findCategoriasBySobre,
 } from '@/infrastructure/database/queries/categorias.queries'
-import { TipoSobre, RolSobreUsuario } from '@/domain/types/core'
+import type { TipoSobre, RolSobreUsuario } from '@/infrastructure/database/custom-enums'
 
 /**
  * Datos para crear un sobre
@@ -86,7 +86,7 @@ export async function crearSobre(
     }
 
     // Validar tipo de sobre
-    const tiposValidos: TipoSobre[] = [TipoSobre.GASTO, TipoSobre.AHORRO, TipoSobre.DEUDA]
+    const tiposValidos: TipoSobre[] = ['GASTO', 'AHORRO', 'DEUDA']
     if (!tiposValidos.includes(input.tipo)) {
       return {
         success: false,
@@ -124,7 +124,7 @@ export async function crearSobre(
     })
 
     // Agregar al creador como OWNER
-    await addParticipanteToSobre(sobre.id, input.userId, RolSobreUsuario.OWNER, input.presupuestoAsignado)
+    await addParticipanteToSobre(sobre.id, input.userId, 'OWNER', input.presupuestoAsignado)
 
     return {
       success: true,
@@ -220,7 +220,7 @@ export async function actualizarSobre(
     const participantes = await findParticipantesBySobre(sobreId)
     const participante = participantes.find((p: any) => p.usuario_id === userId)
 
-    if (!participante || (participante.rol !== RolSobreUsuario.OWNER && participante.rol !== RolSobreUsuario.ADMIN)) {
+    if (!participante || (participante.rol !== 'OWNER' && participante.rol !== 'ADMIN')) {
       return {
         success: false,
         error: 'No tienes permiso para editar este sobre',
@@ -283,7 +283,7 @@ export async function eliminarSobre(
     const participantes = await findParticipantesBySobre(sobreId)
     const participante = participantes.find((p: any) => p.usuario_id === userId)
 
-    if (!participante || participante.rol !== RolSobreUsuario.OWNER) {
+    if (!participante || participante.rol !== 'OWNER') {
       return {
         success: false,
         error: 'Solo el propietario puede eliminar el sobre',
@@ -324,7 +324,7 @@ export async function agregarParticipante(
     const participantes = await findParticipantesBySobre(sobreId)
     const participante = participantes.find((p: any) => p.usuario_id === userId)
 
-    if (!participante || (participante.rol !== RolSobreUsuario.OWNER && participante.rol !== RolSobreUsuario.ADMIN)) {
+    if (!participante || (participante.rol !== 'OWNER' && participante.rol !== 'ADMIN')) {
       return {
         success: false,
         error: 'No tienes permiso para agregar participantes',
@@ -341,7 +341,7 @@ export async function agregarParticipante(
     }
 
     // Validar rol
-    const rolesValidos: RolSobreUsuario[] = [RolSobreUsuario.OWNER, RolSobreUsuario.ADMIN, RolSobreUsuario.CONTRIBUTOR, RolSobreUsuario.VIEWER]
+    const rolesValidos: RolSobreUsuario[] = ['OWNER', 'ADMIN', 'CONTRIBUTOR', 'VIEWER']
     if (!rolesValidos.includes(rol)) {
       return {
         success: false,
@@ -350,7 +350,7 @@ export async function agregarParticipante(
     }
 
     // No permitir múltiples OWNER
-    if (rol === RolSobreUsuario.OWNER) {
+    if (rol === 'OWNER') {
       return {
         success: false,
         error: 'Solo puede haber un propietario por sobre',
@@ -396,7 +396,7 @@ export async function eliminarParticipante(
     const participantes = await findParticipantesBySobre(sobreId)
     const participante = participantes.find((p: any) => p.usuario_id === userId)
 
-    if (!participante || (participante.rol !== RolSobreUsuario.OWNER && participante.rol !== RolSobreUsuario.ADMIN)) {
+    if (!participante || (participante.rol !== 'OWNER' && participante.rol !== 'ADMIN')) {
       return {
         success: false,
         error: 'No tienes permiso para eliminar participantes',
@@ -405,7 +405,7 @@ export async function eliminarParticipante(
 
     // No permitir eliminar al OWNER
     const aEliminar = participantes.find((p: any) => p.usuario_id === participanteId)
-    if (aEliminar?.rol === RolSobreUsuario.OWNER) {
+    if (aEliminar?.rol === 'OWNER') {
       return {
         success: false,
         error: 'No se puede eliminar al propietario del sobre',
@@ -446,7 +446,7 @@ export async function vincularCategorias(
     const participantes = await findParticipantesBySobre(sobreId)
     const participante = participantes.find((p: any) => p.usuario_id === userId)
 
-    if (!participante || (participante.rol !== RolSobreUsuario.OWNER && participante.rol !== RolSobreUsuario.ADMIN)) {
+    if (!participante || (participante.rol !== 'OWNER' && participante.rol !== 'ADMIN')) {
       return {
         success: false,
         error: 'No tienes permiso para vincular categorías',

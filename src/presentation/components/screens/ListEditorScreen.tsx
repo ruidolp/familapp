@@ -16,7 +16,7 @@ import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { notify } from '@/infrastructure/lib/notifications'
-import { adjustQty, quantityToDecimal } from '@/infrastructure/utils/quantity'
+import { adjustQty, quantityToDecimal, decimalToFraction } from '@/infrastructure/utils/quantity'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { EditShoppingListItemDrawer } from '@/components/drawers/EditShoppingListItemDrawer'
 import {
@@ -273,6 +273,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       const responseData = await response.json()
       console.log('✅ SERVER RESPONSE:', responseData)
 
+      // Don't overwrite local state with server response to avoid race conditions
+      // Local state is the source of truth during editing
+      // Server response is used only for confirmation
+
       setItemSaveState((prev) => ({
         ...prev,
         [itemId]: { isSaving: false },
@@ -404,20 +408,48 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   const handleUpdateQuantity = (itemId: string, direction: 'up' | 'down') => {
     const item = items.find((i) => i.id === itemId)
-    if (!item) return
+    if (!item) {
+      console.error('❌ Item not found:', itemId)
+      return
+    }
 
-    const currentQuantity = item.cantidad.toString()
-    const newQuantityStr = adjustQty(currentQuantity, direction)
-    const newQuantity = quantityToDecimal(newQuantityStr)
+    // CRITICAL: Get current cantidad and convert to proper string format
+    const currentDecimal = item.cantidad
 
-    console.log('📊 UPDATE QUANTITY:', {
+    console.log('🔍 BEFORE ADJUSTMENT:', {
       itemId,
       itemName: item.nombre || item._productName,
       direction,
+      'currentDecimal (typeof)': typeof currentDecimal,
+      'currentDecimal (value)': currentDecimal,
+      'currentDecimal (JSON)': JSON.stringify(currentDecimal),
+    })
+
+    // Convert decimal to fraction string if applicable (0.25, 0.5, 0.75)
+    // Otherwise use the number as string
+    let currentQuantity: string
+    const fractionStr = decimalToFraction(currentDecimal)
+    if (fractionStr) {
+      currentQuantity = fractionStr
+    } else {
+      // For whole numbers or other decimals, use Math.round to ensure integer
+      const rounded = Math.round(currentDecimal)
+      currentQuantity = String(rounded)
+    }
+
+    console.log('🔍 READY TO ADJUST:', {
       currentQuantity,
+      'typeof currentQuantity': typeof currentQuantity,
+      direction,
+    })
+
+    const newQuantityStr = adjustQty(currentQuantity, direction)
+    const newQuantity = quantityToDecimal(newQuantityStr)
+
+    console.log('✅ AFTER ADJUSTMENT:', {
       newQuantityStr,
       newQuantity,
-      itemBeforeUpdate: item,
+      'typeof newQuantity': typeof newQuantity,
     })
 
     // Update local state
@@ -434,7 +466,14 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   }
 
   const handleEditItem = (item: ListItem) => {
-    setSelectedItem(item)
+    // Ensure we have the latest version of this item from the current items array
+    const latestItem = items.find((i) => i.id === item.id) || item
+    console.log('📝 OPEN EDIT DRAWER:', {
+      itemId: item.id,
+      itemName: item.nombre || item._productName,
+      cantidad: latestItem.cantidad,
+    })
+    setSelectedItem(latestItem)
     setEditDrawerOpen(true)
   }
 
@@ -724,6 +763,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
         <ProductQuantityInput
           onAddProduct={(name, qty) => handleAddItem(name, false, undefined, qty)}
+          availableProducts={[
+            // Combine catalog and custom products for autocomplete
+            ...(data?.catalog || []).map((p) => ({ ...p, is_catalog: true })),
+            ...(data?.customProducts || []).map((p) => ({ ...p, is_catalog: false })),
+          ]}
         />
       </div>
 
