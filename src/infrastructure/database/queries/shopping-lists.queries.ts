@@ -291,15 +291,24 @@ export async function removeCollaborator(listId: string, userId: string) {
 export async function createShoppingExecution(data: {
   shopping_list_id: string
   user_id: string
-  store_name: string
-  sobre_id?: string
+  status?: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  store_name?: string | null
+  sobre_id?: string | null
+  categoria_sobre_id?: string | null
+  subcategoria_id?: string | null
+  total_estimado?: number | null
+  total_calculated?: number | null
+  total_manual?: number | null
+  tiempo_transcurrido?: number | null
+  started_at?: Date
+  completed_at?: Date | null
 }) {
   return db
     .insertInto('shopping_executions')
     .values({
       ...data,
-      status: 'IN_PROGRESS',
-      started_at: new Date(),
+      status: data.status || 'IN_PROGRESS',
+      started_at: data.started_at || new Date(),
       created_at: new Date(),
       updated_at: new Date(),
     })
