@@ -22,7 +22,7 @@ interface ListItem {
   id: string
   nombre?: string
   cantidad: number
-  comentario?: string
+  comentario?: string | null
 }
 
 interface EditShoppingListItemDrawerProps {
