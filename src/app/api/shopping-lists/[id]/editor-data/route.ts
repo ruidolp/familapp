@@ -89,8 +89,11 @@ export async function GET(
       getFrequentProducts(userId, 50),
     ])
 
-    // Combine categories for easier use in frontend
-    const categories = [...categoriesGlobal, ...categoriesUser]
+    // Combine categories for easier use in frontend, marking each as type
+    const categories = [
+      ...categoriesGlobal.map((cat) => ({ ...cat, _type: 'global' as const })),
+      ...categoriesUser.map((cat) => ({ ...cat, _type: 'user' as const })),
+    ]
 
     // Build response with all data
     const response = {
