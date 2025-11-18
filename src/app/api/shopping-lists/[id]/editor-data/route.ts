@@ -6,6 +6,7 @@ import {
   searchProductCatalog,
   searchUserCustomProducts,
   getUserProductCategories,
+  getGlobalProductCategories,
   getFavorites,
   getFrequentProducts,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
@@ -19,7 +20,8 @@ import {
  * Returns:
  * - catalog: All global products (filtered by user's language)
  * - customProducts: All user's custom products
- * - categories: All user's product categories
+ * - categoriesGlobal: All global categories (admin-created, read-only)
+ * - categoriesUser: All user's custom categories (editable)
  * - items: Current list items
  * - listInfo: Basic list information (id, nombre, descripcion, purchase_count)
  * - favorites: User's favorite products
@@ -59,7 +61,8 @@ export async function GET(
       items,
       catalog,
       customProducts,
-      categories,
+      categoriesUser,
+      categoriesGlobal,
       favorites,
       frequent,
     ] = await Promise.all([
@@ -73,8 +76,11 @@ export async function GET(
       // User's custom products - get ALL
       searchUserCustomProducts(userId, '', 10000),
 
-      // User's product categories
+      // User's custom product categories
       getUserProductCategories(userId),
+
+      // Global product categories (admin-created, read-only)
+      getGlobalProductCategories(),
 
       // User's favorites
       getFavorites(userId),
@@ -106,8 +112,11 @@ export async function GET(
       // User's custom products
       customProducts,
 
-      // User's product categories
-      categories,
+      // Global product categories (admin-created, read-only)
+      categoriesGlobal,
+
+      // User's custom product categories (editable)
+      categoriesUser,
 
       // User's favorites
       favorites,
@@ -119,7 +128,8 @@ export async function GET(
       _stats: {
         totalCatalogProducts: catalog.length,
         totalCustomProducts: customProducts.length,
-        totalCategories: categories.length,
+        totalGlobalCategories: categoriesGlobal.length,
+        totalUserCategories: categoriesUser.length,
         totalItems: items.length,
         totalFavorites: favorites.length,
         totalFrequent: frequent.length,
