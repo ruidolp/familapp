@@ -44,6 +44,7 @@ type ShoppingListItem = Selectable<ShoppingListItemTable>
 // Extended type for list items with joined product names
 interface ListItemWithProduct extends Omit<ShoppingListItem, 'created_at' | 'updated_at' | 'deleted_at' | 'created_by' | 'item_type'> {
   nombre?: string  // From joined product_catalog or product_user_custom
+  final_category_id?: string | null  // Category ID (prioritizes user-assigned, falls back to catalog)
   _productName?: string  // Fallback product name
 }
 
@@ -699,9 +700,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           /* GROUPED BY CATEGORY MODE */
           <div className="space-y-4">
             {(() => {
-              // Group items by category
+              // Group items by category (prioritize final_category_id which includes catalog categories)
               const grouped = items.reduce((acc, item) => {
-                const catId = item.categoria_producto_id || 'sin-categoria'
+                const catId = item.final_category_id || 'sin-categoria'
                 if (!acc[catId]) acc[catId] = []
                 acc[catId].push(item)
                 return acc
