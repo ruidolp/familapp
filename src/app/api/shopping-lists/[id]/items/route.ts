@@ -89,8 +89,27 @@ export async function POST(
       comentario,
     } = body
 
-    // Get next order
+    // Get current items
     const items = await getShoppingListItems(id)
+
+    // Check for duplicates
+    const isDuplicate = items.some((item: any) => {
+      if (is_catalog && product_id) {
+        return item.product_id === product_id
+      } else if (!is_catalog && product_custom_id) {
+        return item.product_custom_id === product_custom_id
+      }
+      return false
+    })
+
+    if (isDuplicate) {
+      return NextResponse.json(
+        { error: 'Este producto ya está en la lista' },
+        { status: 400 }
+      )
+    }
+
+    // Get next order
     const nextOrder = Math.max(0, ...items.map((i: any) => i.item_order || 0)) + 1
 
     const newItem = await createShoppingListItem({

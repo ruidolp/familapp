@@ -152,7 +152,8 @@ export async function createShoppingListItem(data: {
   item_order: number
   created_by: string
 }) {
-  return db
+  // Insert the item and get the new ID
+  const newItem = await db
     .insertInto('shopping_list_items')
     .values({
       ...data,
@@ -160,8 +161,34 @@ export async function createShoppingListItem(data: {
       created_at: new Date(),
       updated_at: new Date(),
     })
-    .returning(['id', 'shopping_list_id', 'product_id', 'cantidad', 'item_order'])
+    .returning(['id'])
     .executeTakeFirstOrThrow()
+
+  // Fetch the complete item with joins to get nombre and final_category_id
+  const completeItem = await db
+    .selectFrom('shopping_list_items')
+    .leftJoin('product_catalog', 'shopping_list_items.product_id', 'product_catalog.id')
+    .leftJoin('product_user_custom', 'shopping_list_items.product_custom_id', 'product_user_custom.id')
+    .select([
+      'shopping_list_items.id',
+      'shopping_list_items.shopping_list_id',
+      'shopping_list_items.product_id',
+      'shopping_list_items.product_custom_id',
+      'shopping_list_items.is_catalog',
+      'shopping_list_items.cantidad',
+      'shopping_list_items.unidad_medida',
+      'shopping_list_items.categoria_producto_id',
+      sql<string | null>`shopping_list_items.categoria_global_id`.as('categoria_global_id'),
+      'shopping_list_items.marca',
+      'shopping_list_items.comentario',
+      'shopping_list_items.item_order',
+      sql<string>`COALESCE(product_catalog.nombre, product_user_custom.nombre)`.as('nombre'),
+      sql<string | null>`COALESCE(shopping_list_items.categoria_producto_id, shopping_list_items.categoria_global_id, product_catalog.category_id)`.as('final_category_id'),
+    ])
+    .where('shopping_list_items.id', '=', newItem.id)
+    .executeTakeFirstOrThrow()
+
+  return completeItem
 }
 
 export async function getShoppingListItems(listId: string) {
