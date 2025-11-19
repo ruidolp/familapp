@@ -334,10 +334,10 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
 // Helper function to group items by category
 function groupByCategory(items: LocalExecutionItem[]): Record<string, LocalExecutionItem[]> {
   return items.reduce((acc, item) => {
-    // Get category name: prefer user category name, then global category ID, then "Sin categoría"
-    const category = item.categoria_producto_nombre ||
-                     (item.categoria_global_id ? `Categoría ${item.categoria_global_id.substring(0, 8)}` : '') ||
-                     'Sin categoría'
+    // Get category name: use the stored name (which can be from user or global categories)
+    // The categoria_producto_nombre field is populated during execution creation with the actual
+    // category name, regardless of whether it's a user or global category
+    const category = item.categoria_producto_nombre || 'Sin categoría'
     if (!acc[category]) {
       acc[category] = []
     }

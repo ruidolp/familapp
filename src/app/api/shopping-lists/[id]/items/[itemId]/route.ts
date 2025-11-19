@@ -63,8 +63,8 @@ export async function PUT(
     })
 
     // Validate and determine which category table the ID belongs to
-    let categoria_usuario_id: string | null = null
-    let categoria_global_id: string | null = null
+    let categoria_usuario_id: string | null | undefined = undefined
+    let categoria_global_id: string | null | undefined = undefined
 
     if (categoria_producto_id) {
       // Check if category exists in user categories
@@ -77,6 +77,7 @@ export async function PUT(
 
       if (userCategory) {
         categoria_usuario_id = categoria_producto_id
+        categoria_global_id = null // Clear global category when assigning user category
         console.log('✅ Category is user category:', categoria_usuario_id)
       } else {
         // Check if category exists in global categories
@@ -89,6 +90,7 @@ export async function PUT(
 
         if (globalCategory) {
           categoria_global_id = categoria_producto_id
+          categoria_usuario_id = null // Clear user category when assigning global category
           console.log('✅ Category is global category:', categoria_global_id)
         } else {
           console.warn('⚠️ Category not found in either table:', categoria_producto_id)
@@ -98,13 +100,17 @@ export async function PUT(
           )
         }
       }
+    } else {
+      // If no category provided, clear both
+      categoria_usuario_id = null
+      categoria_global_id = null
     }
 
     const updatedItem = await updateShoppingListItem(itemId, {
       cantidad: cantidad !== undefined ? cantidad : undefined,
       unidad_medida: unidad_medida !== undefined ? unidad_medida : undefined,
-      categoria_producto_id: categoria_usuario_id !== undefined ? categoria_usuario_id : undefined,
-      categoria_global_id: categoria_global_id !== undefined ? categoria_global_id : undefined,
+      categoria_producto_id: categoria_usuario_id,
+      categoria_global_id: categoria_global_id,
       marca: marca !== undefined ? marca : undefined,
       comentario: comentario !== undefined ? comentario : undefined,
     })

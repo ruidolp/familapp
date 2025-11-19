@@ -187,6 +187,7 @@ export const ExecutionStorage = {
         product_name: item.product_name,
         categoria_producto_id: item.categoria_producto_id,
         categoria_producto_nombre: item.categoria_producto_nombre,
+        categoria_global_id: item.categoria_global_id,
         status: 'pending',
         cantidad_planeada: item.cantidad_planeada,
         unidad_medida: item.unidad_medida,
