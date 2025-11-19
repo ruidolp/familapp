@@ -390,6 +390,18 @@ export async function getActiveExecutionsByUser(userId: string) {
     .execute()
 }
 
+export async function getCompletedExecutionsByUser(userId: string, limit: number = 20) {
+  return db
+    .selectFrom('shopping_executions')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .where('status', '=', 'COMPLETED')
+    .where('deleted_at', 'is', null)
+    .orderBy('completed_at', 'desc')
+    .limit(limit)
+    .execute()
+}
+
 // ============================================
 // SHOPPING EXECUTION ITEMS
 // ============================================

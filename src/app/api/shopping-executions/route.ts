@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/infrastructure/lib/auth'
-import { createShoppingExecution, getActiveExecutionsByUser } from '@/infrastructure/database/queries/shopping-lists.queries'
+import { createShoppingExecution, getActiveExecutionsByUser, getCompletedExecutionsByUser } from '@/infrastructure/database/queries/shopping-lists.queries'
 
 /**
  * GET /api/shopping-executions
- * Get active shopping executions for the current user
+ * Get shopping executions for the current user
+ * ?status=IN_PROGRESS|COMPLETED (defaults to IN_PROGRESS)
  */
 export async function GET(req: NextRequest) {
   try {
@@ -13,7 +14,15 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const executions = await getActiveExecutionsByUser(session.user.id)
+    const url = new URL(req.url)
+    const status = url.searchParams.get('status') || 'IN_PROGRESS'
+
+    let executions
+    if (status === 'COMPLETED') {
+      executions = await getCompletedExecutionsByUser(session.user.id)
+    } else {
+      executions = await getActiveExecutionsByUser(session.user.id)
+    }
 
     return NextResponse.json({
       success: true,

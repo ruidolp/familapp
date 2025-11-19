@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock } from 'lucide-react'
+import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { CreateShoppingListDrawer } from '@/components/drawers/CreateShoppingListDrawer'
+import { ExecutionHistoryDrawer } from '@/components/drawers/ExecutionHistoryDrawer'
 import { notify } from '@/infrastructure/lib/notifications'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
@@ -46,13 +47,17 @@ export function ListasScreen({ userId }: ListasScreenProps) {
   const router = useRouter()
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [activeExecutions, setActiveExecutions] = useState<ExecutionDisplay[]>([])
+  const [completedExecutions, setCompletedExecutions] = useState<ExecutionDisplay[]>([])
   const [loading, setLoading] = useState(false)
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
+  const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false)
+  const [selectedExecution, setSelectedExecution] = useState<ExecutionDisplay | null>(null)
 
-  // Cargar listas y ejecuciones activas al montar
+  // Cargar listas y ejecuciones al montar
   useEffect(() => {
     fetchLists()
     fetchActiveExecutions()
+    fetchCompletedExecutions()
   }, [])
 
   const fetchLists = async () => {
@@ -108,6 +113,34 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     }
   }
 
+  const fetchCompletedExecutions = async () => {
+    try {
+      // Cargar ejecuciones completadas del servidor
+      const serverExecutions: ShoppingExecution[] = []
+      try {
+        const response = await fetch('/api/shopping-executions?status=COMPLETED')
+        if (response.ok) {
+          const data = await response.json()
+          serverExecutions.push(...(data.executions || []))
+        }
+      } catch (error) {
+        console.error('Error fetching server completed executions:', error)
+      }
+
+      // Cargar ejecuciones completadas locales (IndexedDB)
+      const localExecutions = await ExecutionStorage.getAllCompleted()
+      const localExecutionsDisplay: ExecutionDisplay[] = localExecutions.map(exe => ({
+        ...exe,
+        isLocal: true,
+      }))
+
+      const combined = [...localExecutionsDisplay, ...serverExecutions]
+      setCompletedExecutions(combined)
+    } catch (error) {
+      console.error('Error fetching completed executions:', error)
+    }
+  }
+
   const handleOpenCreateDrawer = () => {
     setCreateDrawerOpen(true)
   }
@@ -118,7 +151,35 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     if (!open) {
       fetchLists()
       fetchActiveExecutions()
+      fetchCompletedExecutions()
     }
+  }
+
+  const handleDeleteExecution = async (execution: ExecutionDisplay) => {
+    const executionId = (execution as any).localId || (execution as any).id
+    const isLocal = (execution as any).isLocal
+
+    if (!confirm('¿Eliminar esta compra en progreso?')) return
+
+    try {
+      if (isLocal) {
+        // Eliminar de IndexedDB
+        await ExecutionStorage.deleteLocal(executionId)
+        notify.success('Compra eliminada')
+        fetchActiveExecutions()
+      } else {
+        // En el futuro se puede implementar eliminación en servidor
+        notify.error('No se puede eliminar compras del servidor aún')
+      }
+    } catch (error: any) {
+      console.error('Error deleting execution:', error)
+      notify.error('Error al eliminar compra')
+    }
+  }
+
+  const handleOpenHistory = (execution: ExecutionDisplay) => {
+    setSelectedExecution(execution)
+    setHistoryDrawerOpen(true)
   }
 
   const handleDeleteList = async (listId: string, listName: string) => {
@@ -309,6 +370,82 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             )}
           </div>
 
+          {/* Action buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpenExecution(execution)
+              }}
+            >
+              <Clock size={14} />
+              Continuar
+            </Button>
+
+            {/* Menu de opciones */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <MoreVertical size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteExecution(execution)
+                  }}
+                  className="text-destructive"
+                >
+                  <Trash2 size={14} className="mr-2" />
+                  Eliminar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </Card>
+    )
+  }
+
+  // Helper to render a completed execution card
+  const renderCompletedExecutionCard = (execution: ExecutionDisplay) => {
+    // Encontrar el nombre de la lista asociada
+    const listName = lists.find(l => l.id === execution.shopping_list_id)?.nombre || 'Compra'
+    const endDate = execution.completed_at ? new Date(execution.completed_at) : new Date()
+    const completedText = endDate.toLocaleDateString('es-ES')
+
+    return (
+      <Card
+        key={(execution as any).localId || (execution as any).id}
+        className="p-4 cursor-pointer hover:shadow-lg transition-shadow border-emerald-200 dark:border-emerald-900"
+        onClick={() => handleOpenHistory(execution)}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400" />
+              <h3 className="font-semibold text-base truncate text-emerald-900 dark:text-emerald-100">
+                {listName}
+              </h3>
+            </div>
+            <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-2">
+              Finalizada • {completedText}
+            </p>
+            {(execution as any).store_name && (
+              <p className="text-sm text-muted-foreground line-clamp-1">
+                📍 {(execution as any).store_name}
+              </p>
+            )}
+          </div>
+
           {/* Action button */}
           <Button
             variant="outline"
@@ -316,11 +453,10 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             className="gap-1"
             onClick={(e) => {
               e.stopPropagation()
-              handleOpenExecution(execution)
+              handleOpenHistory(execution)
             }}
           >
-            <Clock size={14} />
-            Continuar
+            Ver detalles
           </Button>
         </div>
       </Card>
@@ -379,26 +515,26 @@ export function ListasScreen({ userId }: ListasScreenProps) {
               </div>
             )}
 
-            {/* Pending Lists Section */}
-            {pendingLists.length > 0 && (
+            {/* All Lists (no section header) */}
+            {lists.length > 0 && (
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 pl-1">
-                  Pendientes ({pendingLists.length})
+                  Mis Listas ({lists.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {pendingLists.map(renderListCard)}
+                  {lists.map(renderListCard)}
                 </div>
               </div>
             )}
 
-            {/* Executed Lists Section */}
-            {executedLists.length > 0 && (
+            {/* Completed Executions Section */}
+            {completedExecutions.length > 0 && (
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-3 pl-1">
-                  ✓ Ejecutadas ({executedLists.length})
+                  ✓ Compras Finalizadas ({completedExecutions.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {executedLists.map(renderListCard)}
+                  {completedExecutions.map(renderCompletedExecutionCard)}
                 </div>
               </div>
             )}
@@ -410,6 +546,13 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       <CreateShoppingListDrawer
         open={createDrawerOpen}
         onOpenChange={handleCreateDrawerOpenChange}
+      />
+
+      {/* Execution History Drawer */}
+      <ExecutionHistoryDrawer
+        execution={selectedExecution}
+        isOpen={historyDrawerOpen}
+        onOpenChange={setHistoryDrawerOpen}
       />
     </div>
   )
