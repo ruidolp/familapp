@@ -63,7 +63,14 @@ export function ProductQuantityInput({
     setShowSuggestions(false)
     setFilteredProducts([])
     setSelectedIndex(-1)
-    inputRef.current?.focus()
+
+    // Keep focus on input - use setTimeout to ensure it happens after React updates
+    // This prevents the focus loss issue on mobile
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus({ preventScroll: true })
+      }
+    }, 0)
   }
 
   const handleSelectSuggestion = (product: Product) => {
@@ -150,9 +157,13 @@ export function ProductQuantityInput({
 
       {/* Add button */}
       <Button
-        onClick={() => handleAddProduct()}
+        onClick={(e) => {
+          e.preventDefault()
+          handleAddProduct()
+        }}
         disabled={disabled || !productName.trim()}
         className="px-6"
+        type="button"
       >
         Agregar
       </Button>

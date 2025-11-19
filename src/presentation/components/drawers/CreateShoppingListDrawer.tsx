@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   Drawer,
@@ -41,6 +41,7 @@ export function CreateShoppingListDrawer({
   const pathname = usePathname()
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   // Extract locale from pathname (e.g., "/es/..." -> "es")
   const locale = pathname.split('/')[1] || 'es'
@@ -72,12 +73,15 @@ export function CreateShoppingListDrawer({
 
       notify.success('Lista creada correctamente')
 
-      // Close drawer
+      // Close drawer first
       onOpenChange(false)
       setName('')
 
-      // Navigate to the editor with correct locale
-      router.push(`/${locale}/shopping-lists/${listId}`)
+      // Use startTransition for smoother navigation
+      // This prevents the "flash" of showing lists before navigating
+      startTransition(() => {
+        router.push(`/${locale}/shopping-lists/${listId}`)
+      })
     } catch (error: any) {
       console.error('Error creating shopping list:', error)
       notify.error(error.message || 'Error al crear la lista')

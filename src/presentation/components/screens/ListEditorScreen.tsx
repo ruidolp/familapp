@@ -54,6 +54,7 @@ interface Product {
   nombre: string
   descripcion?: string
   is_catalog?: boolean
+  category_id?: string | null  // Category from catalog product
 }
 
 // Simplified Category type for UI
@@ -352,6 +353,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   ) => {
     let finalProductId = productId
     let finalIsCatalog = !!isCatalog
+    let catalogProduct: Product | undefined
 
     if (!finalProductId) {
       const catalogMatch = data?.catalog.find(
@@ -361,6 +363,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       if (catalogMatch) {
         finalProductId = catalogMatch.id
         finalIsCatalog = true
+        catalogProduct = catalogMatch
       } else {
         const customMatch = data?.customProducts.find(
           (p) => p.nombre.toLowerCase() === productName.toLowerCase()
@@ -396,9 +399,17 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           }
         }
       }
+    } else if (finalIsCatalog) {
+      // If productId was provided and it's from catalog, find the catalog product
+      catalogProduct = data?.catalog.find((p) => p.id === finalProductId)
     }
 
     const cantidadDecimal = quantityToDecimal(quantity)
+
+    // If it's a catalog product, try to get its category_id for final_category_id
+    const finalCategoryId = catalogProduct && 'category_id' in catalogProduct
+      ? (catalogProduct as any).category_id
+      : null
 
     const newItem = {
       shopping_list_id: listId,
@@ -409,6 +420,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       unidad_medida: unidad ?? null,
       categoria_producto_id: null,
       categoria_global_id: null,
+      final_category_id: finalCategoryId, // Set final_category_id from catalog product
       marca: null,
       comentario: null,
       item_order: items.length,
