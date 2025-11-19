@@ -414,6 +414,35 @@ export const ExecutionStorage = {
   },
 
   /**
+   * Get all completed executions (COMPLETED status)
+   */
+  async getAllCompleted(): Promise<LocalShoppingExecution[]> {
+    try {
+      const db = await getDB()
+      const tx = db.transaction([STORE_EXECUTIONS], 'readonly')
+      const store = tx.objectStore(STORE_EXECUTIONS)
+      const index = store.index('status')
+
+      const results = await new Promise<any[]>((resolve, reject) => {
+        const request = index.getAll('COMPLETED')
+        request.onsuccess = () => resolve(request.result || [])
+        request.onerror = () => reject(request.error)
+      })
+
+      return results
+        .map(deserializeExecution)
+        .sort((a, b) => {
+          const dateA = new Date(a.completed_at || a.updated_at).getTime()
+          const dateB = new Date(b.completed_at || b.updated_at).getTime()
+          return dateB - dateA
+        })
+    } catch (error) {
+      console.error('Failed to get completed executions:', error)
+      return []
+    }
+  },
+
+  /**
    * Get all executions pending sync
    */
   async getPendingSync(): Promise<LocalShoppingExecution[]> {
