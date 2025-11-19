@@ -173,25 +173,42 @@ async function createTransactionForExecution(
   serverExecutionId: string
 ): Promise<void> {
   try {
-    // Get user's primary billetera and moneda
-    // For now, we'll require these to be provided or use defaults
-    // In a real implementation, you'd fetch the user's default billetera
+    // Get user's primary moneda from config
+    let monedaId = ''
+    try {
+      const configRes = await fetch('/api/user/config')
+      if (configRes.ok) {
+        const configData = await configRes.json()
+        monedaId = configData.config?.moneda_principal_id || ''
+        console.log('💱 Moneda obtenida para transacción:', monedaId)
+      } else {
+        console.error('❌ Error al obtener configuración del usuario:', configRes.status)
+      }
+    } catch (error) {
+      console.error('❌ Error fetching user config for transaction:', error)
+    }
+
+    if (!monedaId) {
+      console.error('❌ No se pudo obtener monedaId, no se creará la transacción')
+      return
+    }
 
     const transactionPayload = {
       monto: execution.totalSpent,
+      monedaId: monedaId,
       tipo: 'GASTO' as const,
-      sobre_id: execution.registration.sobre_id!,
-      categoria_id: execution.registration.categoria_sobre_id,
-      subcategoria_id: execution.registration.subcategoria_id,
+      sobreId: execution.registration.sobre_id!,
+      categoriaId: execution.registration.categoria_sobre_id,
+      subcategoriaId: execution.registration.subcategoria_id,
       descripcion: `Compra en ${execution.registration.store_name || 'supermercado'}`,
       fecha: execution.completed_at || new Date(),
-      // Note: billetera_id and moneda_id would need to be fetched or stored
-      // This is a simplified version
       metadata: {
         shopping_execution_id: serverExecutionId,
         source: 'shopping_execution',
       },
     }
+
+    console.log('📤 Creando transacción para ejecución:', transactionPayload)
 
     const response = await fetchWithRetry('/api/transacciones', {
       method: 'POST',
@@ -201,9 +218,11 @@ async function createTransactionForExecution(
 
     if (!response.ok) {
       const error = await response.json()
-      console.error('Failed to create transaction:', error)
+      console.error('❌ Error al crear transacción:', error)
       // Don't throw - transaction creation failure shouldn't fail the entire sync
       // The execution is still valid, just without the transaction link
+    } else {
+      console.log('✅ Transacción creada correctamente')
     }
   } catch (error) {
     console.error('Error creating transaction for execution:', error)
