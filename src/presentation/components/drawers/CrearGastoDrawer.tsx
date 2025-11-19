@@ -287,7 +287,6 @@ export function CrearGastoDrawer({
         body: JSON.stringify({
           nombre: nuevaCategoriaName.trim(),
           emoji: nuevaCategoriaEmoji || '📁',
-          sobreId: sobreSeleccionado,
         }),
       })
 
@@ -299,7 +298,22 @@ export function CrearGastoDrawer({
       const data = await response.json()
       const nuevaCategoria = data.categoria
 
-      // Agregar la nueva categoría al listado
+      // IMPORTANTE: Linkar la categoría al sobre
+      // Sin este paso, la categoría no aparecerá en el listado del sobre
+      const linkResponse = await fetch(`/api/sobres/${sobreSeleccionado}/categorias`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          categoriaIds: [nuevaCategoria.id],
+        }),
+      })
+
+      if (!linkResponse.ok) {
+        const linkError = await linkResponse.json()
+        throw new Error(linkError.error || 'Error al vincular categoría al sobre')
+      }
+
+      // Agregar la nueva categoría al listado local
       setCategorias([...categorias, nuevaCategoria])
       // Seleccionar la nueva categoría automáticamente
       setCategoriaSeleccionada(nuevaCategoria.id)
@@ -307,7 +321,7 @@ export function CrearGastoDrawer({
       setCrearCategoriaMode(false)
       setNuevaCategoriaName('')
       setNuevaCategoriaEmoji('')
-      notify.success(`Categoría "${nuevaCategoriaName}" creada`)
+      notify.success(`Categoría "${nuevaCategoriaName}" creada y vinculada`)
     } catch (error: any) {
       notify.error(error.message || 'Error al crear categoría')
     } finally {

@@ -20,7 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Minus, Plus } from 'lucide-react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { quantityToDecimal, adjustQty, decimalToFraction } from '@/infrastructure/utils/quantity'
@@ -48,6 +48,7 @@ interface EditShoppingListItemDrawerProps {
   item: ListItem | null
   categories?: Category[]
   onSave: (cantidad: number, comentario?: string, categoriaId?: string | null) => void
+  onDelete?: () => void
 }
 
 export function EditShoppingListItemDrawer({
@@ -56,6 +57,7 @@ export function EditShoppingListItemDrawer({
   item,
   categories = [],
   onSave,
+  onDelete,
 }: EditShoppingListItemDrawerProps) {
   const [cantidad, setCantidad] = useState<number>(1)
   const [comentario, setComentario] = useState('')
@@ -83,6 +85,13 @@ export function EditShoppingListItemDrawer({
   const handleSave = () => {
     onSave(cantidad, comentario || undefined, categoriaId)
     onOpenChange(false)
+  }
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete()
+      onOpenChange(false)
+    }
   }
 
   return (
@@ -169,11 +178,19 @@ export function EditShoppingListItemDrawer({
           </div>
         </div>
 
-        <DrawerFooter className="flex-row gap-2 justify-end">
-          <DrawerClose asChild>
-            <Button variant="outline">Cancelar</Button>
-          </DrawerClose>
-          <Button onClick={handleSave}>Guardar</Button>
+        <DrawerFooter className="flex-row gap-2 justify-between">
+          {onDelete && (
+            <Button variant="destructive" onClick={handleDelete} className="flex items-center gap-2">
+              <Trash2 size={16} />
+              Eliminar
+            </Button>
+          )}
+          <div className="flex gap-2 ml-auto">
+            <DrawerClose asChild>
+              <Button variant="outline">Cancelar</Button>
+            </DrawerClose>
+            <Button onClick={handleSave}>Guardar</Button>
+          </div>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

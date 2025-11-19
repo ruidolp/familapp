@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { AppShell } from '@/presentation/components/layout/AppShell'
-import { Header } from '@/presentation/components/layout/Header'
 import { BottomNav, type TabType } from '@/presentation/components/layout/BottomNav'
 import { DotIndicator } from '@/presentation/components/layout/DotIndicator'
 import { ListasScreen } from '@/presentation/components/screens/ListasScreen'
@@ -121,14 +120,6 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   return (
     <>
       <AppShell
-        headerContent={
-          <Header
-            activeTab={activeTab}
-            sobreNombre={sobreActual?.nombre}
-            sobreEmoji={sobreActual?.emoji}
-            sobrePresupuesto={sobreActual?.presupuesto}
-          />
-        }
         footerContent={
           <BottomNav
             activeTab={activeTab}

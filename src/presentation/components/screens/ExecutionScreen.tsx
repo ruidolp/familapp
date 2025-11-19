@@ -16,18 +16,18 @@
  * - Finalize and sync
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { Button } from '@/presentation/components/ui/button'
-import { Loader2, Plus } from 'lucide-react'
+import { Loader2, Pause, Settings } from 'lucide-react'
 import { useExecutionState } from '@/presentation/hooks/useExecutionState'
 import { useTimer } from '@/presentation/hooks/useTimer'
 import { ExecutionHeader } from '@/presentation/components/execution/ExecutionHeader'
 import { ExecutionItem } from '@/presentation/components/execution/ExecutionItem'
 import { PriceInputDrawer } from '@/presentation/components/execution/PriceInputDrawer'
 import { CalculatorDrawer } from '@/presentation/components/execution/CalculatorDrawer'
-import { SettingsSheet } from '@/presentation/components/execution/SettingsSheet'
+import { ExecutionSettingsDrawer } from '@/presentation/components/execution/ExecutionSettingsDrawer'
 import { FinalizeExecutionDrawer } from '@/presentation/components/execution/FinalizeExecutionDrawer'
 import { PauseExecutionDrawer } from '@/presentation/components/execution/PauseExecutionDrawer'
 import type { LocalExecutionItem } from '@/domain/types/shopping-execution'
@@ -68,13 +68,9 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
   const [priceDrawerOpen, setPriceDrawerOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LocalExecutionItem | null>(null)
   const [calculatorOpen, setCalculatorOpen] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [configOpen, setConfigOpen] = useState(false)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [pauseDrawerOpen, setPauseDrawerOpen] = useState(false)
-
-  // Touch/pointer tracking for scroll detection
-  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
-  const MOVEMENT_THRESHOLD = 10 // pixels - if movement exceeds this, it's a scroll, not a click
 
   // Redirect if no execution found
   useEffect(() => {
@@ -96,6 +92,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
       } else {
         // Otherwise, mark as purchased immediately
         markItemAs(item.localId, 'purchased')
+        notify.success('Producto comprado')
       }
     } else if (item.status === 'purchased') {
       if (execution.settings.enablePrices) {
@@ -119,38 +116,6 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
       markItemAs(item.localId, 'pending')
       notify.success('Producto disponible nuevamente')
     }
-  }
-
-  // Pointer tracking for scroll detection (prevents opening drawer on scroll)
-  const handlePointerDown = (e: React.PointerEvent) => {
-    pointerStartRef.current = { x: e.clientX, y: e.clientY }
-  }
-
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!pointerStartRef.current) return
-
-    const deltaX = Math.abs(e.clientX - pointerStartRef.current.x)
-    const deltaY = Math.abs(e.clientY - pointerStartRef.current.y)
-
-    // If movement exceeds threshold, mark as scrolling (nullify start position)
-    if (deltaX > MOVEMENT_THRESHOLD || deltaY > MOVEMENT_THRESHOLD) {
-      pointerStartRef.current = null
-    }
-  }
-
-  const handleItemClick = (item: LocalExecutionItem, e: React.MouseEvent) => {
-    // If pointer start is null, it means there was significant movement (scroll)
-    if (!pointerStartRef.current) {
-      e.preventDefault()
-      e.stopPropagation()
-      return
-    }
-
-    // Reset pointer tracking
-    pointerStartRef.current = null
-
-    // Proceed with tap
-    handleItemTap(item)
   }
 
   // Handle price save
@@ -226,9 +191,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         budgetAmount={execution.budget.amount}
         totalSpent={execution.totalSpent}
         budgetPercentage={budgetPercentage}
-        onMenuClick={() => setSettingsOpen(true)}
         onCalculatorClick={() => setCalculatorOpen(true)}
-        onBackClick={() => setPauseDrawerOpen(true)}
       />
 
       {/* Auto-saving indicator */}
@@ -261,8 +224,6 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                     flatListMode={true}
                     onTap={handleItemTap}
                     onLongPress={handleItemLongPress}
-                    onPointerDown={handlePointerDown}
-                    onPointerMove={handlePointerMove}
                   />
                 ))}
               </div>
@@ -284,8 +245,6 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
-                      onPointerDown={handlePointerDown}
-                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>
@@ -309,8 +268,6 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
-                      onPointerDown={handlePointerDown}
-                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>
@@ -331,8 +288,6 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
-                      onPointerDown={handlePointerDown}
-                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>
@@ -353,8 +308,6 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
-                      onPointerDown={handlePointerDown}
-                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>
@@ -373,12 +326,32 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
 
       {/* Bottom Actions - Fixed footer */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 safe-area-inset-bottom">
-        <Button
-          className="w-full h-12 text-base font-semibold"
-          onClick={() => setFinalizeOpen(true)}
-        >
-          Finalizar Compra
-        </Button>
+        <div className="flex gap-2 items-center">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 flex-shrink-0"
+            onClick={() => setPauseDrawerOpen(true)}
+            title="Pausar"
+          >
+            <Pause className="h-5 w-5" />
+          </Button>
+          <Button
+            className="flex-1 h-12 text-base font-semibold"
+            onClick={() => setFinalizeOpen(true)}
+          >
+            Finalizar Compra
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-12 w-12 flex-shrink-0"
+            onClick={() => setConfigOpen(true)}
+            title="Configuración"
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Drawers and Sheets */}
@@ -400,9 +373,9 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         onOpenChange={setCalculatorOpen}
       />
 
-      <SettingsSheet
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
+      <ExecutionSettingsDrawer
+        open={configOpen}
+        onOpenChange={setConfigOpen}
         settings={execution.settings}
         onSettingsChange={updateSettings}
       />

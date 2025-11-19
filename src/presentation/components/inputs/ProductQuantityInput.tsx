@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { CornerDownLeft, Settings } from 'lucide-react'
 
 interface Product {
   id: string
@@ -17,6 +18,8 @@ interface ProductQuantityInputProps {
   disabled?: boolean
   // Available products for autocomplete (catalog + custom)
   availableProducts?: Product[]
+  // Callback when settings button is clicked
+  onSettingsClick?: () => void
 }
 
 export function ProductQuantityInput({
@@ -24,13 +27,16 @@ export function ProductQuantityInput({
   placeholder = 'Escribe el nombre del producto...',
   disabled = false,
   availableProducts = [],
+  onSettingsClick,
 }: ProductQuantityInputProps) {
   const [productName, setProductName] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [isFocused, setIsFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Filter products based on input
   useEffect(() => {
@@ -128,6 +134,21 @@ export function ProductQuantityInput({
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => {
+            // Cancel any pending blur timeout
+            if (blurTimeoutRef.current) {
+              clearTimeout(blurTimeoutRef.current)
+              blurTimeoutRef.current = null
+            }
+            setIsFocused(true)
+          }}
+          onBlur={() => {
+            // Delay blur to allow button clicks to register
+            blurTimeoutRef.current = setTimeout(() => {
+              setIsFocused(false)
+              blurTimeoutRef.current = null
+            }, 150)
+          }}
           disabled={disabled}
           aria-label="Nombre del producto"
           className="w-full"
@@ -155,18 +176,55 @@ export function ProductQuantityInput({
         )}
       </div>
 
-      {/* Add button */}
-      <Button
-        onClick={(e) => {
-          e.preventDefault()
-          handleAddProduct()
-        }}
-        disabled={disabled || !productName.trim()}
-        className="px-6"
-        type="button"
-      >
-        Agregar
-      </Button>
+      {/* Dynamic buttons based on focus state */}
+      {isFocused ? (
+        /* Add button - shown when input is focused (takes full space) */
+        <Button
+          onClick={(e) => {
+            e.preventDefault()
+            handleAddProduct()
+          }}
+          disabled={disabled || !productName.trim()}
+          className="px-6"
+          type="button"
+        >
+          Agregar
+        </Button>
+      ) : (
+        /* Icon buttons - shown when input is not focused */
+        <>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={(e) => {
+              e.preventDefault()
+              if (inputRef.current) {
+                inputRef.current.focus()
+              }
+            }}
+            disabled={disabled}
+            type="button"
+            aria-label="Agregar producto"
+          >
+            <CornerDownLeft size={20} />
+          </Button>
+          {onSettingsClick && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={(e) => {
+                e.preventDefault()
+                onSettingsClick()
+              }}
+              disabled={disabled}
+              type="button"
+              aria-label="Configuración"
+            >
+              <Settings size={20} />
+            </Button>
+          )}
+        </>
+      )}
     </div>
   )
 }

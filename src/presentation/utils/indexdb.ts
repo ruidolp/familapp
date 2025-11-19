@@ -7,8 +7,9 @@
  */
 
 const DB_NAME = 'familapp_db'
-const DB_VERSION = 1
+const DB_VERSION = 2 // Increment version to add user_preferences store
 const STORE_NAME = 'shopping_list_changes'
+const PREFERENCES_STORE = 'user_preferences'
 
 export interface PendingChanges {
   listId: string
@@ -33,8 +34,15 @@ function getDB(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result
+
+      // Create shopping_list_changes store if it doesn't exist (v1)
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: 'listId' })
+      }
+
+      // Create user_preferences store (v2)
+      if (!db.objectStoreNames.contains(PREFERENCES_STORE)) {
+        db.createObjectStore(PREFERENCES_STORE, { keyPath: 'key' })
       }
     }
   })

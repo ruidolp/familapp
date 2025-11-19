@@ -15,7 +15,8 @@ export default async function ExecutionPage({ params }: ExecutionPageProps) {
     redirect('/auth/login')
   }
 
-  const { id: executionId } = await params
+  const resolvedParams = await params
+  const { id: executionId } = resolvedParams
 
   // ExecutionScreen will load the execution from IndexedDB
   // and get the shopping_list_id from there

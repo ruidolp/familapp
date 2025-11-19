@@ -93,6 +93,29 @@ export interface TransaccionResult {
 }
 
 /**
+ * Verificar que una categoría está linked a un sobre
+ */
+async function verifyCategoriaLinkedToSobre(
+  sobreId: string,
+  categoriaId: string
+): Promise<boolean> {
+  try {
+    const { db } = await import('@/infrastructure/database/kysely')
+    const result = await db
+      .selectFrom('sobres_categorias')
+      .select('categoria_id')
+      .where('sobre_id', '=', sobreId)
+      .where('categoria_id', '=', categoriaId)
+      .executeTakeFirst()
+
+    return !!result
+  } catch (error) {
+    console.error('Error verificando categoría linked al sobre:', error)
+    return false
+  }
+}
+
+/**
  * Calcular warnings para una transacción
  */
 async function calcularWarningTransaccion(
@@ -227,6 +250,20 @@ export async function crearTransaccion(
         return {
           success: false,
           error: 'Categoría no encontrada',
+        }
+      }
+
+      // VALIDACIÓN DEFENSIVA: Si se proporciona sobreId, validar que la categoría esté linked al sobre
+      if (sobreId) {
+        const isCategoriaLinkedToSobre = await verifyCategoriaLinkedToSobre(
+          sobreId,
+          categoriaId
+        )
+        if (!isCategoriaLinkedToSobre) {
+          return {
+            success: false,
+            error: 'La categoría no está vinculada al sobre seleccionado',
+          }
         }
       }
     }

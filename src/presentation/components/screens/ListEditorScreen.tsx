@@ -9,7 +9,6 @@ import {
   Minus,
   AlertCircle,
   Loader2,
-  MoreVertical,
   Square,
   ShoppingCart,
 } from 'lucide-react'
@@ -27,6 +26,11 @@ import {
   type ExecutionConfig,
 } from '@/presentation/components/execution/ConfigureExecutionDrawer'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
+import {
+  getPreferences,
+  savePreferences,
+  type ListEditorPreferences,
+} from '@/infrastructure/utils/user-preferences'
 import type { CreateLocalExecutionInput } from '@/domain/types/shopping-execution'
 import type { DB } from '@/infrastructure/database/types'
 import type { Selectable } from 'kysely'
@@ -99,10 +103,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const [items, setItems] = useState<ListItemWithProduct[]>([])
   const [loading, setLoading] = useState(true)
 
-  // UI preferences
-  const [groupByCategory, setGroupByCategory] = useState(false)
+  // UI preferences - Initialize with defaults (will be loaded from IndexedDB)
+  const [groupByCategory, setGroupByCategory] = useState(true)
   const [showInlineQty, setShowInlineQty] = useState(true)
   const [flatListMode, setFlatListMode] = useState(false)
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false)
 
   // Drawers state
   const [optionsDrawerOpen, setOptionsDrawerOpen] = useState(false)
@@ -123,6 +128,23 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
   const MOVEMENT_THRESHOLD = 10 // pixels - if movement exceeds this, it's a scroll, not a click
 
+  // Load preferences from IndexedDB on mount
+  useEffect(() => {
+    const loadPreferences = async () => {
+      const defaults: ListEditorPreferences = {
+        groupByCategory: true,
+        showInlineQty: true,
+        flatListMode: false,
+      }
+      const prefs = await getPreferences('listEditor', defaults)
+      setGroupByCategory(prefs.groupByCategory)
+      setShowInlineQty(prefs.showInlineQty)
+      setFlatListMode(prefs.flatListMode)
+      setPreferencesLoaded(true)
+    }
+    loadPreferences()
+  }, [])
+
   // Load data on mount
   useEffect(() => {
     loadEditorData()
@@ -130,11 +152,24 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   // Save to localStorage as backup (not for restoration)
   useEffect(() => {
-    localStorage.setItem(
-      `list:${listId}:draft`,
-      JSON.stringify({ items, updatedAt: new Date().toISOString() })
-    )
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        `list:${listId}:draft`,
+        JSON.stringify({ items, updatedAt: new Date().toISOString() })
+      )
+    }
   }, [items, listId])
+
+  // Save UI preferences to IndexedDB when they change (only after initial load)
+  useEffect(() => {
+    if (preferencesLoaded) {
+      savePreferences('listEditor', {
+        groupByCategory,
+        showInlineQty,
+        flatListMode,
+      })
+    }
+  }, [groupByCategory, showInlineQty, flatListMode, preferencesLoaded])
 
   // Listen for visibility change (tab focus)
   useEffect(() => {
@@ -735,13 +770,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             <ShoppingCart size={16} />
             <span className="hidden sm:inline">Ejecutar</span>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setOptionsDrawerOpen(true)}
-          >
-            <MoreVertical size={20} />
-          </Button>
         </div>
       </div>
 
@@ -1026,6 +1054,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             ...(data?.catalog || []).map((p) => ({ ...p, is_catalog: true })),
             ...(data?.customProducts || []).map((p) => ({ ...p, is_catalog: false })),
           ]}
+          onSettingsClick={() => setOptionsDrawerOpen(true)}
         />
       </div>
 
@@ -1052,6 +1081,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           }}
           categories={data?.categories || []}
           onSave={handleSaveItemEdit}
+          onDelete={() => handleDeleteItem(selectedItem.id)}
         />
       )}
 

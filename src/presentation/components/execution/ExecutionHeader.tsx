@@ -11,7 +11,7 @@
  * - Calculator button
  */
 
-import { Menu, Calculator, Settings, ArrowLeft } from 'lucide-react'
+import { Calculator } from 'lucide-react'
 import { Button } from '@/presentation/components/ui/button'
 import { Progress } from '@/presentation/components/ui/progress'
 import { useCurrency } from '@/presentation/providers/currency-provider'
@@ -25,9 +25,7 @@ interface ExecutionHeaderProps {
   budgetAmount?: number
   totalSpent: number
   budgetPercentage: number
-  onMenuClick: () => void
   onCalculatorClick: () => void
-  onBackClick: () => void
 }
 
 export function ExecutionHeader({
@@ -39,9 +37,7 @@ export function ExecutionHeader({
   budgetAmount,
   totalSpent,
   budgetPercentage,
-  onMenuClick,
   onCalculatorClick,
-  onBackClick,
 }: ExecutionHeaderProps) {
   const { formatNumber } = useCurrency()
 
@@ -51,22 +47,12 @@ export function ExecutionHeader({
     <div className="sticky top-0 z-10 bg-background border-b">
       {/* Top Bar - Clean and minimal */}
       <div className="flex items-center justify-between p-4 gap-2">
-        {/* Left section: Back button + List name */}
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 flex-shrink-0"
-            onClick={onBackClick}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-sm sm:text-base font-semibold truncate text-foreground/80">{listName}</h1>
-            {storeName && (
-              <p className="text-xs text-muted-foreground truncate">{storeName}</p>
-            )}
-          </div>
+        {/* Left section: List name */}
+        <div className="min-w-0 flex-1">
+          <h1 className="text-sm sm:text-base font-semibold truncate text-foreground/80">{listName}</h1>
+          {storeName && (
+            <p className="text-xs text-muted-foreground truncate">{storeName}</p>
+          )}
         </div>
 
         {/* Center section: Total Display - Responsive size */}
@@ -86,14 +72,6 @@ export function ExecutionHeader({
             onClick={onCalculatorClick}
           >
             <Calculator className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            onClick={onMenuClick}
-          >
-            <Menu className="h-4 w-4" />
           </Button>
         </div>
       </div>

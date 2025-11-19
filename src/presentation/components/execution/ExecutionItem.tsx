@@ -37,32 +37,79 @@ export function ExecutionItem({
   const { formatNumber } = useCurrency()
   const [pressing, setPressing] = useState(false)
   const longPressTimer = useRef<NodeJS.Timeout | null>(null)
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
+  const hasMoved = useRef(false)
+  const MOVEMENT_THRESHOLD = 10
 
-  const handleTouchStart = () => {
+  const handlePointerDownInternal = (e: React.PointerEvent) => {
+    // Track pointer start position for scroll detection
+    pointerStartRef.current = { x: e.clientX, y: e.clientY }
+    hasMoved.current = false
+
+    // Call parent handler if provided
+    onPointerDown?.(e)
+
+    // Start long press timer
     setPressing(true)
     longPressTimer.current = setTimeout(() => {
-      // Long press detected
-      setPressing(false)
-      onLongPress(item)
-    }, 800) // 800ms for long press
+      // Only trigger long press if there was no significant movement
+      if (!hasMoved.current) {
+        setPressing(false)
+        onLongPress(item)
+      }
+    }, 800)
   }
 
-  const handleTouchEnd = () => {
+  const handlePointerMoveInternal = (e: React.PointerEvent) => {
+    // Call parent handler if provided
+    onPointerMove?.(e)
+
+    // Check if pointer has moved significantly
+    if (!pointerStartRef.current) return
+
+    const deltaX = Math.abs(e.clientX - pointerStartRef.current.x)
+    const deltaY = Math.abs(e.clientY - pointerStartRef.current.y)
+
+    if (deltaX > MOVEMENT_THRESHOLD || deltaY > MOVEMENT_THRESHOLD) {
+      hasMoved.current = true
+      pointerStartRef.current = null
+
+      // Cancel long press timer if scrolling
+      if (longPressTimer.current) {
+        clearTimeout(longPressTimer.current)
+        longPressTimer.current = null
+      }
+      setPressing(false)
+    }
+  }
+
+  const handlePointerUpInternal = (e: React.PointerEvent) => {
+    // Clear long press timer
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current)
       longPressTimer.current = null
     }
 
-    if (pressing) {
-      // Normal tap
+    // Only trigger tap if there was no significant movement
+    if (pressing && !hasMoved.current && pointerStartRef.current) {
       onTap(item)
     }
 
+    // Reset state
     setPressing(false)
+    pointerStartRef.current = null
+    hasMoved.current = false
   }
 
-  const handleClick = () => {
-    onTap(item)
+  const handlePointerCancel = () => {
+    // Clean up on pointer cancel (e.g., scroll started)
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+    setPressing(false)
+    pointerStartRef.current = null
+    hasMoved.current = false
   }
 
   const isPending = item.status === 'pending'
@@ -73,11 +120,10 @@ export function ExecutionItem({
   if (flatListMode) {
     return (
       <div
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onClick={handleClick}
+        onPointerDown={handlePointerDownInternal}
+        onPointerMove={handlePointerMoveInternal}
+        onPointerUp={handlePointerUpInternal}
+        onPointerCancel={handlePointerCancel}
         className={cn(
           'flex items-start gap-2 px-2 py-1 hover:bg-muted cursor-pointer transition-colors',
           isPurchased && 'text-emerald-700 dark:text-emerald-400',
@@ -119,48 +165,21 @@ export function ExecutionItem({
     )
   }
 
-  // Regular card mode - full view
+  // Regular card mode - compact view (matching shopping list style)
   return (
     <div
       className={cn(
-        'flex items-center gap-3 p-3 border rounded-lg transition-all',
-        isPending && 'bg-background border-border hover:border-primary cursor-pointer',
-        isPurchased && 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/60',
-        isDiscarded && 'bg-muted border-border opacity-70',
+        'flex items-center gap-2 p-2 border rounded-lg transition-all cursor-pointer',
+        isPending && 'bg-background border-border hover:border-primary',
+        isPurchased && 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/60 hover:border-emerald-300/60',
+        isDiscarded && 'bg-muted border-border opacity-70 hover:border-muted-foreground',
         pressing && 'scale-95 bg-destructive/10'
       )}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleTouchStart}
-      onMouseUp={handleTouchEnd}
-      onMouseLeave={() => {
-        if (longPressTimer.current) {
-          clearTimeout(longPressTimer.current)
-          longPressTimer.current = null
-        }
-        setPressing(false)
-      }}
-      onClick={isPending ? handleClick : undefined}
+      onPointerDown={handlePointerDownInternal}
+      onPointerMove={handlePointerMoveInternal}
+      onPointerUp={handlePointerUpInternal}
+      onPointerCancel={handlePointerCancel}
     >
-      {/* Status Icon */}
-      <div className="flex-shrink-0">
-        {isPurchased && (
-          <div className="w-8 h-8 rounded-full bg-emerald-600 dark:bg-emerald-700 flex items-center justify-center">
-            <Check className="h-5 w-5 text-white" />
-          </div>
-        )}
-        {isDiscarded && (
-          <div className="w-8 h-8 rounded-full bg-muted-foreground/60 dark:bg-muted-foreground/50 flex items-center justify-center">
-            <X className="h-5 w-5 text-muted" />
-          </div>
-        )}
-        {isPending && (
-          <div className="w-8 h-8 rounded-full border-2 border-muted-foreground" />
-        )}
-      </div>
-
       {/* Quantity */}
       <div className={cn(
         "text-sm font-medium min-w-[2rem] text-center flex-shrink-0",
@@ -172,13 +191,15 @@ export function ExecutionItem({
       {/* Item Info */}
       <div className="flex-1 min-w-0">
         <p className={cn(
-          'font-medium truncate',
-          isDiscarded && 'line-through text-muted-foreground'
+          'font-medium',
+          isDiscarded && 'line-through text-muted-foreground',
+          isPurchased && 'text-emerald-700 dark:text-emerald-400'
         )}>
           {item.product_name}
         </p>
 
-        <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+        {/* Metadata (unidad, marca, agregado) and Price on same line */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {item.unidad_medida && (
             <span>{item.unidad_medida}</span>
           )}
@@ -196,30 +217,38 @@ export function ExecutionItem({
               <span className="text-primary font-medium">Agregado</span>
             </>
           )}
-        </div>
 
-        {/* Price info */}
-        {isPurchased && item.precio_total && (
-          <div className="mt-1 flex items-center gap-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-            <Tag className="h-3 w-3" />
-            {formatNumber(item.precio_total)}
-            {item.precio_unitario && (
-              <span className="text-xs font-normal text-muted-foreground">
-                ({formatNumber(item.precio_unitario)}/un)
+          {/* Price info inline */}
+          {isPurchased && item.precio_total && (
+            <>
+              <span>•</span>
+              <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                <Tag className="h-2.5 w-2.5" />
+                {formatNumber(item.precio_total)}
+                {item.precio_unitario && (
+                  <span className="font-normal text-muted-foreground">
+                    ({formatNumber(item.precio_unitario)}/un)
+                  </span>
+                )}
               </span>
-            )}
-          </div>
-        )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Edit price button for purchased items */}
       {isPurchased && enablePrices && (
         <button
+          onPointerDown={(e) => {
+            // Prevent parent pointer events from triggering
+            e.stopPropagation()
+          }}
           onClick={(e) => {
+            e.preventDefault()
             e.stopPropagation()
             onTap(item)
           }}
-          className="flex-shrink-0 px-2 py-1 text-xs font-medium text-primary border border-primary rounded hover:bg-primary/10"
+          className="flex-shrink-0 px-2 py-1 text-xs font-medium text-primary border border-primary rounded hover:bg-primary/10 touch-auto"
         >
           Editar
         </button>

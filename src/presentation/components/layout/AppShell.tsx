@@ -24,8 +24,8 @@
 import React, { ReactNode } from 'react'
 
 interface AppShellProps {
-  // Contenido del header
-  headerContent: ReactNode
+  // Contenido del header (opcional)
+  headerContent?: ReactNode
 
   // Contenido principal (Card)
   children: ReactNode
@@ -56,13 +56,15 @@ export function AppShell({
     <div className="h-screen flex flex-col bg-gray-900 text-white overflow-hidden">
 
       {/* ========== HEADER ========== */}
-      {/* shrink-0: NUNCA cambia de tamaño */}
-      <header
-        className="shrink-0 bg-gray-800/50 backdrop-blur-md border-b border-white/10"
-        style={{ height: `${headerHeight}px` }}
-      >
-        {headerContent}
-      </header>
+      {/* shrink-0: NUNCA cambia de tamaño | Solo se renderiza si existe headerContent */}
+      {headerContent && (
+        <header
+          className="shrink-0 bg-gray-800/50 backdrop-blur-md border-b border-white/10"
+          style={{ height: `${headerHeight}px` }}
+        >
+          {headerContent}
+        </header>
+      )}
 
       {/* ========== MAIN BODY ========== */}
       {/* flex-1: toma espacio restante | overflow-hidden: contiene el scroll */}

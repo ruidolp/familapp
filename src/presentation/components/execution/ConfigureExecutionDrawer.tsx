@@ -33,8 +33,13 @@ import {
 } from '@/presentation/components/ui/select'
 import { Separator } from '@/presentation/components/ui/separator'
 import { Badge } from '@/presentation/components/ui/badge'
-import { Timer, DollarSign, Tag, Grid, Store } from 'lucide-react'
+import { DollarSign, Tag, Store } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
+import {
+  getPreferences,
+  savePreferences,
+  type ExecutionConfigPreferences,
+} from '@/infrastructure/utils/user-preferences'
 
 interface Sobre {
   id: string
@@ -100,15 +105,34 @@ export function ConfigureExecutionDrawer({
   const [budgetEnabled, setBudgetEnabled] = useState(false)
   const [budgetAmount, setBudgetAmount] = useState('')
 
+  // UI preferences - Initialize with defaults (will be loaded from IndexedDB)
   const [enablePrices, setEnablePrices] = useState(true)
   const [showCategories, setShowCategories] = useState(true)
   const [showTimer, setShowTimer] = useState(true)
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false)
 
   // Create subcategoria inline
   const [newSubcategoriaName, setNewSubcategoriaName] = useState('')
   const [creatingSubcategoria, setCreatingSubcategoria] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Load preferences from IndexedDB on mount
+  useEffect(() => {
+    const loadUserPreferences = async () => {
+      const defaults: ExecutionConfigPreferences = {
+        enablePrices: true,
+        showCategories: true,
+        showTimer: true,
+      }
+      const prefs = await getPreferences('executionConfig', defaults)
+      setEnablePrices(prefs.enablePrices)
+      setShowCategories(prefs.showCategories)
+      setShowTimer(prefs.showTimer)
+      setPreferencesLoaded(true)
+    }
+    loadUserPreferences()
+  }, [])
 
   // Load sobres on mount
   useEffect(() => {
@@ -154,6 +178,17 @@ export function ConfigureExecutionDrawer({
       }
     }
   }, [categorias, categoriaId])
+
+  // Save UI preferences to IndexedDB when they change (only after initial load)
+  useEffect(() => {
+    if (preferencesLoaded) {
+      savePreferences('executionConfig', {
+        enablePrices,
+        showCategories,
+        showTimer,
+      })
+    }
+  }, [enablePrices, showCategories, showTimer, preferencesLoaded])
 
   const loadSobres = async () => {
     try {
@@ -452,44 +487,6 @@ export function ConfigureExecutionDrawer({
             <Switch
               checked={enablePrices}
               onCheckedChange={setEnablePrices}
-            />
-          </div>
-
-          <Separator />
-
-          {/* Categories View Setting */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-base font-medium flex items-center gap-2">
-                <Grid className="h-4 w-4" />
-                Ver por categorías
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Agrupar productos por categoría
-              </p>
-            </div>
-            <Switch
-              checked={showCategories}
-              onCheckedChange={setShowCategories}
-            />
-          </div>
-
-          <Separator />
-
-          {/* Timer Setting */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-base font-medium flex items-center gap-2">
-                <Timer className="h-4 w-4" />
-                Mostrar cronómetro
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Ver tiempo transcurrido
-              </p>
-            </div>
-            <Switch
-              checked={showTimer}
-              onCheckedChange={setShowTimer}
             />
           </div>
         </div>
