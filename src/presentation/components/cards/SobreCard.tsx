@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useState } from 'react'
 import { Plus, Mail } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -61,6 +62,7 @@ export function SobreCard({
   onFlashGasto,
 }: SobreCardProps) {
   const { formatNumber } = useCurrency()
+  const t = useTranslations('sobres')
   const [categoriasLoading, setCategoriasLoading] = useState(false)
   const [editarCategoriaOpen, setEditarCategoriaOpen] = useState(false)
   const [selectedCategoria, setSelectedCategoria] = useState<{ id: string; nombre: string } | null>(null)
@@ -112,17 +114,46 @@ export function SobreCard({
         >
           {/* Header con estado de gasto y menú */}
           <div className="flex justify-between items-start gap-2">
-            <div className="flex-1 space-y-1">
-              {/* Línea 1: Usado */}
-              <div className="text-base text-white">
-                Usado: {formatNumber(gastadoNum)} <span className="text-xs">({porcentajeGastado.toFixed(1)}%)</span>
+            <div className="flex-1 space-y-2.5">
+              {/* Grid de métricas */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Usado */}
+                <div className="space-y-0.5">
+                  <div className="text-xs text-white/70 font-medium uppercase tracking-wide">{t('usado')}</div>
+                  <div className="text-lg font-bold text-white">
+                    {formatNumber(gastadoNum)}
+                  </div>
+                </div>
+
+                {/* Libre */}
+                <div className="space-y-0.5">
+                  <div className="text-xs text-white/70 font-medium uppercase tracking-wide">{t('libre')}</div>
+                  <div className={`text-lg font-bold ${
+                    presupuestoLibre < 0 ? 'text-red-300' : 'text-white'
+                  }`}>
+                    {formatNumber(presupuestoLibre)}
+                  </div>
+                </div>
               </div>
 
-              {/* Línea 2: Libre */}
-              <div className={`text-base font-bold ${
-                presupuestoLibre < 0 ? 'text-red-300' : 'text-white'
-              }`}>
-                Libre: {formatNumber(presupuestoLibre)}
+              {/* Barra de progreso */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-white/60">{porcentajeGastado.toFixed(1)}% {t('utilizado')}</span>
+                  <span className="text-xs text-white/60">{formatNumber(presupuesto)} {t('total')}</span>
+                </div>
+                <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden backdrop-blur">
+                  <div
+                    className={`h-full transition-all duration-500 rounded-full ${
+                      isOverspent
+                        ? 'bg-red-400'
+                        : porcentajeGastado > 80
+                        ? 'bg-yellow-400'
+                        : 'bg-green-400'
+                    }`}
+                    style={{ width: `${Math.min(porcentajeGastado, 100)}%` }}
+                  />
+                </div>
               </div>
             </div>
 

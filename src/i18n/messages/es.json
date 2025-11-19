@@ -373,7 +373,11 @@
     "defaultEnvelopes": {
       "hogar": "Hogar",
       "personal": "Personal"
-    }
+    },
+    "usado": "Usado",
+    "libre": "Libre",
+    "utilizado": "utilizado",
+    "total": "total"
   },
   "billeteras": {
     "title": "Billeteras",
