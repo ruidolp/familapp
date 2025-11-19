@@ -444,12 +444,13 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     // Convert decimal to fraction string if applicable (0.25, 0.5, 0.75)
     // Otherwise use the number as string
     let currentQuantity: string
-    const fractionStr = decimalToFraction(currentDecimal)
+    const fractionStr = decimalToFraction(typeof currentDecimal === 'string' ? parseFloat(currentDecimal) : currentDecimal)
     if (fractionStr) {
       currentQuantity = fractionStr
     } else {
       // For whole numbers or other decimals, use Math.round to ensure integer
-      const rounded = Math.round(currentDecimal)
+      const numericValue = typeof currentDecimal === 'string' ? parseFloat(currentDecimal) : currentDecimal
+      const rounded = Math.round(numericValue)
       currentQuantity = String(rounded)
     }
 
@@ -471,7 +472,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     // Update local state
     setItems(
       items.map((i) =>
-        i.id === itemId ? { ...i, cantidad: newQuantity } : i
+        i.id === itemId ? { ...i, cantidad: newQuantity } as unknown as ListItemWithProduct : i
       )
     )
 
@@ -511,7 +512,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     setItems(
       items.map((i) =>
         i.id === selectedItem.id
-          ? { ...i, cantidad, comentario: comentario ?? null, categoria_producto_id: categoriaId ?? null }
+          ? { ...i, cantidad, comentario: comentario ?? null, categoria_producto_id: categoriaId ?? null } as unknown as ListItemWithProduct
           : i
       )
     )
@@ -569,7 +570,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             data?.categories?.find(c => c.id === item.categoria_global_id)?.nombre ||
             undefined,
           categoria_global_id: item.categoria_global_id ?? undefined,
-          cantidad_planeada: item.cantidad,
+          cantidad_planeada: typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad,
           unidad_medida: item.unidad_medida ?? undefined,
           marca: item.marca ?? undefined,
           item_order: item.item_order || index,
@@ -957,7 +958,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         <EditShoppingListItemDrawer
           open={editDrawerOpen}
           onOpenChange={setEditDrawerOpen}
-          item={selectedItem}
+          item={{
+            ...selectedItem,
+            cantidad: typeof selectedItem.cantidad === 'string' ? parseFloat(selectedItem.cantidad) : selectedItem.cantidad,
+          }}
           categories={data?.categories || []}
           onSave={handleSaveItemEdit}
         />
