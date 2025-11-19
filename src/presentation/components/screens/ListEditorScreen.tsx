@@ -119,6 +119,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // Ref for items container (for auto-scroll)
   const itemsContainerRef = useRef<HTMLDivElement>(null)
 
+  // Touch/pointer tracking for scroll detection
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
+  const MOVEMENT_THRESHOLD = 10 // pixels - if movement exceeds this, it's a scroll, not a click
+
   // Load data on mount
   useEffect(() => {
     loadEditorData()
@@ -240,10 +244,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       const { item: realItem } = await response.json()
 
       // Replace temp ID with real ID
+      // Use the server's final_category_id if available (it includes catalog category)
       setItems((prev) =>
         prev.map((i) =>
           i.id === tempId
-            ? { ...realItem, _productName: newItem._productName, nombre: realItem.nombre }
+            ? {
+                ...realItem,
+                _productName: newItem._productName,
+                nombre: realItem.nombre,
+                final_category_id: realItem.final_category_id, // Ensure we use server's calculated category
+              }
             : i
         )
       )
@@ -407,6 +417,22 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       catalogProduct = data?.catalog.find((p) => p.id === finalProductId)
     }
 
+    // Check for duplicates in the list
+    const isDuplicate = items.some((item) => {
+      if (finalIsCatalog) {
+        // For catalog products, compare product_id
+        return item.product_id === finalProductId
+      } else {
+        // For custom products, compare product_custom_id
+        return item.product_custom_id === finalProductId
+      }
+    })
+
+    if (isDuplicate) {
+      notify.warning(`${productName} ya está en la lista`)
+      return
+    }
+
     const cantidadDecimal = quantityToDecimal(quantity)
 
     // If it's a catalog product, try to get its category_id for final_category_id
@@ -505,6 +531,37 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     if (!itemId.startsWith('temp-')) {
       updateItemOnServer(itemId, { cantidad: newQuantity })
     }
+  }
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pointerStartRef.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!pointerStartRef.current) return
+
+    const deltaX = Math.abs(e.clientX - pointerStartRef.current.x)
+    const deltaY = Math.abs(e.clientY - pointerStartRef.current.y)
+
+    // If movement exceeds threshold, mark as scrolling (nullify start position)
+    if (deltaX > MOVEMENT_THRESHOLD || deltaY > MOVEMENT_THRESHOLD) {
+      pointerStartRef.current = null
+    }
+  }
+
+  const handleItemClick = (item: ListItemWithProduct, e: React.MouseEvent) => {
+    // If pointer start is null, it means there was significant movement (scroll)
+    if (!pointerStartRef.current) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+
+    // Reset pointer tracking
+    pointerStartRef.current = null
+
+    // Proceed with edit
+    handleEditItem(item)
   }
 
   const handleEditItem = (item: ListItemWithProduct) => {
@@ -706,7 +763,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                 return (
                   <div
                     key={item.id}
-                    onClick={() => handleEditItem(item)}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onClick={(e) => handleItemClick(item, e)}
                     className={`flex items-start gap-2 px-2 py-1 hover:bg-muted cursor-pointer transition-colors ${
                       isSaving ? 'opacity-60' : ''
                     } ${hasError ? 'text-destructive' : ''}`}
@@ -801,7 +860,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                                 {/* Product name (clickable) */}
                                 <Button
                                   variant="ghost"
-                                  onClick={() => handleEditItem(item)}
+                                  onPointerDown={handlePointerDown}
+                                  onPointerMove={handlePointerMove}
+                                  onClick={(e) => handleItemClick(item, e)}
                                   className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted"
                                   disabled={isSaving}
                                 >
@@ -904,7 +965,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                       {/* Product name (clickable) */}
                       <Button
                         variant="ghost"
-                        onClick={() => handleEditItem(item)}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onClick={(e) => handleItemClick(item, e)}
                         className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted"
                         disabled={isSaving}
                       >
