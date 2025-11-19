@@ -93,19 +93,22 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       }
 
       // Cargar ejecuciones locales (IndexedDB)
+      // Solo incluir las que NO están sincronizadas
       const localExecutions = await ExecutionStorage.getAllInProgress()
-      const localExecutionsDisplay: ExecutionDisplay[] = localExecutions.map(exe => ({
-        ...exe,
-        isLocal: true,
-      }))
-
-      // Combinar ambas (evitando duplicados si existen)
-      const serverIds = new Set(serverExecutions.map(e => e.id))
-      const filtered = localExecutionsDisplay.filter(
-        e => !serverIds.has((e as any).localId)
+      const unsyncedLocalExecutions = localExecutions.filter(
+        exe => exe.syncStatus !== 'synced'
       )
 
-      const combined = [...localExecutionsDisplay, ...serverExecutions]
+      // Crear IDs del servidor para evitar duplicados
+      const serverIds = new Set(serverExecutions.map(e => e.id))
+
+      // Filtrar locales que no estén ya en el servidor
+      const filteredLocalExecutions = unsyncedLocalExecutions.filter(
+        exe => !exe.serverExecutionId || !serverIds.has(exe.serverExecutionId)
+      )
+
+      // Combinar: primero del servidor, luego locales no sincronizadas
+      const combined = [...serverExecutions, ...filteredLocalExecutions]
       setActiveExecutions(combined)
     } catch (error) {
       console.error('Error fetching active executions:', error)
@@ -128,13 +131,22 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       }
 
       // Cargar ejecuciones completadas locales (IndexedDB)
+      // Solo incluir las que NO están sincronizadas
       const localExecutions = await ExecutionStorage.getAllCompleted()
-      const localExecutionsDisplay: ExecutionDisplay[] = localExecutions.map(exe => ({
-        ...exe,
-        isLocal: true,
-      }))
+      const unsyncedLocalExecutions = localExecutions.filter(
+        exe => exe.syncStatus !== 'synced'
+      )
 
-      const combined = [...localExecutionsDisplay, ...serverExecutions]
+      // Crear IDs del servidor para evitar duplicados
+      const serverIds = new Set(serverExecutions.map(e => e.id))
+
+      // Filtrar locales que no estén ya en el servidor
+      const filteredLocalExecutions = unsyncedLocalExecutions.filter(
+        exe => !exe.serverExecutionId || !serverIds.has(exe.serverExecutionId)
+      )
+
+      // Combinar: primero del servidor, luego locales no sincronizadas
+      const combined = [...serverExecutions, ...filteredLocalExecutions]
       setCompletedExecutions(combined)
     } catch (error) {
       console.error('Error fetching completed executions:', error)

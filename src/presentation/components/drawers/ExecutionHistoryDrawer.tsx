@@ -44,7 +44,8 @@ export function ExecutionHistoryDrawer({
   }
 
   const items = getItems()
-  const isLocal = 'localId' in execution
+  // Check if execution is not synced - verify syncStatus field
+  const isNotSynced = 'syncStatus' in execution && execution.syncStatus !== 'synced'
 
   // Convertir dates de manera segura considerando que pueden ser Date o string
   const startDate = new Date(
@@ -80,7 +81,7 @@ export function ExecutionHistoryDrawer({
           <SheetTitle className="flex items-center gap-2">
             <Clock size={20} className="text-emerald-600" />
             Historial de Compra
-            {isLocal && (
+            {isNotSynced && (
               <span className="ml-auto text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">
                 No sincronizado
               </span>
