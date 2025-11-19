@@ -16,7 +16,7 @@
  * - Finalize and sync
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { Button } from '@/presentation/components/ui/button'
@@ -72,6 +72,10 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [pauseDrawerOpen, setPauseDrawerOpen] = useState(false)
 
+  // Touch/pointer tracking for scroll detection
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
+  const MOVEMENT_THRESHOLD = 10 // pixels - if movement exceeds this, it's a scroll, not a click
+
   // Redirect if no execution found
   useEffect(() => {
     if (!loading && (!execution || error)) {
@@ -115,6 +119,38 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
       markItemAs(item.localId, 'pending')
       notify.success('Producto disponible nuevamente')
     }
+  }
+
+  // Pointer tracking for scroll detection (prevents opening drawer on scroll)
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pointerStartRef.current = { x: e.clientX, y: e.clientY }
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!pointerStartRef.current) return
+
+    const deltaX = Math.abs(e.clientX - pointerStartRef.current.x)
+    const deltaY = Math.abs(e.clientY - pointerStartRef.current.y)
+
+    // If movement exceeds threshold, mark as scrolling (nullify start position)
+    if (deltaX > MOVEMENT_THRESHOLD || deltaY > MOVEMENT_THRESHOLD) {
+      pointerStartRef.current = null
+    }
+  }
+
+  const handleItemClick = (item: LocalExecutionItem, e: React.MouseEvent) => {
+    // If pointer start is null, it means there was significant movement (scroll)
+    if (!pointerStartRef.current) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+
+    // Reset pointer tracking
+    pointerStartRef.current = null
+
+    // Proceed with tap
+    handleItemTap(item)
   }
 
   // Handle price save
@@ -212,7 +248,27 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
 
       {/* Items List */}
       <div className="flex-1 overflow-y-auto px-4 pb-28">
-        {execution.settings.showCategories && itemsByCategory ? (
+        {execution.settings.flatListMode ? (
+          // Flat List Mode - Simplified text view
+          <div className="mt-4">
+            <div className="bg-background border rounded-lg p-2">
+              <div className="space-y-0">
+                {[...pendingItems, ...purchasedItems, ...discardedItems].map(item => (
+                  <ExecutionItem
+                    key={item.localId}
+                    item={item}
+                    enablePrices={execution.settings.enablePrices}
+                    flatListMode={true}
+                    onTap={handleItemTap}
+                    onLongPress={handleItemLongPress}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : execution.settings.showCategories && itemsByCategory ? (
           // Grouped by category
           <div className="space-y-6 mt-4">
             {Object.entries(itemsByCategory).map(([category, items]) => (
@@ -228,6 +284,8 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
+                      onPointerDown={handlePointerDown}
+                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>
@@ -235,7 +293,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             ))}
           </div>
         ) : (
-          // Flat list with sections
+          // Regular list with sections
           <div className="space-y-4 mt-4">
             {/* Pending items section */}
             {pendingItems.length > 0 && (
@@ -251,6 +309,8 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
+                      onPointerDown={handlePointerDown}
+                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>
@@ -271,6 +331,8 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
+                      onPointerDown={handlePointerDown}
+                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>
@@ -291,6 +353,8 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
                       enablePrices={execution.settings.enablePrices}
                       onTap={handleItemTap}
                       onLongPress={handleItemLongPress}
+                      onPointerDown={handlePointerDown}
+                      onPointerMove={handlePointerMove}
                     />
                   ))}
                 </div>

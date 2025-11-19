@@ -671,6 +671,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           showTimer: config.showTimer,
           enablePrices: config.enablePrices,
           showCategories: config.showCategories,
+          flatListMode: false,
         },
       }
 

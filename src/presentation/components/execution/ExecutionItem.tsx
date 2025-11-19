@@ -18,15 +18,21 @@ import type { LocalExecutionItem, ItemStatus } from '@/domain/types/shopping-exe
 interface ExecutionItemProps {
   item: LocalExecutionItem
   enablePrices: boolean
+  flatListMode?: boolean
   onTap: (item: LocalExecutionItem) => void
   onLongPress: (item: LocalExecutionItem) => void
+  onPointerDown?: (e: React.PointerEvent) => void
+  onPointerMove?: (e: React.PointerEvent) => void
 }
 
 export function ExecutionItem({
   item,
   enablePrices,
+  flatListMode = false,
   onTap,
   onLongPress,
+  onPointerDown,
+  onPointerMove,
 }: ExecutionItemProps) {
   const { formatNumber } = useCurrency()
   const [pressing, setPressing] = useState(false)
@@ -63,6 +69,57 @@ export function ExecutionItem({
   const isPurchased = item.status === 'purchased'
   const isDiscarded = item.status === 'discarded'
 
+  // Flat list mode - simplified view like editor
+  if (flatListMode) {
+    return (
+      <div
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onClick={handleClick}
+        className={cn(
+          'flex items-start gap-2 px-2 py-1 hover:bg-muted cursor-pointer transition-colors',
+          isPurchased && 'text-emerald-700 dark:text-emerald-400',
+          isDiscarded && 'opacity-60 line-through text-muted-foreground',
+          pressing && 'bg-destructive/10'
+        )}
+      >
+        {/* Status indicator - small bullet */}
+        <div className={cn(
+          "flex-shrink-0 mt-1 w-2 h-2 rounded-full",
+          isPending && "bg-muted-foreground/40",
+          isPurchased && "bg-emerald-600 dark:bg-emerald-500",
+          isDiscarded && "bg-muted-foreground/20"
+        )} />
+
+        {/* Quantity */}
+        <span className="font-medium flex-shrink-0">
+          {item.cantidad_comprada || item.cantidad_planeada}
+        </span>
+
+        {/* Product name and comment */}
+        <span className="flex-1">
+          {item.product_name}
+          {(item.unidad_medida || item.marca) && (
+            <span className="text-muted-foreground">
+              {item.unidad_medida && ` (${item.unidad_medida})`}
+              {item.marca && ` - ${item.marca}`}
+            </span>
+          )}
+        </span>
+
+        {/* Price (if available) */}
+        {isPurchased && item.precio_total && (
+          <span className="text-xs font-medium flex-shrink-0">
+            {formatNumber(item.precio_total)}
+          </span>
+        )}
+      </div>
+    )
+  }
+
+  // Regular card mode - full view
   return (
     <div
       className={cn(
@@ -72,6 +129,8 @@ export function ExecutionItem({
         isDiscarded && 'bg-muted border-border opacity-70',
         pressing && 'scale-95 bg-destructive/10'
       )}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleTouchStart}
