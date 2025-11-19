@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { X, Clock, MapPin, DollarSign } from 'lucide-react'
@@ -16,6 +17,59 @@ export function ExecutionHistoryDrawer({
   isOpen,
   onOpenChange,
 }: ExecutionHistoryDrawerProps) {
+  const [serverItems, setServerItems] = useState<any[]>([])
+  const [loadingItems, setLoadingItems] = useState(false)
+
+  // Fetch items del servidor cuando sea necesario
+  useEffect(() => {
+    const fetchServerItems = async () => {
+      // Solo hacer fetch si:
+      // 1. El drawer está abierto
+      // 2. Tenemos una ejecución
+      // 3. La ejecución NO tiene items locales (es del servidor)
+      // 4. Tenemos un ID de ejecución
+      if (!isOpen || !execution) {
+        setServerItems([])
+        return
+      }
+
+      const hasLocalItems = 'items' in execution && Array.isArray(execution.items)
+      if (hasLocalItems) {
+        setServerItems([])
+        return
+      }
+
+      // Obtener el ID de la ejecución (puede ser 'id' o 'localId')
+      const executionId = execution.id || execution.localId
+      if (!executionId) {
+        setServerItems([])
+        return
+      }
+
+      // Hacer fetch de los items del servidor
+      setLoadingItems(true)
+      try {
+        const response = await fetch(`/api/shopping-executions/${executionId}/items`)
+        if (response.ok) {
+          const data = await response.json()
+          // Filtrar solo los items que fueron comprados (es_comprado = true)
+          const purchasedItems = (data.items || []).filter((item: any) => item.es_comprado)
+          setServerItems(purchasedItems)
+        } else {
+          console.error('Error fetching execution items:', response.statusText)
+          setServerItems([])
+        }
+      } catch (error) {
+        console.error('Error fetching execution items:', error)
+        setServerItems([])
+      } finally {
+        setLoadingItems(false)
+      }
+    }
+
+    fetchServerItems()
+  }, [isOpen, execution])
+
   if (!execution) return null
 
   // Helper para obtener items según el tipo
@@ -24,8 +78,8 @@ export function ExecutionHistoryDrawer({
       // LocalShoppingExecution
       return execution.items.filter((item: any) => item.status === 'purchased')
     }
-    // ShoppingExecutions del servidor - no tiene items directamente
-    return []
+    // ShoppingExecutions del servidor - usar items obtenidos del fetch
+    return serverItems
   }
 
   // Helper para formatear tiempo
@@ -47,6 +101,26 @@ export function ExecutionHistoryDrawer({
   // Check if execution is not synced - verify syncStatus field
   const isNotSynced = 'syncStatus' in execution && execution.syncStatus !== 'synced'
 
+  // Helper para normalizar items (local vs servidor)
+  const normalizeItem = (item: any) => {
+    // Si es un item local, ya tiene el formato correcto
+    if (item.localId) return item
+
+    // Normalizar item del servidor a formato esperado
+    return {
+      localId: item.id,
+      product_name: item.product_name || 'Producto',
+      categoria_producto_nombre: item.categoria_producto_nombre,
+      cantidad_comprada: item.cantidad_comprada,
+      unidad_medida: item.unidad_medida,
+      precio_unitario: item.precio_unitario ? parseFloat(String(item.precio_unitario)) : undefined,
+      precio_total: item.precio_total ? parseFloat(String(item.precio_total)) : undefined,
+      marca: item.marca,
+    }
+  }
+
+  const normalizedItems = items.map(normalizeItem)
+
   // Convertir dates de manera segura considerando que pueden ser Date o string
   const startDate = new Date(
     execution.started_at instanceof Date
@@ -66,8 +140,8 @@ export function ExecutionHistoryDrawer({
 
   // Calcular total desde items o desde campos total_* del servidor
   let totalPrice = 0
-  if (items.length > 0) {
-    totalPrice = items.reduce((sum: number, item: any) => sum + (item.precio_total || 0), 0) || 0
+  if (normalizedItems.length > 0) {
+    totalPrice = normalizedItems.reduce((sum: number, item: any) => sum + (item.precio_total || 0), 0) || 0
   } else if ('total_manual' in execution && execution.total_manual) {
     totalPrice = parseFloat(String(execution.total_manual))
   } else if ('total_calculated' in execution && execution.total_calculated) {
@@ -137,12 +211,16 @@ export function ExecutionHistoryDrawer({
         {/* Items Section */}
         <div className="mb-6">
           <h3 className="font-semibold text-sm mb-3 text-foreground">
-            Productos Comprados ({items.length})
+            Productos Comprados ({normalizedItems.length})
           </h3>
 
-          {items.length > 0 ? (
+          {loadingItems ? (
+            <div className="text-center py-6 text-muted-foreground">
+              <p className="text-sm">Cargando productos...</p>
+            </div>
+          ) : normalizedItems.length > 0 ? (
             <div className="space-y-2">
-              {items.map((item: any) => (
+              {normalizedItems.map((item: any) => (
                 <div
                   key={item.localId}
                   className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800"
