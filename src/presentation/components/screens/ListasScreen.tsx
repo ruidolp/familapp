@@ -107,8 +107,14 @@ export function ListasScreen({ userId }: ListasScreenProps) {
         exe => !exe.serverExecutionId || !serverIds.has(exe.serverExecutionId)
       )
 
+      // Convertir locales a ExecutionDisplay con isLocal flag
+      const localExecutionsDisplay: ExecutionDisplay[] = filteredLocalExecutions.map(exe => ({
+        ...exe,
+        isLocal: true,
+      }))
+
       // Combinar: primero del servidor, luego locales no sincronizadas
-      const combined = [...serverExecutions, ...filteredLocalExecutions]
+      const combined = [...serverExecutions, ...localExecutionsDisplay]
       setActiveExecutions(combined)
     } catch (error) {
       console.error('Error fetching active executions:', error)
@@ -145,8 +151,14 @@ export function ListasScreen({ userId }: ListasScreenProps) {
         exe => !exe.serverExecutionId || !serverIds.has(exe.serverExecutionId)
       )
 
+      // Convertir locales a ExecutionDisplay con isLocal flag
+      const localExecutionsDisplay: ExecutionDisplay[] = filteredLocalExecutions.map(exe => ({
+        ...exe,
+        isLocal: true,
+      }))
+
       // Combinar: primero del servidor, luego locales no sincronizadas
-      const combined = [...serverExecutions, ...filteredLocalExecutions]
+      const combined = [...serverExecutions, ...localExecutionsDisplay]
       setCompletedExecutions(combined)
     } catch (error) {
       console.error('Error fetching completed executions:', error)
