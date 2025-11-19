@@ -4,10 +4,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button'
 import { X, Clock, MapPin, DollarSign } from 'lucide-react'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
-import type { ShoppingExecution as ServerExecution } from '@/infrastructure/database/types'
 
 interface ExecutionHistoryDrawerProps {
-  execution: LocalShoppingExecution | ServerExecution | null
+  execution: any // Soporta LocalShoppingExecution, ShoppingExecutions, o ShoppingExecution local
   isOpen: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -21,10 +20,11 @@ export function ExecutionHistoryDrawer({
 
   // Helper para obtener items según el tipo
   const getItems = () => {
-    if ('items' in execution) {
+    if ('items' in execution && Array.isArray(execution.items)) {
       // LocalShoppingExecution
-      return execution.items.filter(item => item.status === 'purchased')
+      return execution.items.filter((item: any) => item.status === 'purchased')
     }
+    // ShoppingExecutions del servidor - no tiene items directamente
     return []
   }
 
@@ -45,15 +45,37 @@ export function ExecutionHistoryDrawer({
 
   const items = getItems()
   const isLocal = 'localId' in execution
-  const startDate = new Date(execution.started_at)
-  const endDate = execution.completed_at ? new Date(execution.completed_at) : new Date()
+
+  // Convertir dates de manera segura considerando que pueden ser Date o string
+  const startDate = new Date(
+    execution.started_at instanceof Date
+      ? execution.started_at
+      : typeof execution.started_at === 'string'
+        ? execution.started_at
+        : new Date()
+  )
+  const endDate = new Date(
+    execution.completed_at instanceof Date
+      ? execution.completed_at
+      : typeof execution.completed_at === 'string' && execution.completed_at
+        ? execution.completed_at
+        : new Date()
+  )
   const durationSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000)
-  const totalPrice =
-    items.reduce((sum, item) => sum + (item.precio_total || 0), 0) || 0
+
+  // Calcular total desde items o desde campos total_* del servidor
+  let totalPrice = 0
+  if (items.length > 0) {
+    totalPrice = items.reduce((sum: number, item: any) => sum + (item.precio_total || 0), 0) || 0
+  } else if ('total_manual' in execution && execution.total_manual) {
+    totalPrice = parseFloat(String(execution.total_manual))
+  } else if ('total_calculated' in execution && execution.total_calculated) {
+    totalPrice = parseFloat(String(execution.total_calculated))
+  }
 
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[500px] overflow-y-auto">
+    <Sheet open={isOpen} onOpenChange={onOpenChange} direction="right">
+      <SheetContent className="w-full sm:w-[500px] overflow-y-auto">
         <SheetHeader className="mb-6">
           <SheetTitle className="flex items-center gap-2">
             <Clock size={20} className="text-emerald-600" />
@@ -73,7 +95,7 @@ export function ExecutionHistoryDrawer({
             <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg">
               <p className="text-xs text-muted-foreground mb-1">Inicio</p>
               <p className="font-semibold text-sm">
-                {formatTime(execution.started_at)}
+                {formatTime(startDate)}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {startDate.toLocaleDateString('es-ES')}
@@ -119,7 +141,7 @@ export function ExecutionHistoryDrawer({
 
           {items.length > 0 ? (
             <div className="space-y-2">
-              {items.map((item) => (
+              {items.map((item: any) => (
                 <div
                   key={item.localId}
                   className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800"
