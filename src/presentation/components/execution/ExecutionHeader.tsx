@@ -50,33 +50,35 @@ export function ExecutionHeader({
   return (
     <div className="sticky top-0 z-10 bg-background border-b">
       {/* Top Bar - Clean and minimal */}
-      <div className="flex items-start justify-between p-4 gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between p-4 gap-2">
+        {/* Left section: Back button + List name */}
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9"
+            className="h-9 w-9 flex-shrink-0"
             onClick={onBackClick}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-base font-semibold truncate text-foreground/80">{listName}</h1>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-sm sm:text-base font-semibold truncate text-foreground/80">{listName}</h1>
             {storeName && (
-              <p className="text-xs text-muted-foreground mt-0.5">{storeName}</p>
+              <p className="text-xs text-muted-foreground truncate">{storeName}</p>
             )}
           </div>
         </div>
 
-        {/* Total Display - Prominent */}
-        <div className="flex flex-col items-end gap-0">
+        {/* Center section: Total Display - Responsive size */}
+        <div className="flex flex-col items-end gap-0 flex-shrink-0">
           <span className="text-xs text-muted-foreground font-medium">Total</span>
-          <span className="text-2xl font-bold text-primary">
+          <span className="text-lg sm:text-2xl font-bold text-primary whitespace-nowrap">
             {formatNumber(totalSpent)}
           </span>
         </div>
 
-        <div className="flex items-center gap-1">
+        {/* Right section: Action buttons */}
+        <div className="flex items-center gap-1 flex-shrink-0">
           <Button
             variant="ghost"
             size="icon"

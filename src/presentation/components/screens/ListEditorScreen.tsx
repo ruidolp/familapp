@@ -116,6 +116,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // Save state per item
   const [itemSaveState, setItemSaveState] = useState<ItemSaveState>({})
 
+  // Ref for items container (for auto-scroll)
+  const itemsContainerRef = useRef<HTMLDivElement>(null)
+
   // Load data on mount
   useEffect(() => {
     loadEditorData()
@@ -428,6 +431,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     } as unknown as Omit<ListItemWithProduct, 'id'> & { _productName: string }
 
     await createNewItem(newItem)
+
+    // Auto-scroll to bottom after adding item
+    setTimeout(() => {
+      if (itemsContainerRef.current) {
+        itemsContainerRef.current.scrollTo({
+          top: itemsContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
+    }, 100)
   }
 
   const handleDeleteItem = (itemId: string) => {
@@ -675,7 +688,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       </div>
 
       {/* Items List */}
-      <div className="flex-1 overflow-y-auto p-4 pb-24">
+      <div ref={itemsContainerRef} className="flex-1 overflow-y-auto p-4 pb-24">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <p>Lista vacía</p>
