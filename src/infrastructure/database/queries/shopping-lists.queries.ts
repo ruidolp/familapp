@@ -379,6 +379,17 @@ export async function getExecutionsByList(listId: string) {
     .execute()
 }
 
+export async function getActiveExecutionsByUser(userId: string) {
+  return db
+    .selectFrom('shopping_executions')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .where('status', '=', 'IN_PROGRESS')
+    .where('deleted_at', 'is', null)
+    .orderBy('started_at', 'desc')
+    .execute()
+}
+
 // ============================================
 // SHOPPING EXECUTION ITEMS
 // ============================================

@@ -134,7 +134,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
       await finalizeExecution()
 
       notify.success('¡Compra finalizada!')
-      router.push(`/shopping-lists/${execution.shopping_list_id}`)
+      router.push('/shopping-lists')
     } catch (error: any) {
       console.error('Error finalizing:', error)
       notify.error(error.message || 'Error al finalizar compra')

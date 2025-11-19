@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, ShoppingCart, Trash2, Copy, MoreVertical } from 'lucide-react'
+import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,6 +24,15 @@ interface ShoppingList {
   _itemCount?: number // Agregado por el backend si está disponible
 }
 
+interface ShoppingExecution {
+  id: string
+  shopping_list_id: string
+  status: string
+  store_name?: string | null
+  started_at: string
+  created_at: string
+}
+
 interface ListasScreenProps {
   userId: string
 }
@@ -31,12 +40,14 @@ interface ListasScreenProps {
 export function ListasScreen({ userId }: ListasScreenProps) {
   const router = useRouter()
   const [lists, setLists] = useState<ShoppingList[]>([])
+  const [activeExecutions, setActiveExecutions] = useState<ShoppingExecution[]>([])
   const [loading, setLoading] = useState(false)
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
 
-  // Cargar listas al montar
+  // Cargar listas y ejecuciones activas al montar
   useEffect(() => {
     fetchLists()
+    fetchActiveExecutions()
   }, [])
 
   const fetchLists = async () => {
@@ -57,6 +68,19 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     }
   }
 
+  const fetchActiveExecutions = async () => {
+    try {
+      const response = await fetch('/api/shopping-executions')
+      if (response.ok) {
+        const data = await response.json()
+        setActiveExecutions(data.executions || [])
+      }
+    } catch (error) {
+      console.error('Error fetching active executions:', error)
+      // No mostrar error al usuario, es un feature secundario
+    }
+  }
+
   const handleOpenCreateDrawer = () => {
     setCreateDrawerOpen(true)
   }
@@ -66,6 +90,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     // Refresh list when drawer closes (in case a list was created)
     if (!open) {
       fetchLists()
+      fetchActiveExecutions()
     }
   }
 
@@ -102,6 +127,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       if (response.ok) {
         notify.success('Lista clonada')
         fetchLists()
+        fetchActiveExecutions()
       } else {
         notify.error('Error al clonar lista')
       }
@@ -113,6 +139,10 @@ export function ListasScreen({ userId }: ListasScreenProps) {
 
   const handleOpenList = (listId: string) => {
     router.push(`/shopping-lists/${listId}`)
+  }
+
+  const handleOpenExecution = (executionId: string) => {
+    router.push(`/shopping-executions/${executionId}`)
   }
 
   // Separate lists into pending and executed
@@ -196,6 +226,65 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     </Card>
   )
 
+  // Helper to render an execution card
+  const renderExecutionCard = (execution: ShoppingExecution) => {
+    // Encontrar el nombre de la lista asociada
+    const listName = lists.find(l => l.id === execution.shopping_list_id)?.nombre || 'Compra'
+    const startDate = new Date(execution.started_at)
+    const timeAgo = Math.floor((Date.now() - startDate.getTime()) / 1000)
+    let timeText = ''
+    if (timeAgo < 60) {
+      timeText = 'Hace unos segundos'
+    } else if (timeAgo < 3600) {
+      timeText = `Hace ${Math.floor(timeAgo / 60)} min`
+    } else if (timeAgo < 86400) {
+      timeText = `Hace ${Math.floor(timeAgo / 3600)} h`
+    } else {
+      timeText = `Hace ${Math.floor(timeAgo / 86400)} días`
+    }
+
+    return (
+      <Card
+        key={execution.id}
+        className="p-4 cursor-pointer hover:shadow-lg transition-shadow border-amber-200 dark:border-amber-900"
+        onClick={() => handleOpenExecution(execution.id)}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock size={16} className="text-amber-600 dark:text-amber-400" />
+              <h3 className="font-semibold text-base truncate text-amber-900 dark:text-amber-100">
+                {listName}
+              </h3>
+            </div>
+            <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">
+              En progreso • {timeText}
+            </p>
+            {execution.store_name && (
+              <p className="text-sm text-muted-foreground line-clamp-1">
+                📍 {execution.store_name}
+              </p>
+            )}
+          </div>
+
+          {/* Action button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleOpenExecution(execution.id)
+            }}
+          >
+            <Clock size={14} />
+            Continuar
+          </Button>
+        </div>
+      </Card>
+    )
+  }
+
   if (loading && lists.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -236,6 +325,18 @@ export function ListasScreen({ userId }: ListasScreenProps) {
           </div>
         ) : (
           <div className="space-y-8">
+            {/* Active Executions Section */}
+            {activeExecutions.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 mb-3 pl-1">
+                  ⏱️ Compras en curso ({activeExecutions.length})
+                </h3>
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {activeExecutions.map(renderExecutionCard)}
+                </div>
+              </div>
+            )}
+
             {/* Pending Lists Section */}
             {pendingLists.length > 0 && (
               <div>
