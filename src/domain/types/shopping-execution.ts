@@ -180,6 +180,7 @@ export interface AddItemOnTheFlyInput {
   product_name: string
   categoria_producto_id?: string
   categoria_producto_nombre?: string
+  categoria_global_id?: string
   cantidad_planeada: number
   unidad_medida?: string
   marca?: string
