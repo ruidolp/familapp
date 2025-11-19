@@ -19,7 +19,7 @@ import {
 import { Label } from '@/presentation/components/ui/label'
 import { Switch } from '@/presentation/components/ui/switch'
 import { Separator } from '@/presentation/components/ui/separator'
-import { Timer, Tag, Grid } from 'lucide-react'
+import { Timer, Tag, Grid, AlignLeft } from 'lucide-react'
 import type { ExecutionSettings } from '@/domain/types/shopping-execution'
 
 interface SettingsSheetProps {
@@ -100,6 +100,27 @@ export function SettingsSheet({
               checked={settings.showCategories}
               onCheckedChange={(checked) =>
                 onSettingsChange({ showCategories: checked })
+              }
+            />
+          </div>
+
+          <Separator />
+
+          {/* Flat List Mode */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <AlignLeft className="h-4 w-4" />
+                Modo texto plano
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Vista compacta sin bordes
+              </p>
+            </div>
+            <Switch
+              checked={settings.flatListMode}
+              onCheckedChange={(checked) =>
+                onSettingsChange({ flatListMode: checked })
               }
             />
           </div>

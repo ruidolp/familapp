@@ -23,6 +23,7 @@ export interface ExecutionSettings {
   showTimer: boolean
   enablePrices: boolean
   showCategories: boolean
+  flatListMode: boolean
 }
 
 export interface BudgetConfig {
