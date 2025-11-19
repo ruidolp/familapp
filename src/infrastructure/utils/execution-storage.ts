@@ -391,6 +391,29 @@ export const ExecutionStorage = {
   },
 
   /**
+   * Get all active executions (IN_PROGRESS status)
+   */
+  async getAllInProgress(): Promise<LocalShoppingExecution[]> {
+    try {
+      const db = await getDB()
+      const tx = db.transaction([STORE_EXECUTIONS], 'readonly')
+      const store = tx.objectStore(STORE_EXECUTIONS)
+      const index = store.index('status')
+
+      const results = await new Promise<any[]>((resolve, reject) => {
+        const request = index.getAll('IN_PROGRESS')
+        request.onsuccess = () => resolve(request.result || [])
+        request.onerror = () => reject(request.error)
+      })
+
+      return results.map(deserializeExecution)
+    } catch (error) {
+      console.error('Failed to get in-progress executions:', error)
+      return []
+    }
+  },
+
+  /**
    * Get all executions pending sync
    */
   async getPendingSync(): Promise<LocalShoppingExecution[]> {

@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { CreateShoppingListDrawer } from '@/components/drawers/CreateShoppingListDrawer'
 import { notify } from '@/infrastructure/lib/notifications'
+import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
+import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
 
 interface ShoppingList {
   id: string
@@ -33,6 +35,9 @@ interface ShoppingExecution {
   created_at: string
 }
 
+// Union type para soportar tanto ejecuciones del servidor como locales
+type ExecutionDisplay = ShoppingExecution | (LocalShoppingExecution & { isLocal: true })
+
 interface ListasScreenProps {
   userId: string
 }
@@ -40,7 +45,7 @@ interface ListasScreenProps {
 export function ListasScreen({ userId }: ListasScreenProps) {
   const router = useRouter()
   const [lists, setLists] = useState<ShoppingList[]>([])
-  const [activeExecutions, setActiveExecutions] = useState<ShoppingExecution[]>([])
+  const [activeExecutions, setActiveExecutions] = useState<ExecutionDisplay[]>([])
   const [loading, setLoading] = useState(false)
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
 
@@ -70,11 +75,33 @@ export function ListasScreen({ userId }: ListasScreenProps) {
 
   const fetchActiveExecutions = async () => {
     try {
-      const response = await fetch('/api/shopping-executions')
-      if (response.ok) {
-        const data = await response.json()
-        setActiveExecutions(data.executions || [])
+      // Cargar ejecuciones del servidor
+      const serverExecutions: ShoppingExecution[] = []
+      try {
+        const response = await fetch('/api/shopping-executions')
+        if (response.ok) {
+          const data = await response.json()
+          serverExecutions.push(...(data.executions || []))
+        }
+      } catch (error) {
+        console.error('Error fetching server executions:', error)
       }
+
+      // Cargar ejecuciones locales (IndexedDB)
+      const localExecutions = await ExecutionStorage.getAllInProgress()
+      const localExecutionsDisplay: ExecutionDisplay[] = localExecutions.map(exe => ({
+        ...exe,
+        isLocal: true,
+      }))
+
+      // Combinar ambas (evitando duplicados si existen)
+      const serverIds = new Set(serverExecutions.map(e => e.id))
+      const filtered = localExecutionsDisplay.filter(
+        e => !serverIds.has(e.localId)
+      )
+
+      const combined = [...localExecutionsDisplay, ...serverExecutions]
+      setActiveExecutions(combined)
     } catch (error) {
       console.error('Error fetching active executions:', error)
       // No mostrar error al usuario, es un feature secundario
@@ -141,8 +168,10 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     router.push(`/shopping-lists/${listId}`)
   }
 
-  const handleOpenExecution = (executionId: string) => {
-    router.push(`/shopping-executions/${executionId}`)
+  const handleOpenExecution = (execution: ExecutionDisplay) => {
+    // Para ejecuciones locales usar localId, para del servidor usar id
+    const id = (execution as any).localId || (execution as any).id
+    router.push(`/shopping-executions/${id}`)
   }
 
   // Separate lists into pending and executed
@@ -227,7 +256,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
   )
 
   // Helper to render an execution card
-  const renderExecutionCard = (execution: ShoppingExecution) => {
+  const renderExecutionCard = (execution: ExecutionDisplay) => {
     // Encontrar el nombre de la lista asociada
     const listName = lists.find(l => l.id === execution.shopping_list_id)?.nombre || 'Compra'
     const startDate = new Date(execution.started_at)
@@ -243,11 +272,19 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       timeText = `Hace ${Math.floor(timeAgo / 86400)} días`
     }
 
+    // Obtener el ID apropiado
+    const executionId = (execution as any).localId || (execution as any).id
+    const isLocal = (execution as any).isLocal
+
     return (
       <Card
-        key={execution.id}
-        className="p-4 cursor-pointer hover:shadow-lg transition-shadow border-amber-200 dark:border-amber-900"
-        onClick={() => handleOpenExecution(execution.id)}
+        key={executionId}
+        className={`p-4 cursor-pointer hover:shadow-lg transition-shadow ${
+          isLocal
+            ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30'
+            : 'border-amber-200 dark:border-amber-900'
+        }`}
+        onClick={() => handleOpenExecution(execution)}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -256,13 +293,18 @@ export function ListasScreen({ userId }: ListasScreenProps) {
               <h3 className="font-semibold text-base truncate text-amber-900 dark:text-amber-100">
                 {listName}
               </h3>
+              {isLocal && (
+                <span className="text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 px-2 py-0.5 rounded">
+                  Local
+                </span>
+              )}
             </div>
             <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">
               En progreso • {timeText}
             </p>
-            {execution.store_name && (
+            {(execution as any).store_name && (
               <p className="text-sm text-muted-foreground line-clamp-1">
-                📍 {execution.store_name}
+                📍 {(execution as any).store_name}
               </p>
             )}
           </div>
@@ -274,7 +316,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             className="gap-1"
             onClick={(e) => {
               e.stopPropagation()
-              handleOpenExecution(execution.id)
+              handleOpenExecution(execution)
             }}
           >
             <Clock size={14} />
