@@ -102,7 +102,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       // Combinar ambas (evitando duplicados si existen)
       const serverIds = new Set(serverExecutions.map(e => e.id))
       const filtered = localExecutionsDisplay.filter(
-        e => !serverIds.has(e.localId)
+        e => !serverIds.has((e as any).localId)
       )
 
       const combined = [...localExecutionsDisplay, ...serverExecutions]
@@ -419,7 +419,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
   const renderCompletedExecutionCard = (execution: ExecutionDisplay) => {
     // Encontrar el nombre de la lista asociada
     const listName = lists.find(l => l.id === execution.shopping_list_id)?.nombre || 'Compra'
-    const endDate = execution.completed_at ? new Date(execution.completed_at) : new Date()
+    const endDate = (execution as any).completed_at ? new Date((execution as any).completed_at) : new Date()
     const completedText = endDate.toLocaleDateString('es-ES')
 
     return (
