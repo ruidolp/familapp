@@ -102,6 +102,14 @@ export function ExecutionItem({
         )}
       </div>
 
+      {/* Quantity */}
+      <div className={cn(
+        "text-sm font-medium min-w-[2rem] text-center flex-shrink-0",
+        isDiscarded && 'line-through text-muted-foreground'
+      )}>
+        {item.cantidad_comprada || item.cantidad_planeada}
+      </div>
+
       {/* Item Info */}
       <div className="flex-1 min-w-0">
         <p className={cn(
@@ -112,13 +120,13 @@ export function ExecutionItem({
         </p>
 
         <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
-          <span>
-            {item.cantidad_comprada || item.cantidad_planeada} {item.unidad_medida || 'un'}
-          </span>
+          {item.unidad_medida && (
+            <span>{item.unidad_medida}</span>
+          )}
 
           {item.marca && (
             <>
-              <span>•</span>
+              {item.unidad_medida && <span>•</span>}
               <span>{item.marca}</span>
             </>
           )}

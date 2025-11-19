@@ -219,7 +219,7 @@ export function ExecutionHistoryDrawer({
               <p className="text-sm">Cargando productos...</p>
             </div>
           ) : normalizedItems.length > 0 ? (
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
               {normalizedItems.map((item: any) => (
                 <div
                   key={item.localId}
