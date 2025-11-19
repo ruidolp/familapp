@@ -32,6 +32,7 @@ interface PriceInputDrawerProps {
   onOpenChange: (open: boolean) => void
   item: LocalExecutionItem | null
   onSave: (data: { unitario?: number; total?: number; cantidad?: number }) => void
+  onMarkAsNotPurchased?: () => void
 }
 
 export function PriceInputDrawer({
@@ -39,6 +40,7 @@ export function PriceInputDrawer({
   onOpenChange,
   item,
   onSave,
+  onMarkAsNotPurchased,
 }: PriceInputDrawerProps) {
   const [cantidad, setCantidad] = useState('')
   const [precioUnitario, setPrecioUnitario] = useState('')
@@ -215,21 +217,37 @@ export function PriceInputDrawer({
             )}
           </div>
 
-          <SheetFooter className="absolute bottom-6 left-6 right-6 flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1 h-12 text-base"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!precioTotal && !precioUnitario}
-              className="flex-1 h-12 text-base font-semibold"
-            >
-              Guardar
-            </Button>
+          <SheetFooter className="absolute bottom-6 left-6 right-6 space-y-2">
+            {/* Marcar como no comprado button (only if purchased) */}
+            {item.status === 'purchased' && onMarkAsNotPurchased && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  onMarkAsNotPurchased()
+                  onOpenChange(false)
+                }}
+                className="w-full h-12 text-base"
+              >
+                Marcar como No Comprado
+              </Button>
+            )}
+
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="flex-1 h-12 text-base"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSave}
+                disabled={!precioTotal && !precioUnitario}
+                className="flex-1 h-12 text-base font-semibold"
+              >
+                Guardar
+              </Button>
+            </div>
           </SheetFooter>
         </SheetContent>
       </Sheet>

@@ -93,10 +93,16 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         // Otherwise, mark as purchased immediately
         markItemAs(item.localId, 'purchased')
       }
-    } else if (item.status === 'purchased' && execution.settings.enablePrices) {
-      // Allow editing price
-      setSelectedItem(item)
-      setPriceDrawerOpen(true)
+    } else if (item.status === 'purchased') {
+      if (execution.settings.enablePrices) {
+        // Allow editing price
+        setSelectedItem(item)
+        setPriceDrawerOpen(true)
+      } else {
+        // Allow unmarking as purchased (back to pending)
+        markItemAs(item.localId, 'pending')
+        notify.success('Producto marcado como no comprado')
+      }
     }
   }
 
@@ -105,6 +111,9 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
     if (item.status === 'pending') {
       markItemAs(item.localId, 'discarded')
       notify.success('Producto descartado')
+    } else if (item.status === 'discarded') {
+      markItemAs(item.localId, 'pending')
+      notify.success('Producto disponible nuevamente')
     }
   }
 
@@ -314,6 +323,12 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         onOpenChange={setPriceDrawerOpen}
         item={selectedItem}
         onSave={handlePriceSave}
+        onMarkAsNotPurchased={() => {
+          if (selectedItem) {
+            markItemAs(selectedItem.localId, 'pending')
+            notify.success('Producto marcado como no comprado')
+          }
+        }}
       />
 
       <CalculatorDrawer

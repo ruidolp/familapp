@@ -466,7 +466,28 @@ export async function createExecutionItem(data: {
 export async function getExecutionItems(executionId: string) {
   return db
     .selectFrom('shopping_execution_items')
-    .selectAll()
+    .leftJoin('product_catalog', 'shopping_execution_items.product_id', 'product_catalog.id')
+    .leftJoin('product_user_custom', 'shopping_execution_items.product_custom_id', 'product_user_custom.id')
+    .select([
+      'shopping_execution_items.id',
+      'shopping_execution_items.shopping_execution_id',
+      'shopping_execution_items.shopping_list_item_id',
+      'shopping_execution_items.product_id',
+      'shopping_execution_items.product_custom_id',
+      'shopping_execution_items.is_catalog',
+      'shopping_execution_items.cantidad_comprada',
+      'shopping_execution_items.unidad_medida',
+      'shopping_execution_items.marca',
+      'shopping_execution_items.precio_unitario',
+      'shopping_execution_items.precio_total',
+      'shopping_execution_items.es_comprado',
+      'shopping_execution_items.razon_no_comprado',
+      'shopping_execution_items.categoria_producto_nombre',
+      'shopping_execution_items.created_at',
+      'shopping_execution_items.updated_at',
+      // Product name from catalog or custom products
+      sql<string>`COALESCE(product_catalog.nombre, product_user_custom.nombre)`.as('product_name'),
+    ])
     .where('shopping_execution_id', '=', executionId)
     .execute()
 }
