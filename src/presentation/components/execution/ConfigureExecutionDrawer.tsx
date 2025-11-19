@@ -278,8 +278,7 @@ export function ConfigureExecutionDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
-       
-        className="h-[90vh] overflow-y-auto sm:max-w-[500px] sm:mx-auto"
+        className="flex flex-col h-[90vh] sm:max-w-[500px] sm:mx-auto"
       >
         <SheetHeader>
           <SheetTitle>Configurar Compra</SheetTitle>
@@ -288,7 +287,7 @@ export function ConfigureExecutionDrawer({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-6 space-y-6 pb-20">
+        <div className="flex-1 overflow-y-auto px-4 mt-6 space-y-6 pb-4">
           {/* Register in Budgets */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -495,8 +494,8 @@ export function ConfigureExecutionDrawer({
           </div>
         </div>
 
-        {/* Footer Buttons */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-background border-t flex gap-3">
+        {/* Footer Buttons - Non-fixed, always at the end */}
+        <div className="border-t p-4 flex gap-3 bg-background">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
