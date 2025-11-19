@@ -468,6 +468,8 @@ export async function getExecutionItems(executionId: string) {
     .selectFrom('shopping_execution_items')
     .leftJoin('product_catalog', 'shopping_execution_items.product_id', 'product_catalog.id')
     .leftJoin('product_user_custom', 'shopping_execution_items.product_custom_id', 'product_user_custom.id')
+    .leftJoin('product_categories_user', 'shopping_execution_items.categoria_producto_id', 'product_categories_user.id')
+    .leftJoin('product_categories_global', 'shopping_execution_items.categoria_global_id', 'product_categories_global.id')
     .select([
       'shopping_execution_items.id',
       'shopping_execution_items.shopping_execution_id',
@@ -482,11 +484,14 @@ export async function getExecutionItems(executionId: string) {
       'shopping_execution_items.precio_total',
       'shopping_execution_items.es_comprado',
       'shopping_execution_items.razon_no_comprado',
-      'shopping_execution_items.categoria_producto_nombre',
+      'shopping_execution_items.categoria_producto_id',
+      'shopping_execution_items.categoria_global_id',
       'shopping_execution_items.created_at',
       'shopping_execution_items.updated_at',
       // Product name from catalog or custom products
       sql<string>`COALESCE(product_catalog.nombre, product_user_custom.nombre)`.as('product_name'),
+      // Category name (user category takes precedence over global)
+      sql<string | null>`COALESCE(product_categories_user.nombre, product_categories_global.nombre)`.as('categoria_producto_nombre'),
     ])
     .where('shopping_execution_id', '=', executionId)
     .execute()
