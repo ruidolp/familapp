@@ -1,6 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/infrastructure/lib/auth'
-import { createShoppingExecution } from '@/infrastructure/database/queries/shopping-lists.queries'
+import { createShoppingExecution, getActiveExecutionsByUser } from '@/infrastructure/database/queries/shopping-lists.queries'
+
+/**
+ * GET /api/shopping-executions
+ * Get active shopping executions for the current user
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const executions = await getActiveExecutionsByUser(session.user.id)
+
+    return NextResponse.json({
+      success: true,
+      executions,
+    })
+  } catch (error: any) {
+    console.error('❌ GET /api/shopping-executions error:', error)
+    return NextResponse.json(
+      { error: error.message || 'Error al obtener ejecuciones' },
+      { status: 500 }
+    )
+  }
+}
 
 /**
  * POST /api/shopping-executions
