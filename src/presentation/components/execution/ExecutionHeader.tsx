@@ -11,7 +11,7 @@
  * - Calculator button
  */
 
-import { Menu, Calculator, Settings } from 'lucide-react'
+import { Menu, Calculator, Settings, ArrowLeft } from 'lucide-react'
 import { Button } from '@/presentation/components/ui/button'
 import { Progress } from '@/presentation/components/ui/progress'
 import { useCurrency } from '@/presentation/providers/currency-provider'
@@ -27,6 +27,7 @@ interface ExecutionHeaderProps {
   budgetPercentage: number
   onMenuClick: () => void
   onCalculatorClick: () => void
+  onBackClick: () => void
 }
 
 export function ExecutionHeader({
@@ -40,6 +41,7 @@ export function ExecutionHeader({
   budgetPercentage,
   onMenuClick,
   onCalculatorClick,
+  onBackClick,
 }: ExecutionHeaderProps) {
   const { formatNumber } = useCurrency()
 
@@ -49,11 +51,21 @@ export function ExecutionHeader({
     <div className="sticky top-0 z-10 bg-background border-b">
       {/* Top Bar - Clean and minimal */}
       <div className="flex items-start justify-between p-4 gap-4">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-semibold truncate text-foreground/80">{listName}</h1>
-          {storeName && (
-            <p className="text-xs text-muted-foreground mt-0.5">{storeName}</p>
-          )}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9"
+            onClick={onBackClick}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-semibold truncate text-foreground/80">{listName}</h1>
+            {storeName && (
+              <p className="text-xs text-muted-foreground mt-0.5">{storeName}</p>
+            )}
+          </div>
         </div>
 
         {/* Total Display - Prominent */}

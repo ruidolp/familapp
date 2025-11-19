@@ -18,6 +18,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useLocale } from 'next-intl'
 import { Button } from '@/presentation/components/ui/button'
 import { Loader2, Plus } from 'lucide-react'
 import { useExecutionState } from '@/presentation/hooks/useExecutionState'
@@ -28,6 +29,7 @@ import { PriceInputDrawer } from '@/presentation/components/execution/PriceInput
 import { CalculatorDrawer } from '@/presentation/components/execution/CalculatorDrawer'
 import { SettingsSheet } from '@/presentation/components/execution/SettingsSheet'
 import { FinalizeExecutionDrawer } from '@/presentation/components/execution/FinalizeExecutionDrawer'
+import { PauseExecutionDrawer } from '@/presentation/components/execution/PauseExecutionDrawer'
 import type { LocalExecutionItem } from '@/domain/types/shopping-execution'
 import { notify } from '@/infrastructure/lib/notifications'
 
@@ -38,6 +40,7 @@ interface ExecutionScreenProps {
 
 export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
   const router = useRouter()
+  const locale = useLocale()
 
   // Main state
   const {
@@ -67,14 +70,15 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
   const [calculatorOpen, setCalculatorOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
+  const [pauseDrawerOpen, setPauseDrawerOpen] = useState(false)
 
   // Redirect if no execution found
   useEffect(() => {
     if (!loading && (!execution || error)) {
       notify.error('Ejecución no encontrada')
-      router.push('/shopping-lists')
+      router.push(`/${locale}/dashboard`)
     }
-  }, [loading, execution, error, router])
+  }, [loading, execution, error, router, locale])
 
   // Handle item tap
   const handleItemTap = (item: LocalExecutionItem) => {
@@ -134,12 +138,18 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
       await finalizeExecution()
 
       notify.success('¡Compra finalizada!')
-      router.push('/shopping-lists')
+      router.push(`/${locale}/dashboard`)
     } catch (error: any) {
       console.error('Error finalizing:', error)
       notify.error(error.message || 'Error al finalizar compra')
       throw error
     }
+  }
+
+  // Handle pause and return to lists
+  const handlePause = () => {
+    notify.info('Compra pausada')
+    router.push(`/${locale}/dashboard`)
   }
 
   // Group items by category if enabled
@@ -173,6 +183,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         budgetPercentage={budgetPercentage}
         onMenuClick={() => setSettingsOpen(true)}
         onCalculatorClick={() => setCalculatorOpen(true)}
+        onBackClick={() => setPauseDrawerOpen(true)}
       />
 
       {/* Auto-saving indicator */}
@@ -326,6 +337,12 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         pendingCount={pendingItems.length}
         timerFormatted={timer.formattedTime}
         onConfirm={handleFinalize}
+      />
+
+      <PauseExecutionDrawer
+        open={pauseDrawerOpen}
+        onOpenChange={setPauseDrawerOpen}
+        onConfirm={handlePause}
       />
     </div>
   )
