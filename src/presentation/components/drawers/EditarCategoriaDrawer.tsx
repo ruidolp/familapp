@@ -103,8 +103,18 @@ export function EditarCategoriaDrawer({
   }
 
   // Click en sugerencia
-  const handleSelectSuggestion = (subcategoria: Subcategoria) => {
-    setSelectedSubcategorias([...selectedSubcategorias, subcategoria])
+  const handleSelectSuggestion = async (subcategoria: Subcategoria) => {
+    // Si la marca ya pertenece a esta categoría, solo notificar
+    if (subcategoria.categoria_id === categoriaId) {
+      notify.info(`Marca "${subcategoria.nombre}" ya existe en esta categoría`)
+      setInputValue('')
+      setSuggestions([])
+      setShowSuggestions(false)
+      return
+    }
+
+    // Si la marca pertenece a otra categoría, crear una nueva con el mismo nombre
+    await crearYAgregarSubcategoria(subcategoria.nombre)
     setInputValue('')
     setSuggestions([])
     setShowSuggestions(false)
@@ -128,20 +138,16 @@ export function EditarCategoriaDrawer({
     const existe = subcategorias.find((s) => s.nombre.toLowerCase() === trimmedValue.toLowerCase())
 
     if (existe) {
-      // Si existe, simplemente la agregamos
-      const yaEstaSeleccionada = selectedSubcategorias.some((s) => s.id === existe.id)
-      if (!yaEstaSeleccionada) {
-        setSelectedSubcategorias([...selectedSubcategorias, existe])
-      }
+      // Si existe, usar la misma lógica de handleSelectSuggestion
+      await handleSelectSuggestion(existe)
     } else {
       // Si no existe, la creamos como NUEVA
       await crearYAgregarSubcategoria(trimmedValue)
+      setInputValue('')
+      setSuggestions([])
+      setShowSuggestions(false)
+      inputRef.current?.focus()
     }
-
-    setInputValue('')
-    setSuggestions([])
-    setShowSuggestions(false)
-    inputRef.current?.focus()
   }
 
   // Crear nueva subcategoría
