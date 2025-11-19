@@ -332,16 +332,32 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
 }
 
 // Helper function to group items by category
+// Separates purchased items into a floating "Productos Comprados" category at the end
 function groupByCategory(items: LocalExecutionItem[]): Record<string, LocalExecutionItem[]> {
-  return items.reduce((acc, item) => {
-    // Get category name: use the stored name (which can be from user or global categories)
-    // The categoria_producto_nombre field is populated during execution creation with the actual
-    // category name, regardless of whether it's a user or global category
-    const category = item.categoria_producto_nombre || 'Sin categoría'
-    if (!acc[category]) {
-      acc[category] = []
+  const result: Record<string, LocalExecutionItem[]> = {}
+  const purchasedItems: LocalExecutionItem[] = []
+
+  for (const item of items) {
+    // Separate purchased items for floating category
+    if (item.status === 'purchased') {
+      purchasedItems.push(item)
+    } else {
+      // Group pending and discarded items by their original category
+      // Get category name: use the stored name (which can be from user or global categories)
+      // The categoria_producto_nombre field is populated during execution creation with the actual
+      // category name, regardless of whether it's a user or global category
+      const category = item.categoria_producto_nombre || 'Sin categoría'
+      if (!result[category]) {
+        result[category] = []
+      }
+      result[category].push(item)
     }
-    acc[category].push(item)
-    return acc
-  }, {} as Record<string, LocalExecutionItem[]>)
+  }
+
+  // Add purchased items at the end as a floating category
+  if (purchasedItems.length > 0) {
+    result['✓ Productos Comprados'] = purchasedItems
+  }
+
+  return result
 }
