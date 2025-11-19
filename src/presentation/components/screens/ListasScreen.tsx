@@ -503,19 +503,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* Active Executions Section */}
-            {activeExecutions.length > 0 && (
-              <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 mb-3 pl-1">
-                  ⏱️ Compras en curso ({activeExecutions.length})
-                </h3>
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {activeExecutions.map(renderExecutionCard)}
-                </div>
-              </div>
-            )}
-
-            {/* All Lists (no section header) */}
+            {/* All Lists */}
             {lists.length > 0 && (
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 pl-1">
@@ -523,6 +511,18 @@ export function ListasScreen({ userId }: ListasScreenProps) {
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {lists.map(renderListCard)}
+                </div>
+              </div>
+            )}
+
+            {/* Active Executions Section */}
+            {activeExecutions.length > 0 && (
+              <div>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 mb-3 pl-1">
+                  ⏱️ Listas en curso ({activeExecutions.length})
+                </h3>
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {activeExecutions.map(renderExecutionCard)}
                 </div>
               </div>
             )}
