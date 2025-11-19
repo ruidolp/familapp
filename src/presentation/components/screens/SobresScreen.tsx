@@ -126,12 +126,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
           handleAgregarCategoria(sobres[selectedIndex])
         }
         break
-      case 'nueva-marca':
-        // Las marcas se crean dentro del flujo de crear gasto
-        if (sobres.length > 0) {
-          handleCrearGasto(sobres[selectedIndex])
-        }
-        break
       case 'nuevo-gasto':
         if (sobres.length > 0) {
           handleCrearGasto(sobres[selectedIndex])

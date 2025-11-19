@@ -503,10 +503,10 @@ export function ListasScreen({ userId }: ListasScreenProps) {
         <Button
           onClick={handleOpenCreateDrawer}
           size="sm"
-          className="gap-2"
+          className="gap-2 w-auto px-3"
         >
           <Plus size={18} />
-          Nueva Lista
+          Crear Lista
         </Button>
       </div>
 
@@ -520,9 +520,9 @@ export function ListasScreen({ userId }: ListasScreenProps) {
               <br />
               <span className="text-sm">Crea tu primera lista para empezar</span>
             </p>
-            <Button onClick={handleOpenCreateDrawer} className="gap-2">
+            <Button onClick={handleOpenCreateDrawer} className="gap-2 w-auto px-4">
               <Plus size={18} />
-              Crear Primera Lista
+              Crear Lista
             </Button>
           </div>
         ) : (
