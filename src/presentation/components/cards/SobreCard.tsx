@@ -94,7 +94,7 @@ export function SobreCard({
 
   return (
     <Card
-      className="overflow-hidden cursor-pointer transition-all duration-300 flex flex-col"
+      className="overflow-hidden transition-all duration-300 flex flex-col"
       style={{
         backgroundColor: bgColor,
         backgroundImage: `linear-gradient(135deg, ${bgColor} 0%, ${bgColor}ee 50%, ${bgColor}dd 100%)`,
@@ -102,12 +102,14 @@ export function SobreCard({
         boxShadow: '0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
         minHeight: 'calc(100vh - 12rem)',
       }}
-      onClick={onVerDetalle}
     >
       {/* Contenido */}
       <div className="flex flex-col h-full" style={{ color: 'rgba(255,255,255,0.95)' }}>
         {/* Card: Estado de gasto */}
-        <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2">
+        <div
+          className="rounded-lg border border-white/20 bg-white/10 backdrop-blur m-4 mb-0 p-3 space-y-2 cursor-pointer hover:bg-white/15 transition-colors"
+          onClick={onVerDetalle}
+        >
           {/* Header con estado de gasto y menú */}
           <div className="flex justify-between items-start gap-2">
             <div className="flex-1 space-y-1">
