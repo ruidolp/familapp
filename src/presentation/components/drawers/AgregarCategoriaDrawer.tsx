@@ -168,9 +168,8 @@ export function AgregarCategoriaDrawer({
     }
 
     const filtered = marcas.filter((marca) => {
-      const perteneceACategoria = marca.categoria_id === categoriaId
       const coincideConBusqueda = marca.nombre.toLowerCase().includes(value.toLowerCase())
-      return perteneceACategoria && coincideConBusqueda
+      return coincideConBusqueda
     })
 
     setSuggestionsMarcaPorCategoria({
@@ -184,20 +183,27 @@ export function AgregarCategoriaDrawer({
   }
 
   // Click en sugerencia de marca para una categoría
-  const handleSelectMarcaPorCategoria = (categoriaId: string, marca: Marca) => {
-    notify.info(`Marca "${marca.nombre}" seleccionada`)
-    setInputMarcaPorCategoria({
-      ...inputMarcaPorCategoria,
-      [categoriaId]: '',
-    })
-    setSuggestionsMarcaPorCategoria({
-      ...suggestionsMarcaPorCategoria,
-      [categoriaId]: [],
-    })
-    setShowSuggestionsMarcaPorCategoria({
-      ...showSuggestionsMarcaPorCategoria,
-      [categoriaId]: false,
-    })
+  const handleSelectMarcaPorCategoria = async (categoriaId: string, marca: Marca) => {
+    // Si la marca ya pertenece a esta categoría, solo notificar
+    if (marca.categoria_id === categoriaId) {
+      notify.info(`Marca "${marca.nombre}" ya existe en esta categoría`)
+      setInputMarcaPorCategoria({
+        ...inputMarcaPorCategoria,
+        [categoriaId]: '',
+      })
+      setSuggestionsMarcaPorCategoria({
+        ...suggestionsMarcaPorCategoria,
+        [categoriaId]: [],
+      })
+      setShowSuggestionsMarcaPorCategoria({
+        ...showSuggestionsMarcaPorCategoria,
+        [categoriaId]: false,
+      })
+      return
+    }
+
+    // Si la marca pertenece a otra categoría, crear una nueva con el mismo nombre
+    await crearYAgregarMarcaPorCategoria(categoriaId, marca.nombre)
   }
 
   // ENTER en input de categoría
