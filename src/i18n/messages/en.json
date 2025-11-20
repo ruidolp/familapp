@@ -571,11 +571,42 @@
       "nextStepDescription": "After creating the envelope, you can assign it budget from your wallet.",
       "creating": "Creating...",
       "submit": "Create Envelope",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "form": {
+        "preview": "Preview",
+        "envelopeName": "Envelope name",
+        "budget": "Budget",
+        "name": "Name",
+        "namePlaceholder": "Eg: Food, Transport, Home",
+        "color": "Color"
+      },
+      "sections": {
+        "identity": "Envelope identity"
+      },
+      "info": {
+        "nextStep": "Next step",
+        "nextStepDescription": "After creating the envelope, you can assign it budget from your wallet."
+      },
+      "buttons": {
+        "creating": "Creating...",
+        "createEnvelope": "Create envelope",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "configRequired": "You need to finish your initial setup before creating envelopes.",
+        "createFailed": "We couldn't create the envelope. Try again."
+      },
+      "success": {
+        "created": "Envelope created successfully."
+      },
+      "nameLabel": "Envelope name",
+      "typeLabel": "Envelope type",
+      "budgetLabel": "Initial budget ({currency})",
+      "icon": "Emoji / Icon"
     },
     "addBudget": {
       "title": "Add Budget",
-      "description": "Assign budget to the envelope",
+      "description": "Assign budget to {sobreName}",
       "amount": "💰 Amount to add",
       "amountPlaceholder": "+$",
       "summary": "Summary",
@@ -592,8 +623,34 @@
       "saving": "Saving...",
       "submit": "Add Budget",
       "cancel": "Cancel",
+      "sections": {
+        "summary": "Summary",
+        "details": "Detail"
+      },
+      "form": {
+        "amount": "Amount to add",
+        "availableInWallet": "Available in wallet",
+        "currentBudget": "Current budget",
+        "newBudget": "New budget",
+        "observation": "Observation",
+        "optional": "optional",
+        "observationPlaceholder": "Eg: Initial monthly budget",
+        "advancedConfig": "Advanced configuration",
+        "recurringAmount": "Monthly recurring amount",
+        "recurringAmountHelp": "Set a fixed amount that will be automatically assigned each month to this envelope."
+      },
+      "buttons": {
+        "saving": "Saving...",
+        "addBudget": "Add Budget",
+        "cancel": "Cancel"
+      },
       "errors": {
-        "amountGreaterThanZero": "Amount must be greater than 0"
+        "amountGreaterThanZero": "Amount must be greater than 0",
+        "invalidAmount": "Invalid amount",
+        "addFailed": "Failed to add budget"
+      },
+      "success": {
+        "added": "Budget added to {sobreName} successfully"
       }
     },
     "reduceBudget": {

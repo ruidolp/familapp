@@ -582,11 +582,42 @@
       "nextStepDescription": "Después de crear el sobre, podrás asignarle presupuesto desde tu billetera.",
       "creating": "Creando...",
       "submit": "Crear Sobre",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "form": {
+        "preview": "Vista previa",
+        "envelopeName": "Nombre del sobre",
+        "budget": "Presupuesto",
+        "name": "Nombre",
+        "namePlaceholder": "Ej: Comida, Transporte, Hogar",
+        "color": "Color"
+      },
+      "sections": {
+        "identity": "Identidad del sobre"
+      },
+      "info": {
+        "nextStep": "Siguiente paso",
+        "nextStepDescription": "Después de crear el sobre, podrás asignarle presupuesto desde tu billetera."
+      },
+      "buttons": {
+        "creating": "Creando...",
+        "createEnvelope": "Crear sobre",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "configRequired": "Debes completar tu configuración inicial antes de crear sobres.",
+        "createFailed": "No pudimos crear el sobre. Inténtalo de nuevo."
+      },
+      "success": {
+        "created": "Sobre creado correctamente."
+      },
+      "nameLabel": "Nombre del sobre",
+      "typeLabel": "Tipo de sobre",
+      "budgetLabel": "Presupuesto inicial ({currency})",
+      "icon": "Emoji / Ícono"
     },
     "addBudget": {
       "title": "Agregar Presupuesto",
-      "description": "Asigna presupuesto al sobre",
+      "description": "Asigna presupuesto a {sobreName}",
       "amount": "💰 Monto a agregar",
       "amountPlaceholder": "+$",
       "summary": "Resumen",
@@ -603,8 +634,34 @@
       "saving": "Guardando...",
       "submit": "Agregar Presupuesto",
       "cancel": "Cancelar",
+      "sections": {
+        "summary": "Resumen",
+        "details": "Detalle"
+      },
+      "form": {
+        "amount": "Monto a agregar",
+        "availableInWallet": "Disponible en billetera",
+        "currentBudget": "Presupuesto actual",
+        "newBudget": "Nuevo presupuesto",
+        "observation": "Observación",
+        "optional": "opcional",
+        "observationPlaceholder": "Ej: Presupuesto inicial del mes",
+        "advancedConfig": "Configuración avanzada",
+        "recurringAmount": "Monto recurrente mensual",
+        "recurringAmountHelp": "Configura un monto fijo que se asignará automáticamente cada mes a este sobre."
+      },
+      "buttons": {
+        "saving": "Guardando...",
+        "addBudget": "Agregar Presupuesto",
+        "cancel": "Cancelar"
+      },
       "errors": {
-        "amountGreaterThanZero": "Monto debe ser mayor a 0"
+        "amountGreaterThanZero": "Monto debe ser mayor a 0",
+        "invalidAmount": "Monto inválido",
+        "addFailed": "Error al agregar presupuesto"
+      },
+      "success": {
+        "added": "Presupuesto agregado a {sobreName} exitosamente"
       }
     },
     "reduceBudget": {
