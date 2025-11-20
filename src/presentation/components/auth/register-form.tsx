@@ -120,7 +120,20 @@ export function RegisterForm() {
       if (result.requiresVerification) {
         router.push(`/${locale}/auth/verify?userId=${result.user.id}`)
       } else {
-        router.push(`/${locale}/auth/login`)
+        // Auto-login after successful registration
+        const signInResult = await signIn('credentials', {
+          redirect: false,
+          identifier: 'email' in data ? data.email : data.phone,
+          password: data.password,
+        })
+
+        if (signInResult?.ok) {
+          router.push(`/${locale}/dashboard`)
+          router.refresh()
+        } else {
+          // If auto-login fails, redirect to login page
+          router.push(`/${locale}/auth/login`)
+        }
       }
     } catch (error) {
       toast({

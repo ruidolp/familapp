@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import {
   Drawer,
   DrawerClose,
@@ -34,13 +35,15 @@ export function ListOptionsDrawer({
   flatListMode,
   onFlatListModeChange,
 }: ListOptionsDrawerProps) {
+  const t = useTranslations()
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Opciones de visualización</DrawerTitle>
+          <DrawerTitle>{t('shopping.lists.options.title')}</DrawerTitle>
           <DrawerDescription>
-            Personaliza cómo se muestra la lista
+            {t('shopping.lists.options.description')}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -48,7 +51,7 @@ export function ListOptionsDrawer({
           {/* Agrupar por categoría */}
           <div className="flex items-center justify-between">
             <Label htmlFor="group-category" className="text-base">
-              Agrupar por categoría
+              {t('shopping.lists.options.groupByCategory')}
             </Label>
             <Switch
               id="group-category"
@@ -60,7 +63,7 @@ export function ListOptionsDrawer({
           {/* Mostrar controles de cantidad */}
           <div className="flex items-center justify-between">
             <Label htmlFor="show-qty-buttons" className="text-base">
-              Mostrar controles de cantidad
+              {t('shopping.lists.options.showControls')}
             </Label>
             <Switch
               id="show-qty-buttons"
@@ -72,7 +75,7 @@ export function ListOptionsDrawer({
           {/* Listado plano */}
           <div className="flex items-center justify-between">
             <Label htmlFor="flat-list-mode" className="text-base">
-              Listado plano
+              {t('shopping.lists.options.flatList')}
             </Label>
             <Switch
               id="flat-list-mode"
@@ -85,7 +88,7 @@ export function ListOptionsDrawer({
         <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="outline" className="w-full">
-              Cerrar
+              {t('shopping.lists.options.close')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

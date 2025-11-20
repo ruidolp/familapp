@@ -51,6 +51,33 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const loadCurrencyConfig = async () => {
       try {
         const response = await fetch('/api/user/config')
+
+        // Si no hay configuración (404), usar defaults sin error
+        if (response.status === 404) {
+          const defaultDecimals = 0
+          const formatNumber = (value: number): string => {
+            if (typeof value !== 'number') return '0'
+            const formatter = new Intl.NumberFormat('es-CL', {
+              style: 'currency',
+              currency: 'CLP',
+              minimumFractionDigits: defaultDecimals,
+              maximumFractionDigits: defaultDecimals,
+            })
+            return formatter.format(value)
+          }
+
+          setCurrency({
+            monedaId: 'CLP',
+            nombre: 'Peso Chileno',
+            simbolo: '$',
+            decimales: defaultDecimals,
+            locale: 'es-CL',
+            isLoading: false,
+            formatNumber,
+          })
+          return
+        }
+
         if (!response.ok) throw new Error('Failed to load user config')
 
         const data = await response.json()

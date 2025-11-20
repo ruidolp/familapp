@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -40,6 +41,7 @@ export function EditarCategoriaDrawer({
   categoriaNombre,
   onSuccess,
 }: EditarCategoriaDrawerProps) {
+  const t = useTranslations()
   const [loading, setLoading] = useState(false)
   const [nombre, setNombre] = useState('')
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([])
@@ -185,7 +187,7 @@ export function EditarCategoriaDrawer({
   // Guardar cambios
   const handleGuardar = async () => {
     if (!nombre.trim()) {
-      notify.error('El nombre es obligatorio')
+      notify.error(t('categorias.edit.nameRequired'))
       return
     }
 
@@ -219,9 +221,9 @@ export function EditarCategoriaDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Editar Categoría</DrawerTitle>
+          <DrawerTitle>{t('categorias.edit.title')}</DrawerTitle>
           <DrawerDescription>
-            Modifica el nombre y agrega marcas/empresas
+            {t('categorias.edit.description')}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -229,11 +231,11 @@ export function EditarCategoriaDrawer({
           <div className="space-y-4">
             {/* Nombre de categoría */}
             <div className="space-y-2">
-              <Label htmlFor="nombre">Nombre</Label>
+              <Label htmlFor="nombre">{t('categorias.edit.nameLabel')}</Label>
               <Input
                 id="nombre"
                 type="text"
-                placeholder="Ej: Alimentación"
+                placeholder={t('categorias.edit.namePlaceholder')}
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
               />
@@ -244,16 +246,16 @@ export function EditarCategoriaDrawer({
 
             {/* Texto descriptivo */}
             <div className="space-y-1">
-              <Label>¿Dónde compras?</Label>
+              <Label>{t('categorias.edit.whereShop')}</Label>
               <p className="text-sm text-muted-foreground">
-                Agrega tus marcas recurrentes para que puedas medir tus gastos
+                {t('categorias.edit.brandsHelp')}
               </p>
             </div>
 
             {/* Marcas agregadas - Mostrar arriba */}
             {selectedSubcategorias.length > 0 && (
               <div className="space-y-2">
-                <Label>Marcas agregadas</Label>
+                <Label>{t('categorias.edit.addedBrands')}</Label>
                 <div className="flex flex-wrap gap-2">
                   {selectedSubcategorias.map((sub) => (
                     <Badge
@@ -278,13 +280,13 @@ export function EditarCategoriaDrawer({
 
             {/* Campo de búsqueda/creación - Abajo */}
             <div className="space-y-2">
-              <Label htmlFor="marca">Buscar o crear marca</Label>
+              <Label htmlFor="marca">{t('categorias.edit.searchOrCreate')}</Label>
               <div className="relative">
                 <Input
                   ref={inputRef}
                   id="marca"
                   type="text"
-                  placeholder="Escribe nombre de marca (Ej: Walmart)"
+                  placeholder={t('categorias.edit.brandPlaceholder')}
                   value={inputValue}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -309,7 +311,7 @@ export function EditarCategoriaDrawer({
                         className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
                         type="button"
                       >
-                        <span className="text-green-600">✓</span>
+                        <span className="text-green-600">{t('categorias.edit.checkmark')}</span>
                         <span>{sub.emoji && `${sub.emoji} `}</span>
                         <span>{sub.nombre}</span>
                       </button>
@@ -328,7 +330,7 @@ export function EditarCategoriaDrawer({
                 className="w-full"
                 size="sm"
               >
-                {loading ? 'Agregando...' : 'Agregar Marca'}
+                {loading ? t('common.loading') : t('categorias.edit.addBrand')}
               </Button>
             </div>
           </div>
@@ -340,11 +342,11 @@ export function EditarCategoriaDrawer({
             disabled={loading || !nombre.trim()}
             className="w-full"
           >
-            {loading ? 'Guardando...' : 'Guardar'}
+            {loading ? t('categorias.edit.saving') : t('categorias.edit.submit')}
           </Button>
           <DrawerClose asChild>
             <Button variant="outline" disabled={loading} className="w-full mb-4">
-              Cancelar
+              {t('common.cancel')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

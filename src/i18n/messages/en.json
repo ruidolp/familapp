@@ -497,5 +497,293 @@
       "sameWallet": "Cannot transfer to the same wallet",
       "insufficientBalance": "Insufficient balance"
     }
+  },
+  "gastos": {
+    "title": "Expenses",
+    "create": {
+      "title": "Record Expense",
+      "description": "Create a new expense in an envelope",
+      "amount": "💰 Expense Amount",
+      "amountPlaceholder": "$",
+      "origin": "Expense Origin",
+      "originPlaceholder": "Envelope",
+      "selectEnvelope": "Select envelope",
+      "selectEnvelopePlaceholder": "Envelope",
+      "category": "Category",
+      "addNewCategory": "+ New",
+      "categoryNamePlaceholder": "Category name",
+      "categoryEmoji": "🏷️",
+      "creating": "Recording...",
+      "submit": "Record Expense",
+      "cancel": "Cancel",
+      "details": "Details",
+      "brand": "Brand",
+      "brandPlaceholder": "Search or create brand...",
+      "brandOptional": "optional",
+      "pressEnter": "Press Enter to create new brand",
+      "selectCategoryForBrands": "Select a category to see available brands",
+      "comment": "Comment",
+      "commentOptional": "optional",
+      "commentPlaceholder": "Eg: Lunch at the office",
+      "errors": {
+        "amountGreaterThanZero": "Amount must be greater than 0",
+        "selectEnvelope": "Select an envelope",
+        "categoryRequired": "Category is required"
+      }
+    }
+  },
+  "sobres": {
+    "title": "Envelopes",
+    "defaultEnvelopes": {
+      "hogar": "Home",
+      "personal": "Personal"
+    },
+    "usado": "Used",
+    "libre": "Available",
+    "utilizado": "used",
+    "total": "total",
+    "menu": {
+      "increaseBudget": "Increase Budget",
+      "reduceBudget": "Reduce Budget",
+      "editCategories": "Edit Categories",
+      "shoppingList": "Shopping List"
+    },
+    "emptyBudget": {
+      "message": "Assign budget",
+      "button": "Add Budget"
+    },
+    "categories": {
+      "loading": "Loading categories...",
+      "title": "Categories ({count})",
+      "empty": "Add categories for this envelope to track your spending by category",
+      "addButton": "Add Categories"
+    },
+    "create": {
+      "title": "Create New Envelope",
+      "description": "Define the name and color of your envelope. Then you'll assign budget from a wallet.",
+      "preview": "Preview",
+      "previewBudget": "Budget: $0.00",
+      "identity": "Envelope Identity",
+      "name": "Name",
+      "namePlaceholder": "Eg: Food, Transport, Home",
+      "color": "Color",
+      "nextStep": "Next Step",
+      "nextStepDescription": "After creating the envelope, you can assign it budget from your wallet.",
+      "creating": "Creating...",
+      "submit": "Create Envelope",
+      "cancel": "Cancel"
+    },
+    "addBudget": {
+      "title": "Add Budget",
+      "description": "Assign budget to the envelope",
+      "amount": "💰 Amount to add",
+      "amountPlaceholder": "+$",
+      "summary": "Summary",
+      "available": "Available in wallet",
+      "currentBudget": "Current budget",
+      "newBudget": "New budget",
+      "detail": "Detail",
+      "observation": "Observation",
+      "observationOptional": "optional",
+      "observationPlaceholder": "Eg: Initial monthly budget",
+      "advancedSettings": "Advanced Configuration",
+      "monthlyRecurring": "Monthly recurring amount",
+      "monthlyDescription": "Configure a fixed amount that will be automatically assigned each month to this envelope.",
+      "saving": "Saving...",
+      "submit": "Add Budget",
+      "cancel": "Cancel",
+      "errors": {
+        "amountGreaterThanZero": "Amount must be greater than 0"
+      }
+    },
+    "reduceBudget": {
+      "title": "Reduce Budget",
+      "description": "Reduce budget from {sobreName}... This action does not affect recorded expenses",
+      "freeMoney": "Free Money",
+      "assignedBudget": "Assigned Budget",
+      "amountToReduce": "Amount to reduce",
+      "amountPlaceholder": "0",
+      "observation": "Observation",
+      "observationPlaceholder": "Eg: Budget adjustment",
+      "saving": "Saving...",
+      "submit": "Save",
+      "cancel": "Cancel",
+      "form": {
+        "freeAmount": "Free Amount",
+        "assignedBudget": "Assigned Budget",
+        "amountToReduce": "Amount to reduce",
+        "observation": "Observation",
+        "observationPlaceholder": "Eg: Budget adjustment"
+      },
+      "buttons": {
+        "save": "Save",
+        "saving": "Saving...",
+        "cancel": "Cancel"
+      },
+      "errors": {
+        "amountGreaterThanZero": "Amount must be greater than 0",
+        "invalidAmount": "Invalid amount",
+        "reduceFailed": "Failed to reduce budget"
+      },
+      "success": {
+        "reduced": "Budget for {sobreName} reduced successfully"
+      }
+    },
+    "transactions": {
+      "title": "Transaction Detail",
+      "description": "Transactions from {sobreName}...",
+      "loading": "Loading transactions...",
+      "empty": "No transactions yet",
+      "noTransactions": "No transactions yet",
+      "monthTotal": "Current month total",
+      "totalCurrentMonth": "Current month total",
+      "transactionCount": "transactions",
+      "transactionsCount": "{count} transactions",
+      "noCategory": "No category",
+      "close": "Close",
+      "buttons": {
+        "close": "Close"
+      },
+      "errors": {
+        "loadFailed": "Failed to load transactions"
+      }
+    }
+  },
+  "categorias": {
+    "title": "Categories",
+    "add": {
+      "title": "Add Categories",
+      "description": "Used to categorize expenses in {sobreName}",
+      "categories": "Categories",
+      "namePlaceholder": "Write category (Eg: Food)",
+      "add": "✓",
+      "checkmark": "✓",
+      "brands": "Add companies by each category",
+      "added": "Brands added",
+      "addBrand": "Add brand",
+      "brandSearch": "Search or create brand...",
+      "adding": "Adding...",
+      "addCategory": "Add Category",
+      "addBrandLabel": "Adding...",
+      "selectAtLeastOne": "Select at least one category to continue",
+      "saving": "Saving...",
+      "submit": "Save",
+      "cancel": "Cancel"
+    },
+    "edit": {
+      "title": "Edit Category",
+      "description": "Modify the name and add brands/companies",
+      "name": "Name",
+      "namePlaceholder": "Eg: Food",
+      "where": "Where do you shop?",
+      "whereDescription": "Add your recurring brands so you can measure your expenses",
+      "brandsAdded": "Brands added",
+      "addBrand": "Search or create brand",
+      "brandNamePlaceholder": "Write brand name (Eg: Walmart)",
+      "add": "✓",
+      "adding": "Adding...",
+      "addBrand": "Add Brand",
+      "saving": "Saving...",
+      "submit": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "shopping": {
+    "history": {
+      "title": "Purchase History",
+      "purchaseDate": "Purchase Date",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "purchasedProducts": "Purchased Products",
+      "noPurchasedProducts": "No products recorded"
+    },
+    "lists": {
+      "createNew": {
+        "title": "Create new shopping list",
+        "description": "Give a name to your new list (optional)",
+        "namePlaceholder": "Eg: Supermarket, Vegetables, etc...",
+        "hint": "If you don't write a name, it will be created as 'Untitled'",
+        "unnamed": "Untitled {slug}",
+        "cancel": "Cancel",
+        "creating": "Creating...",
+        "submit": "Create"
+      },
+      "options": {
+        "title": "View options",
+        "description": "Customize how the list is displayed",
+        "groupByCategory": "Group by category",
+        "showControls": "Show quantity controls",
+        "flatList": "Flat list",
+        "close": "Close"
+      }
+    },
+    "execution": {
+      "finalize": {
+        "title": "Purchase Summary",
+        "description": "Verify the details before finishing",
+        "purchased": "Purchased",
+        "discarded": "Discarded",
+        "pending": "Pending",
+        "pendingMessage": "You have {count} product(s) without defining. Consider marking them as purchased or discarded.",
+        "pendingWarning": "You have {count} product(s) without defining. Consider marking them as purchased or discarded.",
+        "totalTime": "Total time",
+        "calculatedTotal": "Calculated Total",
+        "calculatedDesc": "Sum of all recorded prices",
+        "calculatedTotalDescription": "Sum of all recorded prices",
+        "manualTotal": "Total Paid (optional)",
+        "manualTotalDesc": "Enter the actual amount of the ticket if it's different",
+        "totalPaid": "Total Paid (optional)",
+        "totalPaidDescription": "Enter the actual amount of the ticket if it's different",
+        "finalizing": "Finalizing...",
+        "submit": "Finalize and Sync",
+        "cancel": "Cancel"
+      },
+      "settings": {
+        "title": "Settings",
+        "showTimer": "Show timer",
+        "showTimerDescription": "See elapsed time",
+        "addPrices": "Add prices",
+        "addPricesDescription": "Record product prices",
+        "viewByCategories": "View by categories",
+        "viewByCategoriesDescription": "Group products by category",
+        "plainText": "Plain text mode",
+        "plainTextDescription": "Compact view without borders",
+        "close": "Close"
+      }
+    }
+  },
+  "user": {
+    "profile": {
+      "title": "User",
+      "signOut": "Sign Out",
+      "signOutDescription": "Exit the application"
+    }
+  },
+  "modals": {
+    "overspendWarning": {
+      "budgetExceeded": "Budget Exceeded",
+      "insufficientBalance": "Insufficient Balance",
+      "budget": "Budget",
+      "spent": "Spent",
+      "excess": "Excess: {percentage}%",
+      "currentBalance": "Current Balance",
+      "balanceAfter": "Balance After",
+      "recommendations": "💡 Recommended Options:",
+      "budgetOptions": {
+        "increase": "Increase the envelope's budget",
+        "transfer": "Transfer budget from another envelope",
+        "record": "Record the expense anyway (allowed)"
+      },
+      "balanceOptions": {
+        "deposit": "Make a deposit to the wallet",
+        "transfer": "Transfer money from another wallet",
+        "record": "Record the expense anyway (allowed)"
+      },
+      "showDetails": "Show details",
+      "hideDetails": "Hide technical details",
+      "cancel": "Cancel",
+      "addBudget": "Add Budget",
+      "recordAnyway": "Record Anyway"
+    }
   }
 }

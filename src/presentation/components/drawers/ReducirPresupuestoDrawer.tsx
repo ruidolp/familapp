@@ -38,7 +38,7 @@ export function ReducirPresupuestoDrawer({
   presupuestoAsignado,
   onSuccess,
 }: ReducirPresupuestoDrawerProps) {
-  const t = useTranslations('common')
+  const t = useTranslations('sobres.reduceBudget')
   const { formatNumber, simbolo } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [monto, setMonto] = useState('')
@@ -61,7 +61,7 @@ export function ReducirPresupuestoDrawer({
     try {
       const montoNum = parseFloat(monto)
       if (isNaN(montoNum) || montoNum <= 0) {
-        notify.error('Monto debe ser mayor a 0')
+        notify.error(t('errors.invalidAmount'))
         setLoading(false)
         return
       }
@@ -78,12 +78,12 @@ export function ReducirPresupuestoDrawer({
       const data = await response.json()
 
       if (!response.ok) {
-        notify.error(data.error || 'Error al reducir presupuesto')
+        notify.error(data.error || t('errors.reduceFailed'))
         setLoading(false)
         return
       }
 
-      notify.success(`Presupuesto reducido en ${sobreName}`)
+      notify.success(t('success.reduced', { sobreName }))
 
       // Reset form
       setMonto('')
@@ -95,7 +95,7 @@ export function ReducirPresupuestoDrawer({
       // Callback
       onSuccess?.()
     } catch (err: any) {
-      notify.error(err.message || 'Error al reducir presupuesto')
+      notify.error(err.message || t('errors.reduceFailed'))
     } finally {
       setLoading(false)
     }
@@ -105,10 +105,9 @@ export function ReducirPresupuestoDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Reducir Presupuesto</DrawerTitle>
+          <DrawerTitle>{t('title')}</DrawerTitle>
           <DrawerDescription>
-            Reduce presupuesto de tu sobre <span className="font-bold text-foreground">{sobreName}</span>. Esta acción
-            no afecta gastos registrados
+            {t('description', { sobreName })}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -118,12 +117,12 @@ export function ReducirPresupuestoDrawer({
             <div className="bg-card rounded-lg border border-border p-4 space-y-3">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-base text-muted-foreground">Monto Libre</p>
-                  <p className="text-xl font-bold">{simbolo}{formatNumber(Number(montoLibre))}</p>
+                  <p className="text-base text-muted-foreground">{t('form.freeAmount')}</p>
+                  <p className="text-xl font-bold">{simbolo ?? ''}{formatNumber(Number(montoLibre))}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-base text-muted-foreground">Presupuesto Asignado</p>
-                  <p className="text-xl font-bold">{simbolo}{formatNumber(Number(presupuestoAsignado))}</p>
+                  <p className="text-base text-muted-foreground">{t('form.assignedBudget')}</p>
+                  <p className="text-xl font-bold">{simbolo ?? ''}{formatNumber(Number(presupuestoAsignado))}</p>
                 </div>
               </div>
             </div>
@@ -134,7 +133,7 @@ export function ReducirPresupuestoDrawer({
             {/* Monto a restar */}
             <div className="space-y-2">
               <Label htmlFor="monto" className="font-medium">
-                Monto a restar <span className="text-red-500">*</span>
+                {t('form.amountToReduce')} <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xl font-bold text-foreground">
@@ -158,13 +157,13 @@ export function ReducirPresupuestoDrawer({
             {/* Observación */}
             <div className="space-y-2">
               <Label htmlFor="observacion" className="font-medium">
-                Observación
+                {t('form.observation')}
               </Label>
               <Input
                 id="observacion"
                 value={observacion}
                 onChange={(e) => setObservacion(e.target.value)}
-                placeholder="Ej: Ajuste de presupuesto"
+                placeholder={t('form.observationPlaceholder')}
                 className="text-base"
               />
             </div>
@@ -173,11 +172,11 @@ export function ReducirPresupuestoDrawer({
 
         <DrawerFooter>
           <Button onClick={handleSubmit} disabled={loading || !monto} className="w-full">
-            {loading ? 'Guardando...' : 'Guardar'}
+            {loading ? t('buttons.saving') : t('buttons.save')}
           </Button>
           <DrawerClose asChild>
             <Button variant="outline" disabled={loading} className="w-full">
-              Cancelar
+              {t('buttons.cancel')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

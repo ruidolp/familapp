@@ -15,10 +15,10 @@ import {
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Card } from '@/components/ui/card'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
-import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface AgregarPresupuestoDrawerProps {
   open: boolean
@@ -30,6 +30,15 @@ interface AgregarPresupuestoDrawerProps {
   onSuccess?: () => void
 }
 
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-5 w-1 bg-primary rounded-full" />
+      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+    </div>
+  )
+}
+
 export function AgregarPresupuestoDrawer({
   open,
   onOpenChange,
@@ -39,8 +48,7 @@ export function AgregarPresupuestoDrawer({
   presupuestoAsignado,
   onSuccess,
 }: AgregarPresupuestoDrawerProps) {
-  const t = useTranslations('common')
-  const { formatNumber } = useCurrency()
+  const t = useTranslations('sobres.addBudget')
   const [loading, setLoading] = useState(false)
   const [monto, setMonto] = useState('')
   const [observacion, setObservacion] = useState('')
@@ -66,7 +74,7 @@ export function AgregarPresupuestoDrawer({
     try {
       const montoNum = parseFloat(monto)
       if (isNaN(montoNum) || montoNum <= 0) {
-        notify.error('Monto debe ser mayor a 0')
+        notify.error(t('errors.invalidAmount'))
         setLoading(false)
         return
       }
@@ -84,142 +92,182 @@ export function AgregarPresupuestoDrawer({
       const data = await response.json()
 
       if (!response.ok) {
-        notify.error(data.error || 'Error al agregar presupuesto')
+        notify.error(data.error || t('errors.addFailed'))
         setLoading(false)
         return
       }
 
-      notify.success(`Presupuesto agregado a ${sobreName}`)
+      notify.success(t('success.added', { sobreName }))
 
-      // Reset form
       setMonto('')
       setObservacion('')
       setMontoRecurrente('')
 
-      // Close drawer
       onOpenChange(false)
-
-      // Callback
       onSuccess?.()
     } catch (err: any) {
-      notify.error(err.message || 'Error al agregar presupuesto')
+      notify.error(err.message || t('errors.addFailed'))
     } finally {
       setLoading(false)
     }
   }
 
+  const nuevoTotal = monto 
+    ? Number(presupuestoAsignado) + parseFloat(monto || '0')
+    : Number(presupuestoAsignado)
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Agregar Presupuesto</DrawerTitle>
+          <DrawerTitle>{t('title')}</DrawerTitle>
           <DrawerDescription>
-            Agrega presupuesto a tu sobre <span className="font-bold text-foreground">{sobreName}</span>, cada gasto
-            reducirá el presupuesto. Todo en orden con 1 clic
+            {t('description', { sobreName })}
           </DrawerDescription>
         </DrawerHeader>
 
         <DrawerBody>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* CARD: Monto Libre y Presupuesto Asignado */}
-            <div className="bg-card rounded-lg border border-border p-4 space-y-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-base text-muted-foreground">Monto Libre</p>
-                  <p className="text-xl font-bold">{formatNumber(Number(montoLibre))}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-base text-muted-foreground">Presupuesto Asignado</p>
-                  <p className="text-xl font-bold">{formatNumber(Number(presupuestoAsignado))}</p>
+            
+            {/* MONTO - Card Accent */}
+            <Card className="p-5 bg-card-accent border-primary/20">
+              <div className="space-y-3">
+                <Label htmlFor="monto" className="text-base font-semibold">
+                  💰 {t('form.amount')}
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
+                    +$
+                  </span>
+                  <Input
+                    ref={montoRef}
+                    id="monto"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={monto}
+                    onChange={(e) => setMonto(e.target.value)}
+                    placeholder="0.00"
+                    required
+                    className="pl-14 text-2xl font-semibold h-14 bg-background"
+                  />
                 </div>
               </div>
-            </div>
+            </Card>
 
-            {/* Separador */}
-            <div className="border-t border-border" />
-
-            {/* Monto a sumar */}
-            <div className="space-y-2">
-              <Label htmlFor="monto" className="font-medium">
-                Monto a sumar <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                ref={montoRef}
-                id="monto"
-                type="number"
-                step="0.01"
-                min="0"
-                value={monto}
-                onChange={(e) => setMonto(e.target.value)}
-                placeholder="0"
-                required
-                className="text-base"
-              />
-            </div>
-
-            {/* Observación */}
-            <div className="space-y-2">
-              <Label htmlFor="observacion" className="font-medium">
-                Observación
-              </Label>
-              <Input
-                id="observacion"
-                value={observacion}
-                onChange={(e) => setObservacion(e.target.value)}
-                placeholder="Ej: Presupuesto inicial"
-                className="text-base"
-              />
-            </div>
-
-            {/* Configuración Avanzada (Expandible) */}
-            <div className="border rounded-lg">
-              <button
-                type="button"
-                onClick={() => setExpandedConfig(!expandedConfig)}
-                className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition"
-              >
-                <span className="font-medium">Configuración Avanzada</span>
-                {expandedConfig ? (
-                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                )}
-              </button>
-
-              {expandedConfig && (
-                <div className="border-t border-border p-4 space-y-4 bg-muted/30">
-                  <div className="space-y-2">
-                    <Label htmlFor="montoRecurrente" className="font-medium">
-                      Monto Recurrente
-                    </Label>
-                    <Input
-                      id="montoRecurrente"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={montoRecurrente}
-                      onChange={(e) => setMontoRecurrente(e.target.value)}
-                      placeholder="0"
-                      className="text-base"
-                    />
+            {/* RESUMEN */}
+            <div className="space-y-3">
+              <SectionTitle>{t('sections.summary')}</SectionTitle>
+              
+              <Card className="p-4 space-y-4 bg-card-elevated">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                      {t('form.availableInWallet')}
+                    </p>
+                    <p className="text-lg font-semibold">
+                      ${Number(montoLibre).toLocaleString('es-CL', { minimumFractionDigits: 2 })}
+                    </p>
                   </div>
-                  <p className="text-base text-muted-foreground">
-                    Te ahorramos ingresar todos los meses el presupuesto manual, asigna el valor por defecto y
-                    nosotros lo cargaremos todos los meses
-                  </p>
+                  <div className="space-y-1 text-right">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                      {t('form.currentBudget')}
+                    </p>
+                    <p className="text-lg font-semibold">
+                      ${Number(presupuestoAsignado).toLocaleString('es-CL', { minimumFractionDigits: 2 })}
+                    </p>
+                  </div>
                 </div>
-              )}
+
+                {monto && parseFloat(monto) > 0 && (
+                  <div className="border-t border-dashed border-border pt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {t('form.newBudget')}
+                      </span>
+                      <span className="text-xl font-bold text-primary">
+                        ${nuevoTotal.toLocaleString('es-CL', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            </div>
+
+            {/* DETALLE */}
+            <div className="space-y-3">
+              <SectionTitle>{t('sections.details')}</SectionTitle>
+              
+              <Card className="p-4 space-y-4 bg-card-elevated">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="observacion" className="text-sm font-medium text-muted-foreground">
+                      {t('form.observation')}
+                    </Label>
+                    <span className="text-xs text-muted-foreground">{t('form.optional')}</span>
+                  </div>
+                  <Input
+                    id="observacion"
+                    value={observacion}
+                    onChange={(e) => setObservacion(e.target.value)}
+                    placeholder={t('form.observationPlaceholder')}
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="border rounded-lg overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setExpandedConfig(!expandedConfig)}
+                    className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
+                  >
+                    <span className="text-sm font-medium">{t('form.advancedConfig')}</span>
+                    {expandedConfig ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </button>
+
+                  {expandedConfig && (
+                    <div className="border-t border-border p-4 space-y-3 bg-muted/30">
+                      <div className="space-y-2">
+                        <Label htmlFor="montoRecurrente" className="text-sm font-medium text-muted-foreground">
+                          {t('form.recurringAmount')}
+                        </Label>
+                        <Input
+                          id="montoRecurrente"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={montoRecurrente}
+                          onChange={(e) => setMontoRecurrente(e.target.value)}
+                          placeholder="0.00"
+                          className="h-10"
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {t('form.recurringAmountHelp')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </Card>
             </div>
           </form>
         </DrawerBody>
 
-        <DrawerFooter>
-          <Button onClick={handleSubmit} disabled={loading || !monto} className="w-full">
-            {loading ? 'Guardando...' : 'Guardar'}
+        <DrawerFooter className="border-t bg-muted/30">
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || !monto}
+            className="w-full h-12 text-base font-semibold"
+          >
+            {loading ? t('buttons.saving') : t('buttons.addBudget')}
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline" disabled={loading} className="w-full">
-              Cancelar
+            <Button variant="ghost" disabled={loading} className="w-full">
+              {t('buttons.cancel')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

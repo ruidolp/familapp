@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslations } from 'next-intl'
 import { LogOut, User } from 'lucide-react'
 import {
   Drawer,
@@ -25,6 +26,8 @@ export function ProfileDrawer({
   userEmail,
   onLogout,
 }: ProfileDrawerProps) {
+  const t = useTranslations()
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="left">
       <DrawerContent
@@ -45,7 +48,7 @@ export function ProfileDrawer({
           </div>
 
           <DrawerTitle className="text-2xl font-bold text-center font-display">
-            {userName || 'Usuario'}
+            {userName || t('user.profile.title')}
           </DrawerTitle>
 
           {userEmail && (
@@ -71,10 +74,10 @@ export function ProfileDrawer({
               </div>
               <div className="flex-1 text-left">
                 <p className="text-lg font-semibold text-red-700 font-display">
-                  Cerrar Sesión
+                  {t('user.profile.signOut')}
                 </p>
                 <p className="text-base text-red-600">
-                  Salir de la aplicación
+                  {t('user.profile.signOutDescription')}
                 </p>
               </div>
             </button>

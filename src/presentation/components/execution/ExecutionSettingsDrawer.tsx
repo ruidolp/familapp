@@ -11,6 +11,7 @@
  * - Flat list mode
  */
 
+import { useTranslations } from 'next-intl'
 import {
   Drawer,
   DrawerContent,
@@ -38,11 +39,13 @@ export function ExecutionSettingsDrawer({
   settings,
   onSettingsChange,
 }: ExecutionSettingsDrawerProps) {
+  const t = useTranslations()
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="flex flex-col">
         <DrawerHeader>
-          <DrawerTitle>Configuración</DrawerTitle>
+          <DrawerTitle>{t('shopping.execution.settings.title')}</DrawerTitle>
         </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-4 space-y-6 pb-6">
@@ -51,10 +54,10 @@ export function ExecutionSettingsDrawer({
             <div className="space-y-0.5">
               <Label className="text-base font-medium flex items-center gap-2">
                 <Timer className="h-4 w-4" />
-                Mostrar cronómetro
+                {t('shopping.execution.settings.showTimer')}
               </Label>
               <p className="text-sm text-muted-foreground">
-                Ver tiempo transcurrido
+                {t('shopping.execution.settings.showTimerDesc')}
               </p>
             </div>
             <Switch
@@ -72,10 +75,10 @@ export function ExecutionSettingsDrawer({
             <div className="space-y-0.5">
               <Label className="text-base font-medium flex items-center gap-2">
                 <Tag className="h-4 w-4" />
-                Agregar precios
+                {t('shopping.execution.settings.enablePrices')}
               </Label>
               <p className="text-sm text-muted-foreground">
-                Registrar precio de productos
+                {t('shopping.execution.settings.enablePricesDesc')}
               </p>
             </div>
             <Switch
@@ -93,10 +96,10 @@ export function ExecutionSettingsDrawer({
             <div className="space-y-0.5">
               <Label className="text-base font-medium flex items-center gap-2">
                 <Grid className="h-4 w-4" />
-                Ver por categorías
+                {t('shopping.execution.settings.showCategories')}
               </Label>
               <p className="text-sm text-muted-foreground">
-                Agrupar productos por categoría
+                {t('shopping.execution.settings.showCategoriesDesc')}
               </p>
             </div>
             <Switch
@@ -114,10 +117,10 @@ export function ExecutionSettingsDrawer({
             <div className="space-y-0.5">
               <Label className="text-base font-medium flex items-center gap-2">
                 <AlignLeft className="h-4 w-4" />
-                Modo texto plano
+                {t('shopping.execution.settings.flatListMode')}
               </Label>
               <p className="text-sm text-muted-foreground">
-                Vista compacta sin bordes
+                {t('shopping.execution.settings.flatListModeDesc')}
               </p>
             </div>
             <Switch
@@ -132,7 +135,7 @@ export function ExecutionSettingsDrawer({
         <div className="border-t p-4 bg-background">
           <DrawerClose asChild>
             <Button variant="outline" className="w-full">
-              Cerrar
+              {t('common.close')}
             </Button>
           </DrawerClose>
         </div>

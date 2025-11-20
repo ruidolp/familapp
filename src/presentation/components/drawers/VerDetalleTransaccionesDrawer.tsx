@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Drawer,
   DrawerClose,
@@ -47,6 +48,7 @@ export function VerDetalleTransaccionesDrawer({
   sobreId,
   sobreName,
 }: VerDetalleTransaccionesDrawerProps) {
+  const t = useTranslations('sobres.transactions')
   const { formatNumber, simbolo } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [transacciones, setTransacciones] = useState<Transaccion[]>([])
@@ -81,11 +83,11 @@ export function VerDetalleTransaccionesDrawer({
 
         setTotalMes(totalDelMes)
       } else {
-        notify.error('Error al cargar transacciones')
+        notify.error(t('errors.loadFailed'))
       }
     } catch (error) {
       console.error('Error:', error)
-      notify.error('Error al cargar transacciones')
+      notify.error(t('errors.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -118,20 +120,20 @@ export function VerDetalleTransaccionesDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Detalle de Transacciones</DrawerTitle>
+          <DrawerTitle>{t('title')}</DrawerTitle>
           <DrawerDescription>
-            Transacciones del sobre &quot;{sobreName}&quot;
+            {t('description', { sobreName })}
           </DrawerDescription>
         </DrawerHeader>
 
         <DrawerBody>
           {loading ? (
             <div className="text-center py-8">
-              <p className="text-base text-muted-foreground">Cargando transacciones...</p>
+              <p className="text-base text-muted-foreground">{t('loading')}</p>
             </div>
           ) : transacciones.length === 0 ? (
             <div className="text-center py-8 space-y-2">
-              <p className="text-base text-muted-foreground">No hay transacciones aún</p>
+              <p className="text-base text-muted-foreground">{t('noTransactions')}</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -139,11 +141,11 @@ export function VerDetalleTransaccionesDrawer({
               <Card className="p-4 bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total mes actual</p>
-                    <p className="text-2xl font-bold text-blue-600">{simbolo}{formatNumber(totalMes)}</p>
+                    <p className="text-sm text-muted-foreground">{t('totalCurrentMonth')}</p>
+                    <p className="text-2xl font-bold text-blue-600">{simbolo ?? ''}{formatNumber(totalMes)}</p>
                   </div>
                   <Badge variant="outline" className="text-base">
-                    {transacciones.length} transacciones
+                    {t('transactionsCount', { count: transacciones.length })}
                   </Badge>
                 </div>
               </Card>
@@ -175,7 +177,7 @@ export function VerDetalleTransaccionesDrawer({
                               <p className="text-base font-medium">
                                 {transaccion.subcategoria?.nombre ||
                                   transaccion.categoria?.nombre ||
-                                  'Sin categoría'}
+                                  t('noCategory')}
                               </p>
                               {transaccion.descripcion && (
                                 <p className="text-sm text-muted-foreground truncate">
@@ -187,7 +189,7 @@ export function VerDetalleTransaccionesDrawer({
 
                           {/* Monto */}
                           <p className="text-base font-semibold text-foreground ml-2">
-                            -{simbolo}{formatNumber(Number(transaccion.monto))}
+                            -{simbolo ?? ''}{formatNumber(Number(transaccion.monto))}
                           </p>
                         </Card>
                       ))}
@@ -202,7 +204,7 @@ export function VerDetalleTransaccionesDrawer({
         <DrawerFooter>
           <DrawerClose asChild>
             <Button variant="outline" className="w-full">
-              Cerrar
+              {t('buttons.close')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

@@ -8,6 +8,7 @@
  */
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Sheet,
   SheetContent,
@@ -43,6 +44,7 @@ export function FinalizeExecutionDrawer({
   timerFormatted,
   onConfirm,
 }: FinalizeExecutionDrawerProps) {
+  const t = useTranslations()
   const { formatNumber } = useCurrency()
   const [manualTotal, setManualTotal] = useState('')
   const [syncing, setSyncing] = useState(false)
@@ -72,9 +74,9 @@ export function FinalizeExecutionDrawer({
         <div className="flex-1 overflow-y-auto">
           {/* Header - No SheetHeader to avoid fixed height issues */}
           <div className="p-6 pb-4">
-            <SheetTitle className="text-xl font-bold">Resumen de Compra</SheetTitle>
+            <SheetTitle className="text-xl font-bold">{t('shopping.execution.finalize.title')}</SheetTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Verifica los detalles antes de finalizar
+              {t('shopping.execution.finalize.description')}
             </p>
           </div>
 
@@ -89,7 +91,7 @@ export function FinalizeExecutionDrawer({
                 <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
                   {purchasedCount}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Comprados</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('shopping.execution.finalize.purchased')}</p>
               </div>
 
               {/* Descartados */}
@@ -100,7 +102,7 @@ export function FinalizeExecutionDrawer({
                 <div className="text-2xl font-bold text-foreground/70">
                   {discardedCount}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Descartados</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('shopping.execution.finalize.discarded')}</p>
               </div>
 
               {/* Pendientes */}
@@ -126,7 +128,7 @@ export function FinalizeExecutionDrawer({
                 )}>
                   {pendingCount}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Pendientes</p>
+                <p className="text-xs text-muted-foreground mt-1">{t('shopping.execution.finalize.pending')}</p>
               </div>
             </div>
 
@@ -135,8 +137,7 @@ export function FinalizeExecutionDrawer({
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription className="text-xs sm:text-sm">
-                  Tienes {pendingCount} producto{pendingCount > 1 ? 's' : ''} sin definir.
-                  Considera marcarlos como comprados o descartados.
+                  {t('shopping.execution.finalize.pendingWarning', { count: pendingCount })}
                 </AlertDescription>
               </Alert>
             )}
@@ -147,7 +148,7 @@ export function FinalizeExecutionDrawer({
             <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">Tiempo total</span>
+                <span className="text-sm text-muted-foreground">{t('shopping.execution.finalize.totalTime')}</span>
               </div>
               <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
             </div>
@@ -156,12 +157,12 @@ export function FinalizeExecutionDrawer({
 
             {/* Calculated Total - Highlighted */}
             <div className="bg-primary/5 dark:bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <p className="text-xs text-muted-foreground mb-2">Total Calculado</p>
+              <p className="text-xs text-muted-foreground mb-2">{t('shopping.execution.finalize.calculatedTotal')}</p>
               <div className="text-3xl font-bold text-primary">
                 {totalCalculated > 0 ? formatNumber(totalCalculated) : '—'}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Suma de todos los precios registrados
+                {t('shopping.execution.finalize.calculatedDesc')}
               </p>
             </div>
 
@@ -169,10 +170,10 @@ export function FinalizeExecutionDrawer({
             <div className="space-y-3">
               <div>
                 <Label htmlFor="manual-total" className="text-sm font-medium">
-                  Total Pagado (opcional)
+                  {t('shopping.execution.finalize.manualTotal')}
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Ingresa el monto real del ticket si es diferente
+                  {t('shopping.execution.finalize.manualTotalDesc')}
                 </p>
               </div>
               <Input
@@ -210,10 +211,10 @@ export function FinalizeExecutionDrawer({
             {syncing ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Finalizando...
+                {t('shopping.execution.finalize.finalizing')}
               </>
             ) : (
-              'Finalizar y Sincronizar'
+              t('shopping.execution.finalize.submit')
             )}
           </Button>
 
@@ -223,7 +224,7 @@ export function FinalizeExecutionDrawer({
             disabled={syncing}
             className="w-full"
           >
-            Cancelar
+            {t('common.cancel')}
           </Button>
         </div>
       </SheetContent>

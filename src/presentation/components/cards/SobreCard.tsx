@@ -173,7 +173,7 @@ export function SobreCard({
                   e.stopPropagation()
                   onAgregarPresupuesto?.()
                 }}>
-                  Aumentar Presupuesto
+                  {t('menu.increaseBudget')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -182,19 +182,19 @@ export function SobreCard({
                   }}
                   disabled={presupuestoLibre <= 0}
                 >
-                  Reducir Presupuesto
+                  {t('menu.reduceBudget')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation()
                   onEditarCategorias?.()
                 }}>
-                  Editar Categorías
+                  {t('menu.editCategories')}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation()
                   onVerDetalle?.()
                 }}>
-                  Listado de Compras
+                  {t('menu.shoppingList')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -211,7 +211,7 @@ export function SobreCard({
         {presupuesto <= 0 && (
           <div className="p-4 rounded-lg bg-white/10 text-center space-y-3 backdrop-blur border border-white/20">
             <p className="text-base text-white/75">
-              Asigne presupuesto
+              {t('emptyBudget.message')}
             </p>
             <Button
               size="sm"
@@ -223,7 +223,7 @@ export function SobreCard({
               variant="outline"
             >
               <Plus size={18} />
-              Agregar Presupuesto
+              {t('emptyBudget.button')}
             </Button>
           </div>
         )}
@@ -232,13 +232,13 @@ export function SobreCard({
         {categoriasLoading ? (
           <div className="p-3 rounded-lg bg-white/10 text-center backdrop-blur">
             <p className="text-base text-white/75">
-              Cargando categorías...
+              {t('categories.loading')}
             </p>
           </div>
         ) : categoriasOrdenadas.length > 0 ? (
           <div className="space-y-3 flex-1 flex flex-col min-h-0">
             <p className="text-base font-medium text-white/80">
-              Categorías ({categoriasOrdenadas.length})
+              {t('categories.title', { count: categoriasOrdenadas.length })}
             </p>
 
             <div className="overflow-y-auto space-y-2 pr-2 flex-1">
@@ -274,14 +274,14 @@ export function SobreCard({
                 variant="outline"
               >
                 <Plus size={18} />
-                Agregar Categoría
+                {t('categories.addButton')}
               </Button>
             </div>
           </div>
         ) : (
           <div className="p-3 rounded-lg bg-white/10 text-center backdrop-blur border border-white/20">
             <p className="text-base text-white/75">
-              Sin categorías aún
+              {t('categories.empty')}
             </p>
             {/* Agregar Categoría button - when no categories */}
             <Button
@@ -294,7 +294,7 @@ export function SobreCard({
               variant="outline"
             >
               <Plus size={18} />
-              Agregar Categoría
+              {t('categories.addButton')}
             </Button>
           </div>
         )}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,11 +23,11 @@ interface CrearBilleteraProps {
 }
 
 const TIPOS_BILLETERA = [
-  { value: 'DEBITO', label: 'Débito' },
-  { value: 'CREDITO', label: 'Crédito' },
-  { value: 'EFECTIVO', label: 'Efectivo' },
-  { value: 'AHORRO', label: 'Ahorro' },
-  { value: 'INVERSION', label: 'Inversión' },
+  { value: 'DEBITO', labelKey: 'billeteras.types.DEBITO' },
+  { value: 'CREDITO', labelKey: 'billeteras.types.CREDITO' },
+  { value: 'EFECTIVO', labelKey: 'billeteras.types.EFECTIVO' },
+  { value: 'AHORRO', labelKey: 'billeteras.types.AHORRO' },
+  { value: 'INVERSION', labelKey: 'billeteras.types.INVERSION' },
 ]
 
 export function CrearBilleteraForm({
@@ -35,6 +36,7 @@ export function CrearBilleteraForm({
   onCancel,
   isInline = false,
 }: CrearBilleteraProps) {
+  const t = useTranslations()
   const [loading, setLoading] = useState(false)
   const [billeteraNombre, setBilleteraNombre] = useState('')
   const [billeteraType, setBilleteraType] = useState('EFECTIVO')
@@ -72,7 +74,7 @@ export function CrearBilleteraForm({
         return
       }
 
-      notify.success('Billetera creada')
+      notify.success(t('common.success'))
 
       // Resetear form
       setBilleteraNombre('')
@@ -92,30 +94,30 @@ export function CrearBilleteraForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="nombre-billetera">
-          Nombre <span className="text-red-500">*</span>
+          {t('billeteras.fields.name')} <span className="text-red-500">*</span>
         </Label>
         <Input
           ref={billeteraNombreRef}
           id="nombre-billetera"
           value={billeteraNombre}
           onChange={(e) => setBilleteraNombre(e.target.value)}
-          placeholder="Ej: Mi Tarjeta, Efectivo"
+          placeholder={t('billeteras.fields.namePlaceholder')}
           required
         />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="tipo-billetera">
-          Tipo <span className="text-red-500">*</span>
+          {t('billeteras.fields.type')} <span className="text-red-500">*</span>
         </Label>
         <Select value={billeteraType} onValueChange={setBilleteraType}>
           <SelectTrigger id="tipo-billetera">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {TIPOS_BILLETERA.map((t) => (
-              <SelectItem key={t.value} value={t.value}>
-                {t.label}
+            {TIPOS_BILLETERA.map((tipo) => (
+              <SelectItem key={tipo.value} value={tipo.value}>
+                {t(tipo.labelKey)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -124,7 +126,7 @@ export function CrearBilleteraForm({
 
       <div className="space-y-2">
         <Label htmlFor="saldo-billetera">
-          Saldo Inicial <span className="text-red-500">*</span>
+          {t('billeteras.fields.initialBalance')} <span className="text-red-500">*</span>
         </Label>
         <Input
           ref={billeteraSaldoRef}
@@ -134,7 +136,7 @@ export function CrearBilleteraForm({
           min="0"
           value={billeteraSaldo}
           onChange={(e) => setBilleteraSaldo(e.target.value)}
-          placeholder="0.00"
+          placeholder={t('billeteras.fields.initialBalancePlaceholder')}
           required
         />
       </div>
@@ -145,7 +147,7 @@ export function CrearBilleteraForm({
           disabled={loading || !billeteraNombre.trim()}
           className="flex-1"
         >
-          {loading ? 'Creando...' : 'Crear Billetera'}
+          {loading ? t('billeteras.create.submitting') : t('billeteras.create.submit')}
         </Button>
         {onCancel && (
           <Button
@@ -155,7 +157,7 @@ export function CrearBilleteraForm({
             disabled={loading}
             className="flex-1"
           >
-            Atrás
+            {t('common.back')}
           </Button>
         )}
       </div>

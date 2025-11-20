@@ -53,13 +53,13 @@ export function AppShell({
 }: AppShellProps) {
   return (
     // CONTENEDOR RAÍZ - SIEMPRE h-screen flex flex-col
-    <div className="h-screen flex flex-col bg-gray-900 text-white overflow-hidden">
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
 
       {/* ========== HEADER ========== */}
       {/* shrink-0: NUNCA cambia de tamaño | Solo se renderiza si existe headerContent */}
       {headerContent && (
         <header
-          className="shrink-0 bg-gray-800/50 backdrop-blur-md border-b border-white/10"
+          className="shrink-0 bg-card/50 backdrop-blur-md border-b border-border"
           style={{ height: `${headerHeight}px` }}
         >
           {headerContent}
@@ -80,7 +80,7 @@ export function AppShell({
         {/* Solo se renderiza si existe | shrink-0: NUNCA cambia de tamaño */}
         {dotIndicator && (
           <div
-            className="shrink-0 flex items-center justify-center bg-gray-900/80 backdrop-blur-sm"
+            className="shrink-0 flex items-center justify-center bg-background/80 backdrop-blur-sm"
             style={{ height: `${dotIndicatorHeight}px` }}
           >
             {dotIndicator}
@@ -91,7 +91,7 @@ export function AppShell({
       {/* ========== FOOTER ========== */}
       {/* shrink-0: NUNCA cambia de tamaño */}
       <footer
-        className="shrink-0 bg-gray-800/50 backdrop-blur-md border-t border-white/10"
+        className="shrink-0 bg-card/50 backdrop-blur-md border-t border-border"
         style={{ height: `${footerHeight}px` }}
       >
         {footerContent}

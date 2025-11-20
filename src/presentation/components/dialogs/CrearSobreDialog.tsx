@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -52,6 +53,7 @@ export function CrearSobreDialog({
   onOpenChange,
   userId,
 }: CrearSobreDialogProps) {
+  const t = useTranslations()
   const router = useRouter()
   const { nombre: nombreMoneda } = useCurrency()
   const [loading, setLoading] = useState(false)
@@ -111,9 +113,9 @@ export function CrearSobreDialog({
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Crear Nuevo Sobre</DialogTitle>
+            <DialogTitle>{t('sobres.create.title')}</DialogTitle>
             <DialogDescription>
-              Agrega un presupuesto para gestionar tus gastos
+              {t('sobres.create.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -121,13 +123,13 @@ export function CrearSobreDialog({
             {/* Nombre */}
             <div className="grid gap-2">
               <Label htmlFor="nombre">
-                Nombre <span className="text-red-500">*</span>
+                {t('sobres.create.nameLabel')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="nombre"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ej: Hogar, Comida, Transporte"
+                placeholder={t('sobres.create.namePlaceholder')}
                 required
               />
             </div>
@@ -135,7 +137,7 @@ export function CrearSobreDialog({
             {/* Tipo */}
             <div className="grid gap-2">
               <Label htmlFor="tipo">
-                Tipo <span className="text-red-500">*</span>
+                {t('sobres.create.typeLabel')} <span className="text-red-500">*</span>
               </Label>
               <Select value={tipo} onValueChange={setTipo}>
                 <SelectTrigger>
@@ -154,7 +156,7 @@ export function CrearSobreDialog({
             {/* Presupuesto */}
             <div className="grid gap-2">
               <Label htmlFor="presupuesto">
-                Presupuesto Asignado ({nombreMoneda}) <span className="text-red-500">*</span>
+                {t('sobres.create.budgetLabel', { currency: nombreMoneda ?? '' })} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="presupuesto"
@@ -169,7 +171,7 @@ export function CrearSobreDialog({
 
             {/* Color */}
             <div className="grid gap-2">
-              <Label>Color</Label>
+              <Label>{t('sobres.create.color')}</Label>
               <div className="flex gap-2">
                 {COLORES_SUGERIDOS.map((c) => (
                   <button
@@ -189,7 +191,7 @@ export function CrearSobreDialog({
 
             {/* Emoji */}
             <div className="grid gap-2">
-              <Label>Icono</Label>
+              <Label>{t('sobres.create.icon')}</Label>
               <div className="flex gap-2">
                 {EMOJIS_SUGERIDOS.map((e) => (
                   <button
@@ -222,13 +224,13 @@ export function CrearSobreDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button
               type="submit"
               disabled={loading || !nombre.trim() || parseFloat(presupuesto) <= 0}
             >
-              {loading ? 'Creando...' : 'Crear Sobre'}
+              {loading ? t('sobres.create.creating') : t('sobres.create.submit')}
             </Button>
           </DialogFooter>
         </form>

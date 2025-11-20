@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { HexColorPicker } from 'react-colorful'
 import { Button } from '@/components/ui/button'
 import {
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Card } from '@/components/ui/card'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 
@@ -37,6 +39,15 @@ const COLORES_SUGERIDOS = [
   '#64748b',
 ]
 
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-5 w-1 bg-primary rounded-full" />
+      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+    </div>
+  )
+}
+
 export function CrearSobreDrawer({
   open,
   onOpenChange,
@@ -44,17 +55,16 @@ export function CrearSobreDrawer({
   onSobreCreated,
 }: CrearSobreDrawerProps) {
   const router = useRouter()
+  const t = useTranslations('sobres.create')
   const [loading, setLoading] = useState(false)
   const [sobreName, setSobreName] = useState('')
   const [sobreColor, setSobreColor] = useState(COLORES_SUGERIDOS[0])
   const [showColorPicker, setShowColorPicker] = useState(false)
   const [existingSobres, setExistingSobres] = useState<string[]>([])
 
-  // Ref para focus
   const sobreNombreRef = useRef<HTMLInputElement>(null)
   useInputFocus(sobreNombreRef, 350)
 
-  // Al abrir, cargar sobres existentes
   useEffect(() => {
     if (open) {
       setSobreName('')
@@ -84,14 +94,12 @@ export function CrearSobreDrawer({
     try {
       const nombreTrimmed = sobreName.trim()
 
-      // Validar duplicado
       if (existingSobres.includes(nombreTrimmed.toLowerCase())) {
         notify.duplicate('sobre', 'nombre')
         setLoading(false)
         return
       }
 
-      // Crear el sobre
       const response = await fetch('/api/sobres', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,7 +116,7 @@ export function CrearSobreDrawer({
 
       if (!response.ok) {
         if (data.requiresOnboarding) {
-          notify.warning('Configuración requerida', data.error)
+          notify.warning(t('errors.configRequired'), data.error)
         } else {
           notify.error(data.error)
         }
@@ -116,23 +124,17 @@ export function CrearSobreDrawer({
         return
       }
 
-      notify.created('Sobre')
+      notify.created(t('success.created'))
 
-      // Reset
       setSobreName('')
       setSobreColor(COLORES_SUGERIDOS[0])
       setShowColorPicker(false)
 
-      // Close drawer
       onOpenChange(false)
-
-      // Callback - paso del sobre para que SobresScreen abra AgregarPresupuestoDrawer
       onSobreCreated?.(data.sobre)
-
-      // Refresh page
       router.refresh()
     } catch (err: any) {
-      notify.error(err.message || 'Error al crear el sobre')
+      notify.error(err.message || t('errors.createFailed'))
     } finally {
       setLoading(false)
     }
@@ -142,95 +144,152 @@ export function CrearSobreDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Crear Nuevo Sobre</DrawerTitle>
+          <DrawerTitle>{t('title')}</DrawerTitle>
           <DrawerDescription>
-            Define el nombre y color de tu sobre. Luego asignarás presupuesto desde una billetera.
+            {t('description')}
           </DrawerDescription>
         </DrawerHeader>
 
         <DrawerBody>
-          <form onSubmit={handleCrearSobre} className="space-y-4">
-            {/* Nombre */}
-            <div className="space-y-2">
-              <Label htmlFor="nombre-sobre">
-                Nombre <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                ref={sobreNombreRef}
-                id="nombre-sobre"
-                value={sobreName}
-                onChange={(e) => setSobreName(e.target.value)}
-                placeholder="Ej: Comida, Transporte, Hogar"
-                required
-              />
-            </div>
-
-            {/* Color */}
-            <div className="space-y-2">
-              <Label>Color</Label>
-              <div className="flex gap-2 flex-wrap items-center">
-                {COLORES_SUGERIDOS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => {
-                      setSobreColor(c)
-                      setShowColorPicker(false)
-                    }}
-                    className={`w-10 h-10 rounded-full border-2 transition-all ${
-                      sobreColor === c && !showColorPicker
-                        ? 'border-slate-900 scale-110'
-                        : 'border-slate-300 hover:scale-105'
-                    }`}
-                    style={{ backgroundColor: c }}
-                  />
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => setShowColorPicker(!showColorPicker)}
-                  className={`w-10 h-10 rounded-full border-2 transition-all flex items-center justify-center text-sm font-bold ${
-                    showColorPicker
-                      ? 'border-slate-900 bg-slate-100'
-                      : 'border-slate-300 hover:bg-slate-50'
-                  }`}
+          <form onSubmit={handleCrearSobre} className="space-y-6">
+            
+            {/* PREVIEW - Card Accent */}
+            <Card className="p-5 bg-card-accent">
+              <div className="flex items-center gap-4">
+                <div 
+                  className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-bold transition-colors"
+                  style={{ backgroundColor: sobreColor }}
                 >
-                  +
-                </button>
-              </div>
-
-              {showColorPicker && (
-                <div className="mt-3 p-3 border border-slate-300 rounded-lg bg-white">
-                  <HexColorPicker color={sobreColor} onChange={setSobreColor} />
-                  <div className="mt-3 flex items-center gap-2">
-                    <div
-                      className="w-8 h-8 rounded border border-slate-300"
-                      style={{ backgroundColor: sobreColor }}
-                    />
-                    <Input
-                      type="text"
-                      value={sobreColor}
-                      onChange={(e) => setSobreColor(e.target.value)}
-                      className="flex-1 font-mono text-base"
-                    />
-                  </div>
+                  {sobreName.trim() ? sobreName.trim().charAt(0).toUpperCase() : '?'}
                 </div>
-              )}
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                    {t('form.preview')}
+                  </p>
+                  <p className="text-xl font-semibold">
+                    {sobreName.trim() || t('form.envelopeName')}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {t('form.budget')}: $0.00
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* IDENTIDAD */}
+            <div className="space-y-3">
+              <SectionTitle>{t('sections.identity')}</SectionTitle>
+              
+              <Card className="p-4 space-y-4 bg-card-elevated">
+                {/* Nombre */}
+                <div className="space-y-2">
+                  <Label htmlFor="nombre-sobre" className="text-sm font-medium text-muted-foreground">
+                    {t('form.name')}
+                  </Label>
+                  <Input
+                    ref={sobreNombreRef}
+                    id="nombre-sobre"
+                    value={sobreName}
+                    onChange={(e) => setSobreName(e.target.value)}
+                    placeholder={t('form.namePlaceholder')}
+                    required
+                    className="h-11 text-base"
+                  />
+                </div>
+
+                {/* Color */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-medium text-muted-foreground">
+                    {t('form.color')}
+                  </Label>
+                  
+                  <div className="flex gap-2 flex-wrap items-center">
+                    {COLORES_SUGERIDOS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => {
+                          setSobreColor(c)
+                          setShowColorPicker(false)
+                        }}
+                        className={`
+                          w-10 h-10 rounded-full transition-all
+                          ${sobreColor === c && !showColorPicker
+                            ? 'ring-2 ring-offset-2 ring-primary scale-110'
+                            : 'hover:scale-105 opacity-80 hover:opacity-100'
+                          }
+                        `}
+                        style={{ backgroundColor: c }}
+                      />
+                    ))}
+
+                    <button
+                      type="button"
+                      onClick={() => setShowColorPicker(!showColorPicker)}
+                      className={`
+                        w-10 h-10 rounded-full border-2 border-dashed transition-all 
+                        flex items-center justify-center text-sm font-bold
+                        ${showColorPicker
+                          ? 'border-primary bg-muted text-primary'
+                          : 'border-muted-foreground/30 hover:border-primary hover:text-primary'
+                        }
+                      `}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {showColorPicker && (
+                    <div className="mt-3 p-4 border border-border rounded-lg bg-background space-y-3">
+                      <HexColorPicker 
+                        color={sobreColor} 
+                        onChange={setSobreColor}
+                        style={{ width: '100%' }}
+                      />
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-lg border border-border"
+                          style={{ backgroundColor: sobreColor }}
+                        />
+                        <Input
+                          type="text"
+                          value={sobreColor}
+                          onChange={(e) => setSobreColor(e.target.value)}
+                          className="flex-1 font-mono h-10"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Card>
             </div>
+
+            {/* INFO */}
+            <Card className="p-4 bg-muted border-border">
+              <div className="flex gap-3">
+                <span className="text-lg">💡</span>
+                <div className="text-sm">
+                  <p className="font-medium mb-1">{t('info.nextStep')}</p>
+                  <p className="text-muted-foreground">
+                    {t('info.nextStepDescription')}
+                  </p>
+                </div>
+              </div>
+            </Card>
           </form>
         </DrawerBody>
 
-        <DrawerFooter>
+        <DrawerFooter className="border-t bg-muted/30">
           <Button
             onClick={handleCrearSobre}
             disabled={loading || !sobreName.trim()}
-            className="w-full"
+            className="w-full h-12 text-base font-semibold"
           >
-            {loading ? 'Creando...' : 'Crear Sobre'}
+            {loading ? t('buttons.creating') : t('buttons.createEnvelope')}
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline" disabled={loading} className="w-full mb-4">
-              Cancelar
+            <Button variant="ghost" disabled={loading} className="w-full">
+              {t('buttons.cancel')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

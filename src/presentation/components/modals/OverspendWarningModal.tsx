@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +47,7 @@ export function OverspendWarningModal({
   onAddBudget,
   loading = false,
 }: OverspendWarningModalProps) {
+  const t = useTranslations()
   const { formatNumber } = useCurrency()
   const [showDetails, setShowDetails] = useState(false)
 
@@ -60,7 +62,7 @@ export function OverspendWarningModal({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <span className="text-2xl">⚠️</span>
-            {isOverspend ? 'Presupuesto Excedido' : 'Saldo Insuficiente'}
+            {isOverspend ? t('modals.overspendWarning.budgetExceeded') : t('modals.overspendWarning.insufficientBalance')}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {warning.message}
@@ -74,13 +76,13 @@ export function OverspendWarningModal({
               <AlertDescription className="space-y-2">
                 <div className="grid grid-cols-2 gap-2 text-base">
                   <div>
-                    <p className="text-muted-foreground">Presupuesto</p>
+                    <p className="text-muted-foreground">{t('modals.overspendWarning.budget')}</p>
                     <p className="font-bold">
                       ${formatNumber(warning.details.presupuesto_asignado)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Gastado</p>
+                    <p className="text-muted-foreground">{t('modals.overspendWarning.spent')}</p>
                     <p className="font-bold text-red-600">
                       ${formatNumber(warning.details.gastado)}
                     </p>
@@ -88,7 +90,7 @@ export function OverspendWarningModal({
                 </div>
                 <div className="pt-2 border-t">
                   <Badge variant="destructive" className="w-full justify-center">
-                    Exceso: {Math.round(warning.details.porcentajeExceso)}%
+                    {t('modals.overspendWarning.excess')}: {Math.round(warning.details.porcentajeExceso)}%
                   </Badge>
                 </div>
               </AlertDescription>
@@ -100,13 +102,13 @@ export function OverspendWarningModal({
               <AlertDescription className="space-y-2">
                 <div className="grid grid-cols-2 gap-2 text-base">
                   <div>
-                    <p className="text-muted-foreground">Saldo Actual</p>
+                    <p className="text-muted-foreground">{t('modals.overspendWarning.currentBalance')}</p>
                     <p className="font-bold">
                       ${formatNumber(warning.details.saldoAnterior ?? 0)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground">Saldo Después</p>
+                    <p className="text-muted-foreground">{t('modals.overspendWarning.balanceAfter')}</p>
                     <p className="font-bold text-red-600">
                       ${formatNumber(warning.details.saldoNuevo ?? 0)}
                     </p>
@@ -118,20 +120,20 @@ export function OverspendWarningModal({
 
           {/* Opciones recomendadas */}
           <div className="bg-blue-50 rounded-lg p-3 space-y-2">
-            <p className="text-base font-medium text-blue-900">💡 Opciones recomendadas:</p>
+            <p className="text-base font-medium text-blue-900">{t('modals.overspendWarning.recommendedOptions')}</p>
             <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
               {isOverspend && (
                 <>
-                  <li>Aumentar el presupuesto del sobre</li>
-                  <li>Transferir budget desde otro sobre</li>
-                  <li>Registrar el gasto de todas formas (permitido)</li>
+                  <li>{t('modals.overspendWarning.increaseBudget')}</li>
+                  <li>{t('modals.overspendWarning.transferBudget')}</li>
+                  <li>{t('modals.overspendWarning.registerAnyway')}</li>
                 </>
               )}
               {isNegativeWallet && (
                 <>
-                  <li>Realizar un depósito en la billetera</li>
-                  <li>Transferir dinero desde otra billetera</li>
-                  <li>Registrar el gasto de todas formas (permitido)</li>
+                  <li>{t('modals.overspendWarning.makeDeposit')}</li>
+                  <li>{t('modals.overspendWarning.transferMoney')}</li>
+                  <li>{t('modals.overspendWarning.registerAnyway')}</li>
                 </>
               )}
             </ul>
@@ -142,7 +144,7 @@ export function OverspendWarningModal({
             onClick={() => setShowDetails(!showDetails)}
             className="text-sm text-muted-foreground hover:text-foreground underline"
           >
-            {showDetails ? 'Ocultar detalles' : 'Mostrar detalles técnicos'}
+            {showDetails ? t('modals.overspendWarning.hideDetails') : t('modals.overspendWarning.showDetails')}
           </button>
 
           {showDetails && (
@@ -159,7 +161,7 @@ export function OverspendWarningModal({
         </div>
 
         <AlertDialogFooter className="flex gap-2">
-          <AlertDialogCancel disabled={loading}>Cancelar</AlertDialogCancel>
+          <AlertDialogCancel disabled={loading}>{t('common.cancel')}</AlertDialogCancel>
 
           {onAddBudget && (
             <Button
@@ -167,12 +169,12 @@ export function OverspendWarningModal({
               onClick={onAddBudget}
               disabled={loading}
             >
-              Agregar Budget
+              {t('modals.overspendWarning.addBudget')}
             </Button>
           )}
 
           <AlertDialogAction onClick={onConfirm} disabled={loading}>
-            {loading ? 'Registrando...' : 'Registrar de Todas Formas'}
+            {loading ? t('modals.overspendWarning.registering') : t('modals.overspendWarning.registerAnywayButton')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

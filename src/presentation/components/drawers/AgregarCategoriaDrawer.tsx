@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -51,6 +52,7 @@ export function AgregarCategoriaDrawer({
   userId,
   onSuccess,
 }: AgregarCategoriaDrawerProps) {
+  const t = useTranslations()
   const [loading, setLoading] = useState(false)
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [marcas, setMarcas] = useState<Marca[]>([])
@@ -320,7 +322,7 @@ export function AgregarCategoriaDrawer({
   // Guardar categorías en el sobre
   const handleGuardar = async () => {
     if (selectedCategories.length === 0) {
-      notify.error('Selecciona al menos una categoría')
+      notify.error(t('categorias.add.selectAtLeastOne'))
       return
     }
 
@@ -353,9 +355,9 @@ export function AgregarCategoriaDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Agregar Categorías</DrawerTitle>
+          <DrawerTitle>{t('categorias.add.title')}</DrawerTitle>
           <DrawerDescription>
-            Usados para categorizar gastos en &quot;{sobreName}&quot;
+            {t('categorias.add.description', { sobreName })}
           </DrawerDescription>
         </DrawerHeader>
 
@@ -371,7 +373,7 @@ export function AgregarCategoriaDrawer({
                   ref={inputCategoriaRef}
                   id="categoria"
                   type="text"
-                  placeholder="Escribe categoría (Ej: Alimentación)"
+                  placeholder={t('categorias.add.namePlaceholder')}
                   value={inputCategoria}
                   onChange={(e) => handleInputCategoriaChange(e.target.value)}
                   onKeyDown={handleKeyDownCategoria}
@@ -395,7 +397,7 @@ export function AgregarCategoriaDrawer({
                         className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
                         type="button"
                       >
-                        <span className="text-green-600">✓</span>
+                        <span className="text-green-600">{t('categorias.add.checkmark')}</span>
                         {cat.emoji && <span>{cat.emoji}</span>}
                         <span>{cat.nombre}</span>
                       </button>
@@ -414,7 +416,7 @@ export function AgregarCategoriaDrawer({
                 className="w-full"
                 size="sm"
               >
-                {loading ? 'Agregando...' : 'Agregar Categoría'}
+                {loading ? t('common.loading') : t('categorias.add.addCategory')}
               </Button>
             </div>
 
@@ -450,7 +452,7 @@ export function AgregarCategoriaDrawer({
                   onClick={() => setExpandedEmpresas(!expandedEmpresas)}
                   className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition"
                 >
-                  <span className="font-medium">Agrega empresas por cada categoría</span>
+                  <span className="font-medium">{t('categorias.add.brands')}</span>
                   {expandedEmpresas ? (
                     <ChevronUp className="h-5 w-5 text-muted-foreground" />
                   ) : (
@@ -478,7 +480,7 @@ export function AgregarCategoriaDrawer({
                           {/* Empresas agregadas */}
                           {marcasDelCategoria.length > 0 && (
                             <div className="space-y-1">
-                              <Label className="text-sm">Empresas agregadas</Label>
+                              <Label className="text-sm">{t('categorias.add.added')}</Label>
                               <div className="flex flex-wrap gap-1">
                                 {marcasDelCategoria.map((marca) => (
                                   <Badge key={marca.id} variant="secondary" className="text-sm">
@@ -493,13 +495,13 @@ export function AgregarCategoriaDrawer({
                           {/* Input para buscar/crear empresa */}
                           <div className="space-y-2">
                             <Label htmlFor={`marca-${categoria.id}`} className="text-sm">
-                              Agregar empresa
+                              {t('categorias.add.addBrand')}
                             </Label>
                             <div className="relative">
                               <Input
                                 id={`marca-${categoria.id}`}
                                 type="text"
-                                placeholder="Busca o crea empresa..."
+                                placeholder={t('categorias.add.brandSearch')}
                                 value={inputValue}
                                 onChange={(e) => handleInputMarcaChangePorCategoria(categoria.id, e.target.value)}
                                 onKeyDown={(e) => handleKeyDownMarcaPorCategoria(e, categoria.id)}
@@ -532,7 +534,7 @@ export function AgregarCategoriaDrawer({
                                       className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
                                       type="button"
                                     >
-                                      <span className="text-green-600">✓</span>
+                                      <span className="text-green-600">{t('categorias.add.checkmark')}</span>
                                       {marca.emoji && <span>{marca.emoji}</span>}
                                       <span>{marca.nombre}</span>
                                     </button>
@@ -551,7 +553,7 @@ export function AgregarCategoriaDrawer({
                               className="w-full"
                               size="sm"
                             >
-                              {loading ? 'Agregando...' : 'Agregar Marca'}
+                              {loading ? t('common.loading') : t('categorias.add.addBrand')}
                             </Button>
                           </div>
                         </Card>
@@ -565,7 +567,7 @@ export function AgregarCategoriaDrawer({
             {selectedCategories.length === 0 && (
               <Alert>
                 <AlertDescription>
-                  Selecciona al menos una categoría para continuar
+                  {t('categorias.add.selectAtLeastOne')}
                 </AlertDescription>
               </Alert>
             )}
@@ -578,11 +580,11 @@ export function AgregarCategoriaDrawer({
             disabled={loading || selectedCategories.length === 0}
             className="w-full"
           >
-            {loading ? 'Guardando...' : 'Guardar'}
+            {loading ? t('categorias.add.saving') : t('categorias.add.submit')}
           </Button>
           <DrawerClose asChild>
             <Button variant="outline" disabled={loading} className="w-full mb-4">
-              Cancelar
+              {t('common.cancel')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -28,7 +29,6 @@ import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 import { useCrearGasto } from '@/presentation/hooks/useTransacciones'
 import { useCategoryContext } from '@/presentation/providers/category-context'
-import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface Sobre {
   id: string
@@ -61,6 +61,15 @@ interface CrearGastoDrawerProps {
   onSuccess?: () => void
 }
 
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-5 w-1 bg-primary rounded-full" />
+      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+    </div>
+  )
+}
+
 export function CrearGastoDrawer({
   open,
   onOpenChange,
@@ -69,8 +78,8 @@ export function CrearGastoDrawer({
   preselectedCategoriaId,
   onSuccess,
 }: CrearGastoDrawerProps) {
+  const t = useTranslations()
   const { selectedCategoryId, setSelectedCategoryId } = useCategoryContext()
-  const { formatNumber } = useCurrency()
 
   const [loading, setLoading] = useState(false)
   const [sobres, setSobres] = useState<Sobre[]>([])
@@ -92,14 +101,10 @@ export function CrearGastoDrawer({
     porcentaje: number
   } | null>(null)
 
-  // Para crear categoría inline
   const [crearCategoriaMode, setCrearCategoriaMode] = useState(false)
   const [nuevaCategoriaName, setNuevaCategoriaName] = useState('')
   const [nuevaCategoriaEmoji, setNuevaCategoriaEmoji] = useState('')
   const [creandoCategoria, setCreandoCategoria] = useState(false)
-  const [creandoMarca, setCreandoMarca] = useState(false)
-  const [suggestionsCategoria, setSuggestionsCategoria] = useState<Categoria[]>([])
-  const [showSuggestionsCategoria, setShowSuggestionsCategoria] = useState(false)
 
   const montoRef = useRef<HTMLInputElement>(null)
   const inputMarcaRef = useRef<HTMLInputElement>(null)
@@ -107,12 +112,10 @@ export function CrearGastoDrawer({
 
   const { crearGasto } = useCrearGasto()
 
-  // Cargar datos cuando se abre
   useEffect(() => {
     if (open) {
       fetchData()
       setSobreSeleccionado(preselectedSobreId || '')
-      // Usar selectedCategoryId del context si está disponible, sino usar preselectedCategoriaId
       const categoryToSet = selectedCategoryId || preselectedCategoriaId || ''
       setCategoriaSeleccionada(categoryToSet)
       setMarcaSeleccionada('')
@@ -121,7 +124,6 @@ export function CrearGastoDrawer({
       setComentario('')
       setPresupuestoWarning(null)
 
-      // Si hay un sobre preseleccionado, cargar sus categorías inmediatamente
       if (preselectedSobreId) {
         fetchCategoriasBySobre(preselectedSobreId)
       }
@@ -154,7 +156,6 @@ export function CrearGastoDrawer({
     }
   }
 
-  // Cargar categorías del sobre seleccionado cuando cambia
   useEffect(() => {
     if (sobreSeleccionado) {
       fetchCategoriasBySobre(sobreSeleccionado)
@@ -167,15 +168,12 @@ export function CrearGastoDrawer({
       if (response.ok) {
         const data = await response.json()
         setCategorias(data.categorias || [])
-      } else {
-        console.error('Error al cargar categorías del sobre:', response.status)
       }
     } catch (error) {
       console.error('Error fetching categorías del sobre:', error)
     }
   }
 
-  // Manejar cambios en input de marca
   const handleInputMarcaChange = (value: string) => {
     setInputMarca(value)
 
@@ -195,7 +193,6 @@ export function CrearGastoDrawer({
     setShowSuggestionsMarca(filtered.length > 0)
   }
 
-  // Click en sugerencia de marca
   const handleSelectMarca = (marca: Marca) => {
     setMarcaSeleccionada(marca.id)
     setInputMarca('')
@@ -204,13 +201,11 @@ export function CrearGastoDrawer({
     inputMarcaRef.current?.focus()
   }
 
-  // Remover marca seleccionada
   const handleRemoveMarca = () => {
     setMarcaSeleccionada('')
     setInputMarca('')
   }
 
-  // ENTER en input de marca
   const handleKeyDownMarca = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter') return
     e.preventDefault()
@@ -231,7 +226,6 @@ export function CrearGastoDrawer({
     inputMarcaRef.current?.focus()
   }
 
-  // Crear nueva marca
   const crearYAgregarMarca = async (nombre: string) => {
     if (!categoriaSeleccionada) return
 
@@ -265,7 +259,6 @@ export function CrearGastoDrawer({
     }
   }
 
-  // Crear nueva categoría
   const handleCreateCategoria = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -287,6 +280,7 @@ export function CrearGastoDrawer({
         body: JSON.stringify({
           nombre: nuevaCategoriaName.trim(),
           emoji: nuevaCategoriaEmoji || '📁',
+          sobreId: sobreSeleccionado,
         }),
       })
 
@@ -298,30 +292,12 @@ export function CrearGastoDrawer({
       const data = await response.json()
       const nuevaCategoria = data.categoria
 
-      // IMPORTANTE: Linkar la categoría al sobre
-      // Sin este paso, la categoría no aparecerá en el listado del sobre
-      const linkResponse = await fetch(`/api/sobres/${sobreSeleccionado}/categorias`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          categoriaIds: [nuevaCategoria.id],
-        }),
-      })
-
-      if (!linkResponse.ok) {
-        const linkError = await linkResponse.json()
-        throw new Error(linkError.error || 'Error al vincular categoría al sobre')
-      }
-
-      // Agregar la nueva categoría al listado local
       setCategorias([...categorias, nuevaCategoria])
-      // Seleccionar la nueva categoría automáticamente
       setCategoriaSeleccionada(nuevaCategoria.id)
-      // Limpiar el formulario
       setCrearCategoriaMode(false)
       setNuevaCategoriaName('')
       setNuevaCategoriaEmoji('')
-      notify.success(`Categoría "${nuevaCategoriaName}" creada y vinculada`)
+      notify.success(`Categoría "${nuevaCategoriaName}" creada`)
     } catch (error: any) {
       notify.error(error.message || 'Error al crear categoría')
     } finally {
@@ -335,37 +311,31 @@ export function CrearGastoDrawer({
 
     try {
       if (!sobreSeleccionado) {
-        notify.error('Selecciona un sobre')
+        notify.error(t('gastos.create.errors.selectEnvelope'))
         setLoading(false)
         return
       }
       if (!categoriaSeleccionada) {
-        notify.error('La categoría es obligatoria')
+        notify.error(t('gastos.create.errors.categoryRequired'))
         setLoading(false)
         return
       }
       if (!monto || parseFloat(monto) <= 0) {
-        notify.error('Ingresa un monto válido')
+        notify.error(t('gastos.create.errors.amountGreaterThanZero'))
         setLoading(false)
         return
       }
 
-      // Obtener moneda del usuario
       let monedaId = ''
 
       try {
         const configRes = await fetch('/api/user/config')
         if (configRes.ok) {
           const configData = await configRes.json()
-          console.log('📋 Configuración del usuario:', configData)
-          // El endpoint devuelve { success: true, config: { moneda_principal_id, ... } }
           monedaId = configData.config?.moneda_principal_id || ''
-          console.log('💱 Moneda obtenida:', monedaId)
-        } else {
-          console.error('❌ Error al obtener configuración:', configRes.status)
         }
       } catch (error) {
-        console.error('❌ Error fetching user config:', error)
+        console.error('Error fetching user config:', error)
       }
 
       if (!monedaId) {
@@ -385,8 +355,6 @@ export function CrearGastoDrawer({
         subcategoriaId: marcaSeleccionada || undefined,
       }
 
-      console.log('📤 Enviando gasto al API:', gastoData)
-
       const result = await crearGasto(gastoData)
 
       notify.success('Gasto registrado correctamente')
@@ -395,9 +363,7 @@ export function CrearGastoDrawer({
         notify.warning(`${result.warning.type}: ${result.warning.message}`)
       }
 
-      // Limpiar selectedCategoryId del context
       setSelectedCategoryId(null)
-
       onOpenChange(false)
       onSuccess?.()
     } catch (err: any) {
@@ -407,7 +373,6 @@ export function CrearGastoDrawer({
     }
   }
 
-  // Validar presupuesto cuando el monto o sobre cambian
   useEffect(() => {
     if (monto && sobreSeleccionado) {
       const sobreActual = sobres.find((s) => s.id === sobreSeleccionado)
@@ -415,7 +380,6 @@ export function CrearGastoDrawer({
         const montoNum = parseFloat(monto)
         const presupuesto = Number(sobreActual.presupuesto_asignado) || 0
         const gastado = Number(sobreActual.gastado) || 0
-        const montoLibre = presupuesto - gastado
         const nuevoGastadoTotal = gastado + montoNum
 
         if (nuevoGastadoTotal > presupuesto) {
@@ -435,13 +399,11 @@ export function CrearGastoDrawer({
   }, [monto, sobreSeleccionado, sobres])
 
   const sobreActual = sobres.find((s) => s.id === sobreSeleccionado)
-  const categoriaActual = categorias.find((c) => c.id === categoriaSeleccionada)
   const marcasDelCategoria = categoriaSeleccionada
     ? marcas.filter((m) => m.categoria_id === categoriaSeleccionada)
     : []
   const marcaActual = marcas.find((m) => m.id === marcaSeleccionada)
 
-  // Ordenar categorías del sobre por uso (gastado) descendente
   const categoriasOrdenadas = [...categorias].sort((a, b) => {
     const gastadoA = Number(a.gastado) || 0
     const gastadoB = Number(b.gastado) || 0
@@ -452,307 +414,296 @@ export function CrearGastoDrawer({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Registrar Gasto</DrawerTitle>
+          <DrawerTitle>{t('gastos.create.title')}</DrawerTitle>
           <DrawerDescription>
-            Crea un nuevo gasto en un sobre
+            {t('gastos.create.description')}
           </DrawerDescription>
         </DrawerHeader>
 
         <DrawerBody>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Sobre */}
-            <div className="space-y-2">
-              <Label htmlFor="sobre" className="font-medium">Sobre</Label>
-              {sobres.length === 1 ? (
-                <div className="flex items-center gap-2 p-2 rounded-lg border bg-slate-50">
-                  <Badge variant="outline" className="text-base">
-                    {sobreActual?.emoji} {sobreActual?.nombre}
-                  </Badge>
-                </div>
-              ) : (
-                <Select value={sobreSeleccionado} onValueChange={setSobreSeleccionado}>
-                  <SelectTrigger id="sobre" className="text-base">
-                    <SelectValue placeholder="Seleccionar sobre" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sobres.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.emoji} {s.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
-            {/* Categorías (como chips) */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="font-medium">Categoría</Label>
-                {!crearCategoriaMode && (
-                  <button
-                    type="button"
-                    onClick={() => setCrearCategoriaMode(true)}
-                    className="text-xs text-primary hover:underline"
-                  >
-                    + Crear categoría
-                  </button>
-                )}
-              </div>
-
-              {/* Formulario crear categoría inline */}
-              {crearCategoriaMode && (
-                <div className="space-y-2 p-3 rounded-lg border border-dashed border-primary bg-primary/5">
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder="Nombre de la categoría"
-                      value={nuevaCategoriaName}
-                      onChange={(e) => {
-                        const value = e.target.value
-                        setNuevaCategoriaName(value)
-
-                        // Filtrar categorías globales que coincidan
-                        if (value.trim()) {
-                          const filtered = categorias.filter(cat =>
-                            cat.nombre.toLowerCase().includes(value.toLowerCase())
-                          )
-                          setSuggestionsCategoria(filtered)
-                          setShowSuggestionsCategoria(filtered.length > 0)
-                        } else {
-                          setSuggestionsCategoria([])
-                          setShowSuggestionsCategoria(false)
-                        }
-                      }}
-                      onFocus={() => {
-                        if (nuevaCategoriaName && suggestionsCategoria.length > 0) {
-                          setShowSuggestionsCategoria(true)
-                        }
-                      }}
-                      onBlur={() => {
-                        setTimeout(() => setShowSuggestionsCategoria(false), 200)
-                      }}
-                      className="text-base"
-                      autoFocus
-                    />
-
-                    {/* Sugerencias de categorías existentes */}
-                    {showSuggestionsCategoria && suggestionsCategoria.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white shadow-lg z-10">
-                        {suggestionsCategoria.map((cat) => (
-                          <button
-                            key={cat.id}
-                            type="button"
-                            onClick={() => {
-                              setCategoriaSeleccionada(cat.id)
-                              setCrearCategoriaMode(false)
-                              setNuevaCategoriaName('')
-                              setSuggestionsCategoria([])
-                              setShowSuggestionsCategoria(false)
-                            }}
-                            className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
-                          >
-                            <span className="text-green-600">✓</span>
-                            {cat.emoji && <span>{cat.emoji}</span>}
-                            <span>{cat.nombre}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      onClick={(e) => handleCreateCategoria(e)}
-                      disabled={creandoCategoria || !nuevaCategoriaName.trim()}
-                      className="flex-1 text-base"
-                      size="sm"
-                    >
-                      {creandoCategoria ? 'Creando...' : 'Crear'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setCrearCategoriaMode(false)
-                        setNuevaCategoriaName('')
-                        setNuevaCategoriaEmoji('')
-                      }}
-                      className="text-base"
-                      size="sm"
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Chips de categorías */}
-              <div className="flex flex-wrap gap-2">
-                {categoriasOrdenadas.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={() => setCategoriaSeleccionada(c.id)}
-                    className={`px-3 py-2 rounded-full text-base font-medium transition-all ${
-                      categoriaSeleccionada === c.id
-                        ? 'bg-primary text-primary-foreground shadow-lg'
-                        : 'border border-border hover:border-primary hover:bg-muted'
-                    }`}
-                  >
-                    {c.emoji && <span className="mr-1">{c.emoji}</span>}
-                    {c.nombre}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Marca (en Card si categoría seleccionada) */}
-            {categoriaSeleccionada && (
-              <Card className="p-4 space-y-3 border-slate-200 bg-slate-50">
-                <Label className="text-base font-medium">
-                  Marca <span className="text-xs text-muted-foreground font-normal">(opcional)</span>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* MONTO - Card Accent (destacada) */}
+            <Card className="p-5 bg-card-accent border-primary/20">
+              <div className="space-y-3">
+                <Label htmlFor="monto" className="text-base font-semibold">
+                  {t('gastos.create.amount')}
                 </Label>
-
-                {/* Marca seleccionada */}
-                {marcaSeleccionada && marcaActual && (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default" className="gap-1">
-                      {marcaActual.emoji && <span>{marcaActual.emoji}</span>}
-                      <span>{marcaActual.nombre}</span>
-                    </Badge>
-                    <button
-                      onClick={handleRemoveMarca}
-                      className="ml-auto text-sm hover:text-red-600"
-                      type="button"
-                    >
-                      Cambiar
-                    </button>
-                  </div>
-                )}
-
-                {/* Marcas disponibles con scroll */}
-                {!marcaSeleccionada && marcasDelCategoria.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">Selecciona una marca:</Label>
-                    <div className="max-h-20 overflow-x-auto flex gap-2 pb-2">
-                      {marcasDelCategoria.map((marca) => (
-                        <button
-                          key={marca.id}
-                          onClick={() => handleSelectMarca(marca)}
-                          className="flex-shrink-0 px-3 py-1 rounded-full border border-slate-300 hover:bg-slate-100 text-base transition"
-                          type="button"
-                        >
-                          {marca.emoji && <span className="mr-1">{marca.emoji}</span>}
-                          {marca.nombre}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Input para buscar/crear marca */}
                 <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
+                    $
+                  </span>
                   <Input
-                    ref={inputMarcaRef}
-                    type="text"
-                    placeholder="Busca o crea marca..."
-                    value={inputMarca}
-                    onChange={(e) => handleInputMarcaChange(e.target.value)}
-                    onKeyDown={handleKeyDownMarca}
-                    onFocus={() => {
-                      if (inputMarca && suggestionsMarca.length > 0) {
-                        setShowSuggestionsMarca(true)
-                      }
-                    }}
-                    onBlur={() => {
-                      setTimeout(() => setShowSuggestionsMarca(false), 200)
-                    }}
-                    disabled={marcaSeleccionada !== ''}
-                    enterKeyHint="go"
-                    className="text-base"
+                    ref={montoRef}
+                    id="monto"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={monto}
+                    onChange={(e) => setMonto(e.target.value)}
+                    placeholder="0.00"
+                    required
+                    className="pl-10 text-2xl font-semibold h-14 bg-background"
                   />
+                </div>
+              </div>
 
-                  {showSuggestionsMarca && suggestionsMarca.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white shadow-lg z-10">
-                      {suggestionsMarca.map((marca) => (
-                        <button
-                          key={marca.id}
-                          onClick={() => handleSelectMarca(marca)}
-                          className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
-                          type="button"
-                        >
-                          <span className="text-green-600">✓</span>
-                          {marca.emoji && <span>{marca.emoji}</span>}
-                          <span>{marca.nombre}</span>
-                        </button>
-                      ))}
+              {presupuestoWarning?.excede && (
+                <Alert className="mt-4 border-border bg-muted">
+                  <AlertDescription className="text-foreground">
+                    <p className="font-medium">
+                      ⚠️ Excede el presupuesto en ${presupuestoWarning.exceso.toFixed(2)}
+                    </p>
+                    <p className="text-xs mt-1 text-muted-foreground">
+                      Sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; • {presupuestoWarning.porcentaje.toFixed(1)}% sobre el límite
+                    </p>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </Card>
+
+            {/* ORIGEN */}
+            <div className="space-y-3">
+              <SectionTitle>{t('gastos.create.origin')}</SectionTitle>
+
+              <Card className="p-4 space-y-4 bg-card-elevated">
+                {/* Sobre */}
+                <div className="space-y-2">
+                  <Label htmlFor="sobre" className="text-sm font-medium text-muted-foreground">
+                    {t('gastos.create.originPlaceholder')}
+                  </Label>
+                  {sobres.length === 1 ? (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
+                      <span className="text-lg">{sobreActual?.emoji}</span>
+                      <span className="font-medium">{sobreActual?.nombre}</span>
                     </div>
+                  ) : (
+                    <Select value={sobreSeleccionado} onValueChange={setSobreSeleccionado}>
+                      <SelectTrigger id="sobre" className="h-11">
+                        <SelectValue placeholder={t('gastos.create.selectEnvelopePlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sobres.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            <span className="flex items-center gap-2">
+                              <span>{s.emoji}</span>
+                              <span>{s.nombre}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   )}
                 </div>
 
-                <Button
-                  type="button"
-                  onClick={async () => {
-                    if (inputMarca.trim()) {
-                      await handleKeyDownMarca({ key: 'Enter', preventDefault: () => {} } as any)
-                    }
-                  }}
-                  disabled={!inputMarca.trim() || creandoMarca}
-                  className="w-full"
-                  size="sm"
-                >
-                  {creandoMarca ? 'Creando...' : 'Agregar Marca'}
-                </Button>
-              </Card>
-            )}
+                {/* Categoría */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      {t('gastos.create.category')}
+                    </Label>
+                    {!crearCategoriaMode && (
+                      <button
+                        type="button"
+                        onClick={() => setCrearCategoriaMode(true)}
+                        className="text-xs text-primary hover:underline font-medium"
+                      >
+                        {t('gastos.create.addNewCategory')}
+                      </button>
+                    )}
+                  </div>
 
-            {/* Monto */}
-            <div className="space-y-2">
-              <Label htmlFor="monto" className="font-medium">Monto</Label>
-              <Input
-                ref={montoRef}
-                id="monto"
-                type="number"
-                step="0.01"
-                min="0"
-                value={monto}
-                onChange={(e) => setMonto(e.target.value)}
-                placeholder="0"
-                required
-                className="text-base"
-              />
+                  {crearCategoriaMode && (
+                    <div className="p-3 rounded-lg border-2 border-dashed border-primary/30 bg-muted space-y-3">
+                      <Input
+                        type="text"
+                        placeholder={t('gastos.create.categoryNamePlaceholder')}
+                        value={nuevaCategoriaName}
+                        onChange={(e) => setNuevaCategoriaName(e.target.value)}
+                        className="h-10"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder={t('gastos.create.categoryEmoji')}
+                          value={nuevaCategoriaEmoji}
+                          onChange={(e) => setNuevaCategoriaEmoji(e.target.value)}
+                          className="w-16 h-10 text-center"
+                          maxLength={2}
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleCreateCategoria}
+                          disabled={creandoCategoria || !nuevaCategoriaName.trim()}
+                          className="flex-1 h-10"
+                          size="sm"
+                        >
+                          {creandoCategoria ? t('common.loading') : t('common.cancel')}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => {
+                            setCrearCategoriaMode(false)
+                            setNuevaCategoriaName('')
+                            setNuevaCategoriaEmoji('')
+                          }}
+                          className="h-10 px-3"
+                          size="sm"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap gap-2">
+                    {categoriasOrdenadas.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setCategoriaSeleccionada(c.id)}
+                        className={`
+                          px-3 py-2 rounded-lg text-sm font-medium transition-all
+                          ${categoriaSeleccionada === c.id
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted hover:bg-muted/80 text-foreground'
+                          }
+                        `}
+                      >
+                        {c.emoji && <span className="mr-1.5">{c.emoji}</span>}
+                        {c.nombre}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </Card>
             </div>
 
-            {/* Warning de presupuesto */}
-            {presupuestoWarning?.excede && (
-              <Alert className="border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">
-                  <p className="font-semibold mb-2">
-                    ⚠️ INFORMATIVO: Excede el presupuesto del sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; en ${formatNumber(presupuestoWarning.exceso)} ({Math.round(presupuestoWarning.porcentaje)}%)
-                  </p>
-                  <p className="text-sm">
-                    Podrás ingresar el gasto de todas maneras, es solo informativo
-                  </p>
-                </AlertDescription>
-              </Alert>
-            )}
+            {/* DETALLE */}
+            <div className="space-y-3">
+              <SectionTitle>{t('gastos.create.details')}</SectionTitle>
 
-            {/* Comentario */}
-            <div className="space-y-2">
-              <Label htmlFor="comentario" className="font-medium">Comentario (opcional)</Label>
-              <Input
-                id="comentario"
-                value={comentario}
-                onChange={(e) => setComentario(e.target.value)}
-                placeholder="Ej: Almuerzo en la oficina"
-                className="text-base"
-              />
+              <Card className="p-4 space-y-4 bg-card-elevated">
+                {categoriaSeleccionada && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium text-muted-foreground">
+                        {t('gastos.create.brand')}
+                      </Label>
+                      <span className="text-xs text-muted-foreground">{t('gastos.create.brandOptional')}</span>
+                    </div>
+
+                    {marcaSeleccionada && marcaActual && (
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-muted border border-border">
+                        <Badge variant="secondary" className="gap-1.5">
+                          {marcaActual.emoji && <span>{marcaActual.emoji}</span>}
+                          <span>{marcaActual.nombre}</span>
+                        </Badge>
+                        <button
+                          onClick={handleRemoveMarca}
+                          className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          type="button"
+                        >
+                          Cambiar
+                        </button>
+                      </div>
+                    )}
+
+                    {!marcaSeleccionada && marcasDelCategoria.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
+                          {marcasDelCategoria.slice(0, 8).map((marca) => (
+                            <button
+                              key={marca.id}
+                              onClick={() => handleSelectMarca(marca)}
+                              className="flex-shrink-0 px-3 py-1.5 rounded-full bg-muted hover:bg-muted/80 text-sm transition-colors"
+                              type="button"
+                            >
+                              {marca.emoji && <span className="mr-1">{marca.emoji}</span>}
+                              {marca.nombre}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {!marcaSeleccionada && (
+                      <div className="relative">
+                        <Input
+                          ref={inputMarcaRef}
+                          type="text"
+                          placeholder={t('gastos.create.brandPlaceholder')}
+                          value={inputMarca}
+                          onChange={(e) => handleInputMarcaChange(e.target.value)}
+                          onKeyDown={handleKeyDownMarca}
+                          onFocus={() => {
+                            if (inputMarca && suggestionsMarca.length > 0) {
+                              setShowSuggestionsMarca(true)
+                            }
+                          }}
+                          onBlur={() => {
+                            setTimeout(() => setShowSuggestionsMarca(false), 200)
+                          }}
+                          enterKeyHint="go"
+                          className="h-10"
+                        />
+
+                        {showSuggestionsMarca && suggestionsMarca.length > 0 && (
+                          <div className="absolute top-full left-0 right-0 mt-1 border rounded-lg bg-popover shadow-lg z-10 overflow-hidden">
+                            {suggestionsMarca.map((marca) => (
+                              <button
+                                key={marca.id}
+                                onClick={() => handleSelectMarca(marca)}
+                                className="w-full text-left px-3 py-2.5 hover:bg-muted flex items-center gap-2 text-sm transition-colors"
+                                type="button"
+                              >
+                                <span className="text-primary">✓</span>
+                                {marca.emoji && <span>{marca.emoji}</span>}
+                                <span>{marca.nombre}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {!marcaSeleccionada && (
+                      <p className="text-xs text-muted-foreground">
+                        {t('gastos.create.pressEnter')} <kbd className="px-1.5 py-0.5 bg-muted rounded text-xs font-mono">Enter</kbd>
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {!categoriaSeleccionada && (
+                  <p className="text-sm text-muted-foreground italic">
+                    {t('gastos.create.selectCategoryForBrands')}
+                  </p>
+                )}
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="comentario" className="text-sm font-medium text-muted-foreground">
+                      {t('gastos.create.comment')}
+                    </Label>
+                    <span className="text-xs text-muted-foreground">{t('gastos.create.commentOptional')}</span>
+                  </div>
+                  <Input
+                    id="comentario"
+                    value={comentario}
+                    onChange={(e) => setComentario(e.target.value)}
+                    placeholder={t('gastos.create.commentPlaceholder')}
+                    className="h-10"
+                  />
+                </div>
+              </Card>
             </div>
           </form>
         </DrawerBody>
 
-        <DrawerFooter>
+        <DrawerFooter className="border-t bg-muted/30">
           <Button
             onClick={handleSubmit}
             disabled={
@@ -761,13 +712,13 @@ export function CrearGastoDrawer({
               !categoriaSeleccionada ||
               !monto
             }
-            className="w-full"
+            className="w-full h-12 text-base font-semibold"
           >
-            {loading ? 'Registrando...' : 'Registrar Gasto'}
+            {loading ? t('gastos.create.creating') : t('gastos.create.submit')}
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline" disabled={loading} className="w-full mb-4">
-              Cancelar
+            <Button variant="ghost" disabled={loading} className="w-full">
+              {t('common.cancel')}
             </Button>
           </DrawerClose>
         </DrawerFooter>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -53,6 +54,7 @@ export function CrearBilleteraDialog({
   onOpenChange,
   userId,
 }: CrearBilleteraDialogProps) {
+  const t = useTranslations()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -111,9 +113,9 @@ export function CrearBilleteraDialog({
       <DialogContent className="sm:max-w-[500px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Crear Nueva Billetera</DialogTitle>
+            <DialogTitle>{t('billeteras.create.title')}</DialogTitle>
             <DialogDescription>
-              Agrega una cuenta de banco, efectivo, o tarjeta de crédito
+              {t('billeteras.create.description')}
             </DialogDescription>
           </DialogHeader>
 
@@ -121,13 +123,13 @@ export function CrearBilleteraDialog({
             {/* Nombre */}
             <div className="grid gap-2">
               <Label htmlFor="nombre">
-                Nombre <span className="text-red-500">*</span>
+                {t('billeteras.create.nameLabel')} <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="nombre"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
-                placeholder="Ej: Banco Nacional - Débito"
+                placeholder={t('billeteras.create.namePlaceholder')}
                 required
               />
             </div>
@@ -135,7 +137,7 @@ export function CrearBilleteraDialog({
             {/* Tipo */}
             <div className="grid gap-2">
               <Label htmlFor="tipo">
-                Tipo <span className="text-red-500">*</span>
+                {t('billeteras.create.typeLabel')} <span className="text-red-500">*</span>
               </Label>
               <Select value={tipo} onValueChange={setTipo}>
                 <SelectTrigger>
@@ -153,7 +155,7 @@ export function CrearBilleteraDialog({
 
             {/* Saldo Inicial */}
             <div className="grid gap-2">
-              <Label htmlFor="saldo">Saldo Inicial (USD)</Label>
+              <Label htmlFor="saldo">{t('billeteras.create.initialBalance')}</Label>
               <Input
                 id="saldo"
                 type="number"
@@ -166,7 +168,7 @@ export function CrearBilleteraDialog({
 
             {/* Color */}
             <div className="grid gap-2">
-              <Label>Color</Label>
+              <Label>{t('billeteras.create.color')}</Label>
               <div className="flex gap-2">
                 {COLORES_SUGERIDOS.map((c) => (
                   <button
@@ -186,7 +188,7 @@ export function CrearBilleteraDialog({
 
             {/* Emoji */}
             <div className="grid gap-2">
-              <Label>Icono</Label>
+              <Label>{t('billeteras.create.icon')}</Label>
               <div className="flex gap-2">
                 {EMOJIS_SUGERIDOS.map((e) => (
                   <button
@@ -219,10 +221,10 @@ export function CrearBilleteraDialog({
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancelar
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={loading || !nombre.trim()}>
-              {loading ? 'Creando...' : 'Crear Billetera'}
+              {loading ? t('billeteras.create.creating') : t('billeteras.create.submit')}
             </Button>
           </DialogFooter>
         </form>

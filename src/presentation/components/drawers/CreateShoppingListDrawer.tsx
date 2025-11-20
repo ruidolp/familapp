@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {
   Drawer,
   DrawerClose,
@@ -37,6 +38,7 @@ export function CreateShoppingListDrawer({
   open,
   onOpenChange,
 }: CreateShoppingListDrawerProps) {
+  const t = useTranslations()
   const router = useRouter()
   const pathname = usePathname()
   const [name, setName] = useState('')
@@ -50,8 +52,8 @@ export function CreateShoppingListDrawer({
     try {
       setIsLoading(true)
 
-      // If no name provided, create with "Sin nombre #slug"
-      const finalName = name.trim() || `Sin nombre #${generateRandomSlug()}`
+      // If no name provided, create with translated unnamed format
+      const finalName = name.trim() || t('shopping.lists.createNew.unnamed', { slug: generateRandomSlug() })
 
       // Create the shopping list via API
       const response = await fetch('/api/shopping-lists', {
@@ -71,7 +73,7 @@ export function CreateShoppingListDrawer({
       const data = await response.json()
       const listId = data.list.id
 
-      notify.success('Lista creada correctamente')
+      notify.success(t('common.success'))
 
       // Close drawer first
       onOpenChange(false)
@@ -107,16 +109,16 @@ export function CreateShoppingListDrawer({
     <Drawer open={open} onOpenChange={handleOpenChange}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>Crear nueva lista de compras</DrawerTitle>
+          <DrawerTitle>{t('shopping.lists.createNew.title')}</DrawerTitle>
           <DrawerDescription>
-            Dale un nombre a tu nueva lista (opcional)
+            {t('shopping.lists.createNew.description')}
           </DrawerDescription>
         </DrawerHeader>
 
         <div className="px-4 py-6">
           <Input
             type="text"
-            placeholder="Ej: Supermercado, Verduras, etc..."
+            placeholder={t('shopping.lists.createNew.namePlaceholder')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -125,18 +127,18 @@ export function CreateShoppingListDrawer({
             className="text-base"
           />
           <p className="text-xs text-muted-foreground mt-3">
-            Si no escribes un nombre, se creará como "Sin nombre #abc123"
+            {t('shopping.lists.createNew.hint')}
           </p>
         </div>
 
         <DrawerFooter className="flex-row gap-2 justify-end">
           <DrawerClose asChild>
             <Button variant="outline" disabled={isLoading}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
           </DrawerClose>
           <Button onClick={handleCreate} disabled={isLoading}>
-            {isLoading ? 'Creando...' : 'Crear'}
+            {isLoading ? t('shopping.lists.createNew.creating') : t('shopping.lists.createNew.submit')}
           </Button>
         </DrawerFooter>
       </DrawerContent>

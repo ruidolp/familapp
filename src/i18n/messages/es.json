@@ -402,6 +402,18 @@
       "edit": "Editar",
       "info": "Información"
     },
+    "create": {
+      "title": "Nueva Billetera",
+      "description": "Crea una nueva billetera para gestionar tu dinero",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Mi Billetera",
+      "typeLabel": "Tipo de Tarjeta",
+      "initialBalance": "Saldo Inicial",
+      "color": "Color",
+      "icon": "Icono",
+      "creating": "Creando...",
+      "submit": "Crear Billetera"
+    },
     "fields": {
       "name": "Nombre",
       "namePlaceholder": "Mi Billetera",
@@ -496,5 +508,313 @@
       "sameWallet": "No puedes transferir a la misma billetera",
       "insufficientBalance": "Saldo insuficiente"
     }
+  },
+  "gastos": {
+    "title": "Gastos",
+    "create": {
+      "title": "Registrar Gasto",
+      "description": "Crea un nuevo gasto en un sobre",
+      "amount": "💰 Monto del gasto",
+      "amountPlaceholder": "$",
+      "origin": "Origen del gasto",
+      "originPlaceholder": "Sobre",
+      "selectEnvelope": "Seleccionar sobre",
+      "selectEnvelopePlaceholder": "Sobre",
+      "category": "Categoría",
+      "addNewCategory": "+ Nueva",
+      "categoryNamePlaceholder": "Nombre de la categoría",
+      "categoryEmoji": "🏷️",
+      "creating": "Registrando...",
+      "submit": "Registrar Gasto",
+      "cancel": "Cancelar",
+      "details": "Detalle",
+      "brand": "Marca",
+      "brandPlaceholder": "Buscar o crear marca...",
+      "brandOptional": "opcional",
+      "pressEnter": "Presiona Enter para crear nueva marca",
+      "selectCategoryForBrands": "Selecciona una categoría para ver las marcas disponibles",
+      "comment": "Comentario",
+      "commentOptional": "opcional",
+      "commentPlaceholder": "Ej: Almuerzo en la oficina",
+      "errors": {
+        "amountGreaterThanZero": "Monto debe ser mayor a 0",
+        "selectEnvelope": "Selecciona un sobre",
+        "categoryRequired": "La categoría es obligatoria"
+      }
+    }
+  },
+  "sobres": {
+    "title": "Sobres",
+    "defaultEnvelopes": {
+      "hogar": "Hogar",
+      "personal": "Personal"
+    },
+    "usado": "Usado",
+    "libre": "Libre",
+    "utilizado": "utilizado",
+    "total": "total",
+    "menu": {
+      "increaseBudget": "Aumentar Presupuesto",
+      "reduceBudget": "Reducir Presupuesto",
+      "editCategories": "Editar Categorías",
+      "shoppingList": "Listado de Compras"
+    },
+    "emptyBudget": {
+      "message": "Asigne presupuesto",
+      "button": "Agregar Presupuesto"
+    },
+    "categories": {
+      "loading": "Cargando categorías...",
+      "title": "Categorías ({count})",
+      "empty": "Agrega categorías para este sobre para rastrear tus gastos por categoría",
+      "addButton": "Agregar Categorías"
+    },
+    "create": {
+      "title": "Crear Nuevo Sobre",
+      "description": "Define el nombre y color de tu sobre. Luego asignarás presupuesto desde una billetera.",
+      "preview": "Vista previa",
+      "previewBudget": "Presupuesto: $0.00",
+      "identity": "Identidad del sobre",
+      "name": "Nombre",
+      "namePlaceholder": "Ej: Comida, Transporte, Hogar",
+      "color": "Color",
+      "nextStep": "Siguiente paso",
+      "nextStepDescription": "Después de crear el sobre, podrás asignarle presupuesto desde tu billetera.",
+      "creating": "Creando...",
+      "submit": "Crear Sobre",
+      "cancel": "Cancelar"
+    },
+    "addBudget": {
+      "title": "Agregar Presupuesto",
+      "description": "Asigna presupuesto al sobre",
+      "amount": "💰 Monto a agregar",
+      "amountPlaceholder": "+$",
+      "summary": "Resumen",
+      "available": "Disponible en billetera",
+      "currentBudget": "Presupuesto actual",
+      "newBudget": "Nuevo presupuesto",
+      "detail": "Detalle",
+      "observation": "Observación",
+      "observationOptional": "opcional",
+      "observationPlaceholder": "Ej: Presupuesto inicial del mes",
+      "advancedSettings": "Configuración avanzada",
+      "monthlyRecurring": "Monto recurrente mensual",
+      "monthlyDescription": "Configura un monto fijo que se asignará automáticamente cada mes a este sobre.",
+      "saving": "Guardando...",
+      "submit": "Agregar Presupuesto",
+      "cancel": "Cancelar",
+      "errors": {
+        "amountGreaterThanZero": "Monto debe ser mayor a 0"
+      }
+    },
+    "reduceBudget": {
+      "title": "Reducir Presupuesto",
+      "description": "Reduce presupuesto de {sobreName}... Esta acción no afecta gastos registrados",
+      "freeMoney": "Monto Libre",
+      "assignedBudget": "Presupuesto Asignado",
+      "amountToReduce": "Monto a restar",
+      "amountPlaceholder": "0",
+      "observation": "Observación",
+      "observationPlaceholder": "Ej: Ajuste de presupuesto",
+      "saving": "Guardando...",
+      "submit": "Guardar",
+      "cancel": "Cancelar",
+      "form": {
+        "freeAmount": "Monto Libre",
+        "assignedBudget": "Presupuesto Asignado",
+        "amountToReduce": "Monto a restar",
+        "observation": "Observación",
+        "observationPlaceholder": "Ej: Ajuste de presupuesto"
+      },
+      "buttons": {
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "cancel": "Cancelar"
+      },
+      "errors": {
+        "amountGreaterThanZero": "Monto debe ser mayor a 0",
+        "invalidAmount": "Monto inválido",
+        "reduceFailed": "Error al reducir presupuesto"
+      },
+      "success": {
+        "reduced": "Presupuesto de {sobreName} reducido exitosamente"
+      }
+    },
+    "transactions": {
+      "title": "Detalle de Transacciones",
+      "description": "Transacciones de {sobreName}...",
+      "loading": "Cargando transacciones...",
+      "empty": "No hay transacciones aún",
+      "noTransactions": "No hay transacciones aún",
+      "monthTotal": "Total mes actual",
+      "totalCurrentMonth": "Total mes actual",
+      "transactionCount": "transacciones",
+      "transactionsCount": "{count} transacciones",
+      "noCategory": "Sin categoría",
+      "close": "Cerrar",
+      "buttons": {
+        "close": "Cerrar"
+      },
+      "errors": {
+        "loadFailed": "Error al cargar transacciones"
+      }
+    }
+  },
+  "categorias": {
+    "title": "Categorías",
+    "add": {
+      "title": "Agregar Categorías",
+      "description": "Usados para categorizar gastos en {sobreName}",
+      "categories": "Categorías",
+      "namePlaceholder": "Escribe categoría (Ej: Alimentación)",
+      "add": "✓",
+      "checkmark": "✓",
+      "brands": "Agrega empresas por cada categoría",
+      "added": "Empresas agregadas",
+      "addBrand": "Agregar empresa",
+      "brandSearch": "Busca o crea empresa...",
+      "adding": "Agregando...",
+      "addCategory": "Agregar Categoría",
+      "addBrandLabel": "Agregando...",
+      "selectAtLeastOne": "Selecciona al menos una categoría para continuar",
+      "saving": "Guardando...",
+      "submit": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "edit": {
+      "title": "Editar Categoría",
+      "description": "Modifica el nombre y agrega marcas/empresas",
+      "name": "Nombre",
+      "namePlaceholder": "Ej: Alimentación",
+      "where": "¿Dónde compras?",
+      "whereDescription": "Agrega tus marcas recurrentes para que puedas medir tus gastos",
+      "brandsAdded": "Marcas agregadas",
+      "addBrand": "Buscar o crear marca",
+      "brandNamePlaceholder": "Escribe nombre de marca (Ej: Walmart)",
+      "add": "✓",
+      "adding": "Agregando...",
+      "addBrand": "Agregar Marca",
+      "saving": "Guardando...",
+      "submit": "Guardar",
+      "cancel": "Cancelar"
+    }
+  },
+  "shopping": {
+    "history": {
+      "title": "Historial de Compra",
+      "purchaseDate": "Fecha de Compra",
+      "quantity": "Cantidad",
+      "unitPrice": "Precio Unitario",
+      "purchasedProducts": "Productos Comprados",
+      "noPurchasedProducts": "No hay productos registrados"
+    },
+    "lists": {
+      "createNew": {
+        "title": "Crear nueva lista de compras",
+        "description": "Dale un nombre a tu nueva lista (opcional)",
+        "namePlaceholder": "Ej: Supermercado, Verduras, etc...",
+        "hint": "Si no escribes un nombre, se creará como 'Sin nombre'",
+        "unnamed": "Sin nombre {slug}",
+        "cancel": "Cancelar",
+        "creating": "Creando...",
+        "submit": "Crear"
+      },
+      "options": {
+        "title": "Opciones de visualización",
+        "description": "Personaliza cómo se muestra la lista",
+        "groupByCategory": "Agrupar por categoría",
+        "showControls": "Mostrar controles de cantidad",
+        "flatList": "Listado plano",
+        "close": "Cerrar"
+      }
+    },
+    "execution": {
+      "finalize": {
+        "title": "Resumen de Compra",
+        "description": "Verifica los detalles antes de finalizar",
+        "purchased": "Comprados",
+        "discarded": "Descartados",
+        "pending": "Pendientes",
+        "pendingMessage": "Tienes {count} producto(s) sin definir. Considera marcarlos como comprados o descartados.",
+        "pendingWarning": "Tienes {count} producto(s) sin definir. Considera marcarlos como comprados o descartados.",
+        "totalTime": "Tiempo total",
+        "calculatedTotal": "Total Calculado",
+        "calculatedDesc": "Suma de todos los precios registrados",
+        "calculatedTotalDescription": "Suma de todos los precios registrados",
+        "manualTotal": "Total Pagado (opcional)",
+        "manualTotalDesc": "Ingresa el monto real del ticket si es diferente",
+        "totalPaid": "Total Pagado (opcional)",
+        "totalPaidDescription": "Ingresa el monto real del ticket si es diferente",
+        "finalizing": "Finalizando...",
+        "submit": "Finalizar y Sincronizar",
+        "cancel": "Cancelar"
+      },
+      "settings": {
+        "title": "Configuración",
+        "showTimer": "Mostrar cronómetro",
+        "showTimerDescription": "Ver tiempo transcurrido",
+        "addPrices": "Agregar precios",
+        "addPricesDescription": "Registrar precio de productos",
+        "viewByCategories": "Ver por categorías",
+        "viewByCategoriesDescription": "Agrupar productos por categoría",
+        "plainText": "Modo texto plano",
+        "plainTextDescription": "Vista compacta sin bordes",
+        "close": "Cerrar"
+      }
+    }
+  },
+  "user": {
+    "profile": {
+      "title": "Usuario",
+      "signOut": "Cerrar Sesión",
+      "signOutDescription": "Salir de la aplicación"
+    }
+  },
+  "modals": {
+    "overspendWarning": {
+      "budgetExceeded": "Presupuesto Excedido",
+      "insufficientBalance": "Saldo Insuficiente",
+      "budget": "Presupuesto",
+      "spent": "Gastado",
+      "excess": "Exceso: {percentage}%",
+      "currentBalance": "Saldo Actual",
+      "balanceAfter": "Saldo Después",
+      "recommendations": "💡 Opciones recomendadas:",
+      "budgetOptions": {
+        "increase": "Aumentar el presupuesto del sobre",
+        "transfer": "Transferir budget desde otro sobre",
+        "record": "Registrar el gasto de todas formas (permitido)"
+      },
+      "balanceOptions": {
+        "deposit": "Realizar un depósito en la billetera",
+        "transfer": "Transferir dinero desde otra billetera",
+        "record": "Registrar el gasto de todas formas (permitido)"
+      },
+      "showDetails": "Mostrar detalles",
+      "hideDetails": "Ocultar detalles técnicos",
+      "cancel": "Cancelar",
+      "addBudget": "Agregar Budget",
+      "recordAnyway": "Registrar de Todas Formas",
+      "recommendedOptions": "💡 Opciones recomendadas:",
+      "increaseBudget": "Aumentar el presupuesto del sobre",
+      "transferBudget": "Transferir presupuesto desde otro sobre",
+      "makeDeposit": "Realizar un depósito en la billetera",
+      "transferMoney": "Transferir dinero desde otra billetera",
+      "registerAnyway": "Registrar el gasto de todas formas (permitido)",
+      "registerAnywayButton": "Registrar de Todas Formas",
+      "registering": "Registrando..."
+    }
+  },
+  "buttons": {
+    "addBudget": "Agregar Presupuesto",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "createEnvelope": "Crear Sobre",
+    "creating": "Creando...",
+    "disclaimer": "Podrás cambiar estas preferencias más adelante",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "submit": "Enviar",
+    "submitting": "Enviando..."
   }
 }

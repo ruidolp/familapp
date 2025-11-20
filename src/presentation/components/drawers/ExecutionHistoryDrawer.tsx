@@ -230,7 +230,7 @@ export function ExecutionHistoryDrawer({
                       )}
                       {item.precio_unitario && (
                         <p className="text-xs text-muted-foreground">
-                          {t('unitPrice')}: {simbolo}{item.precio_unitario.toFixed(decimales)}
+                          {t('unitPrice')}: {simbolo ?? ''}{item.precio_unitario.toFixed(decimales)}
                         </p>
                       )}
                     </div>
@@ -238,7 +238,7 @@ export function ExecutionHistoryDrawer({
                     {item.precio_total && (
                       <div className="text-right">
                         <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                          {simbolo}{item.precio_total.toFixed(decimales)}
+                          {simbolo ?? ''}{item.precio_total.toFixed(decimales)}
                         </p>
                       </div>
                     )}
@@ -263,7 +263,7 @@ export function ExecutionHistoryDrawer({
               </span>
             </div>
             <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-              {simbolo}{totalPrice.toFixed(decimales)}
+              {simbolo ?? ''}{totalPrice.toFixed(decimales)}
             </span>
           </div>
         </div>

@@ -147,7 +147,7 @@ export function TransferDrawer({
                 <SelectContent>
                   {billeteras.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.nombre} ({simbolo}{formatNumber(Number(b.saldo_real))})
+                      {b.nombre} ({simbolo ?? ''}{formatNumber(Number(b.saldo_real))})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -166,7 +166,7 @@ export function TransferDrawer({
                 <SelectContent>
                   {availableDestinations.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.nombre} ({simbolo}{formatNumber(Number(b.saldo_real))})
+                      {b.nombre} ({simbolo ?? ''}{formatNumber(Number(b.saldo_real))})
                     </SelectItem>
                   ))}
                 </SelectContent>

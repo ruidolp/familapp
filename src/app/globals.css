@@ -25,6 +25,8 @@
     --foreground: 0 0% 9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 9%;
+    --card-elevated: 0 0% 98%;
+    --card-accent: 0 0% 95%;
     --wallet-card: 0 0% 97%;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 100%;
@@ -43,6 +45,8 @@
     --foreground: 180 100% 85%;
     --card: 250 30% 11%;
     --card-foreground: 180 100% 85%;
+    --card-elevated: 250 30% 14%;
+    --card-accent: 174 40% 12%;
     --wallet-card: 250 30% 13%;
     --primary: 174 100% 51%;
     --primary-foreground: 250 35% 8%;
@@ -61,6 +65,8 @@
     --foreground: 0 0% 9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 9%;
+    --card-elevated: 0 0% 98%;
+    --card-accent: 0 0% 95%;
     --wallet-card: 0 0% 97%;
     --primary: 0 0% 9%;
     --primary-foreground: 0 0% 100%;
@@ -79,6 +85,8 @@
     --foreground: 0 0% 98%;
     --card: 0 0% 12%;
     --card-foreground: 0 0% 98%;
+    --card-elevated: 0 0% 15%;
+    --card-accent: 0 0% 18%;
     --wallet-card: 0 0% 14%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
@@ -97,6 +105,8 @@
     --foreground: 330 45% 12%;
     --card: 0 0% 100%;
     --card-foreground: 330 45% 12%;
+    --card-elevated: 350 30% 97%;
+    --card-accent: 350 40% 94%;
     --wallet-card: 28 35% 95%;
     --primary: 350 85% 60%;
     --primary-foreground: 0 0% 100%;
@@ -158,5 +168,18 @@
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Card variants usando variables del tema */
+  .bg-card-elevated {
+    background-color: hsl(var(--card-elevated));
+  }
+
+  .bg-card-accent {
+    background-color: hsl(var(--card-accent));
+  }
+
+  .border-card-accent {
+    border-color: hsl(var(--card-accent));
   }
 }
