@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/infrastructure/lib/auth'
+import { db } from '@/infrastructure/database/kysely'
 import {
   getShoppingExecution,
   updateShoppingExecution,
@@ -108,6 +109,18 @@ export async function PUT(
       gasto_id,
       completed_at: status === 'COMPLETED' ? new Date() : undefined,
     })
+
+    // If execution is being marked as COMPLETED, increment the purchase_count of the shopping list
+    if (status === 'COMPLETED') {
+      await db
+        .updateTable('shopping_lists')
+        .set(eb => ({
+          purchase_count: eb('purchase_count', '+', 1),
+          updated_at: new Date(),
+        }))
+        .where('id', '=', execution.shopping_list_id)
+        .execute()
+    }
 
     return NextResponse.json({
       success: true,

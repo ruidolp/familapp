@@ -13,6 +13,7 @@ import { useState, useRef } from 'react'
 import { Check, X, Tag } from 'lucide-react'
 import { cn } from '@/infrastructure/lib/utils'
 import { useCurrency } from '@/presentation/providers/currency-provider'
+import { decimalToFraction } from '@/infrastructure/utils/quantity'
 import type { LocalExecutionItem, ItemStatus } from '@/domain/types/shopping-execution'
 
 interface ExecutionItemProps {
@@ -40,6 +41,24 @@ export function ExecutionItem({
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
   const hasMoved = useRef(false)
   const MOVEMENT_THRESHOLD = 10
+
+  // Helper to format quantity as fraction if it's a decimal
+  const formatQuantity = (quantity: string | number | undefined) => {
+    if (!quantity) return ''
+    const qty = String(quantity)
+
+    // Check if it's a decimal number (like 0.5, 0.25, 0.75)
+    if (!isNaN(Number(qty))) {
+      const decimal = Number(qty)
+      // Try to convert to fraction
+      if (decimal < 1 && decimal > 0) {
+        const fraction = decimalToFraction(decimal)
+        if (fraction) return fraction
+      }
+    }
+
+    return qty
+  }
 
   const handlePointerDownInternal = (e: React.PointerEvent) => {
     // Track pointer start position for scroll detection
@@ -141,7 +160,7 @@ export function ExecutionItem({
 
         {/* Quantity */}
         <span className="font-medium flex-shrink-0">
-          {item.cantidad_comprada || item.cantidad_planeada}
+          {formatQuantity(item.cantidad_comprada || item.cantidad_planeada)}
         </span>
 
         {/* Product name and comment */}
@@ -185,7 +204,7 @@ export function ExecutionItem({
         "text-sm font-medium min-w-[2rem] text-center flex-shrink-0",
         isDiscarded && 'line-through text-muted-foreground'
       )}>
-        {item.cantidad_comprada || item.cantidad_planeada}
+        {formatQuantity(item.cantidad_comprada || item.cantidad_planeada)}
       </div>
 
       {/* Item Info */}

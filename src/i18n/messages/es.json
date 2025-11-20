@@ -379,6 +379,16 @@
     "utilizado": "utilizado",
     "total": "total"
   },
+  "shopping": {
+    "history": {
+      "title": "Historial de Compra",
+      "purchaseDate": "Fecha de Compra",
+      "quantity": "Cantidad",
+      "unitPrice": "Precio Unitario",
+      "purchasedProducts": "Productos Comprados",
+      "noPurchasedProducts": "No hay productos registrados"
+    }
+  },
   "billeteras": {
     "title": "Billeteras",
     "loading": "Cargando billeteras...",

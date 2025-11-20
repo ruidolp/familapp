@@ -378,6 +378,16 @@
     "utilizado": "used",
     "total": "total"
   },
+  "shopping": {
+    "history": {
+      "title": "Purchase History",
+      "purchaseDate": "Purchase Date",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "purchasedProducts": "Purchased Products",
+      "noPurchasedProducts": "No products recorded"
+    }
+  },
   "billeteras": {
     "title": "Wallets",
     "loading": "Loading wallets...",

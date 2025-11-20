@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { X, Clock, MapPin, DollarSign } from 'lucide-react'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
 
 interface ExecutionHistoryDrawerProps {
@@ -17,6 +19,8 @@ export function ExecutionHistoryDrawer({
   isOpen,
   onOpenChange,
 }: ExecutionHistoryDrawerProps) {
+  const t = useTranslations('shopping.history')
+  const { formatNumber, simbolo, decimales } = useCurrency()
   const [serverItems, setServerItems] = useState<any[]>([])
   const [loadingItems, setLoadingItems] = useState(false)
 
@@ -154,7 +158,7 @@ export function ExecutionHistoryDrawer({
         <SheetHeader className="mb-6">
           <SheetTitle className="flex items-center gap-2">
             <Clock size={20} className="text-emerald-600" />
-            Historial de Compra
+            {t('title')}
             {isNotSynced && (
               <span className="ml-auto text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">
                 No sincronizado
@@ -165,34 +169,12 @@ export function ExecutionHistoryDrawer({
 
         {/* Header Info */}
         <div className="space-y-4 mb-6">
-          {/* Horarios */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Purchase Date and Store */}
+          <div className="grid grid-cols-1 gap-4">
             <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1">Inicio</p>
+              <p className="text-xs text-muted-foreground mb-1">{t('purchaseDate')}</p>
               <p className="font-semibold text-sm">
-                {formatTime(startDate)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {startDate.toLocaleDateString('es-ES')}
-              </p>
-            </div>
-            <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1">Finalización</p>
-              <p className="font-semibold text-sm">
-                {formatTime(endDate)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {endDate.toLocaleDateString('es-ES')}
-              </p>
-            </div>
-          </div>
-
-          {/* Duration and Store */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-              <p className="text-xs text-blue-700 dark:text-blue-300 mb-1">Duración</p>
-              <p className="font-semibold text-sm text-blue-900 dark:text-blue-100">
-                {formatDuration(durationSeconds)}
+                {startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })} {startDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
             {(execution as any).store_name && (
@@ -211,7 +193,7 @@ export function ExecutionHistoryDrawer({
         {/* Items Section */}
         <div className="mb-6">
           <h3 className="font-semibold text-sm mb-3 text-foreground">
-            Productos Comprados ({normalizedItems.length})
+            {t('purchasedProducts')} ({normalizedItems.length})
           </h3>
 
           {loadingItems ? (
@@ -242,13 +224,13 @@ export function ExecutionHistoryDrawer({
                     <div className="space-y-1">
                       {item.cantidad_comprada && (
                         <p className="text-xs text-muted-foreground">
-                          Qty: {item.cantidad_comprada}{' '}
+                          {t('quantity')}: {item.cantidad_comprada}{' '}
                           {item.unidad_medida && `(${item.unidad_medida})`}
                         </p>
                       )}
                       {item.precio_unitario && (
                         <p className="text-xs text-muted-foreground">
-                          Precio unit: ${item.precio_unitario.toFixed(2)}
+                          {t('unitPrice')}: {simbolo}{item.precio_unitario.toFixed(decimales)}
                         </p>
                       )}
                     </div>
@@ -256,7 +238,7 @@ export function ExecutionHistoryDrawer({
                     {item.precio_total && (
                       <div className="text-right">
                         <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                          ${item.precio_total.toFixed(2)}
+                          {simbolo}{item.precio_total.toFixed(decimales)}
                         </p>
                       </div>
                     )}
@@ -266,7 +248,7 @@ export function ExecutionHistoryDrawer({
             </div>
           ) : (
             <div className="text-center py-6 text-muted-foreground">
-              <p className="text-sm">No hay productos registrados</p>
+              <p className="text-sm">{t('noPurchasedProducts')}</p>
             </div>
           )}
         </div>
@@ -281,7 +263,7 @@ export function ExecutionHistoryDrawer({
               </span>
             </div>
             <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-              ${totalPrice.toFixed(2)}
+              {simbolo}{totalPrice.toFixed(decimales)}
             </span>
           </div>
         </div>

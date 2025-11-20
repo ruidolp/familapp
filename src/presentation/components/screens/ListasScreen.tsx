@@ -503,10 +503,9 @@ export function ListasScreen({ userId }: ListasScreenProps) {
         <Button
           onClick={handleOpenCreateDrawer}
           size="sm"
-          className="gap-2 w-auto px-3"
+          className="w-auto px-3"
         >
-          <Plus size={18} />
-          Crear Lista
+          Nueva Lista
         </Button>
       </div>
 

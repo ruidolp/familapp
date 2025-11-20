@@ -113,7 +113,7 @@ export default async function LocaleLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased">
+      <body className="bg-background text-foreground font-sans antialiased">
         <QueryProvider>
           <ThemeProvider defaultTheme={defaultTheme} themes={themes}>
             <SessionProvider>
