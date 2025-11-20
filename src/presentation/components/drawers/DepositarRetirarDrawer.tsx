@@ -43,7 +43,7 @@ export function DepositarRetirarDrawer({
   onOpenChange,
 }: DepositarRetirarDrawerProps) {
   const t = useTranslations('billeteras')
-  const { formatNumber } = useCurrency()
+  const { formatNumber, simbolo } = useCurrency()
   const { billeteras, handleDeposito } = useBilleteras()
 
   // Refs para inputs
@@ -150,7 +150,7 @@ export function DepositarRetirarDrawer({
               {billeteraId && billeteras.find(b => b.id === billeteraId) && (
                 <div className="text-base text-muted-foreground">
                   {t('balance.projected')}: <span className="font-semibold text-foreground">
-                    ${formatNumber(Number(billeteras.find(b => b.id === billeteraId)?.saldo_proyectado || 0))}
+                    {simbolo}{formatNumber(Number(billeteras.find(b => b.id === billeteraId)?.saldo_proyectado || 0))}
                   </span>
                 </div>
               )}

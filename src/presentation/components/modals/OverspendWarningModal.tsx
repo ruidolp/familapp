@@ -88,7 +88,7 @@ export function OverspendWarningModal({
                 </div>
                 <div className="pt-2 border-t">
                   <Badge variant="destructive" className="w-full justify-center">
-                    Exceso: {warning.details.porcentajeExceso.toFixed(1)}%
+                    Exceso: {Math.round(warning.details.porcentajeExceso)}%
                   </Badge>
                 </div>
               </AlertDescription>
@@ -153,7 +153,7 @@ export function OverspendWarningModal({
               )}
               <p>presupuesto: ${formatNumber(warning.details.presupuesto_asignado)}</p>
               <p>gastado: ${formatNumber(warning.details.gastado)}</p>
-              <p>exceso: {warning.details.porcentajeExceso.toFixed(2)}%</p>
+              <p>exceso: {Math.round(warning.details.porcentajeExceso)}%</p>
             </div>
           )}
         </div>

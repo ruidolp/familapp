@@ -48,7 +48,7 @@ export function TransferDrawer({
   preselectedId,
 }: TransferDrawerProps) {
   const t = useTranslations('billeteras')
-  const { formatNumber } = useCurrency()
+  const { formatNumber, simbolo } = useCurrency()
   const transferMutation = useTransferBetween()
 
   // Refs para inputs
@@ -147,7 +147,7 @@ export function TransferDrawer({
                 <SelectContent>
                   {billeteras.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.nombre} (${formatNumber(Number(b.saldo_real))})
+                      {b.nombre} ({simbolo}{formatNumber(Number(b.saldo_real))})
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -166,7 +166,7 @@ export function TransferDrawer({
                 <SelectContent>
                   {availableDestinations.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
-                      {b.nombre} (${formatNumber(Number(b.saldo_real))})
+                      {b.nombre} ({simbolo}{formatNumber(Number(b.saldo_real))})
                     </SelectItem>
                   ))}
                 </SelectContent>

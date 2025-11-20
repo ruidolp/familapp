@@ -800,7 +800,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                     } ${hasError ? 'text-destructive' : ''}`}
                   >
                     <div className="flex-shrink-0 mt-1 w-2 h-2 rounded-full bg-muted-foreground/40" />
-                    <span className="font-medium flex-shrink-0">{item.cantidad}</span>
+                    <span className="font-medium flex-shrink-0">
+                      {decimalToFraction(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad) || Math.round(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad)}
+                    </span>
                     <span className="flex-1">
                       {item.nombre || item._productName || item.product_id || item.product_custom_id}
                       {item.comentario && (
@@ -870,7 +872,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                                 {/* Quantity */}
                                 <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
-                                  {item.cantidad}
+                                  {decimalToFraction(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad) || Math.round(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad)}
                                 </div>
 
                                 {/* Plus button (if show qty controls) */}
@@ -975,7 +977,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                       {/* Quantity */}
                       <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
-                        {item.cantidad}
+                        {decimalToFraction(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad) || Math.round(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad)}
                       </div>
 
                       {/* Plus button (if show qty controls) */}

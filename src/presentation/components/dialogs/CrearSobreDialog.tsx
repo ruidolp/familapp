@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface CrearSobreDialogProps {
   open: boolean
@@ -52,6 +53,7 @@ export function CrearSobreDialog({
   userId,
 }: CrearSobreDialogProps) {
   const router = useRouter()
+  const { nombre: nombreMoneda } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -152,7 +154,7 @@ export function CrearSobreDialog({
             {/* Presupuesto */}
             <div className="grid gap-2">
               <Label htmlFor="presupuesto">
-                Presupuesto Asignado (USD) <span className="text-red-500">*</span>
+                Presupuesto Asignado ({nombreMoneda}) <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="presupuesto"
@@ -160,7 +162,7 @@ export function CrearSobreDialog({
                 step="0.01"
                 value={presupuesto}
                 onChange={(e) => setPresupuesto(e.target.value)}
-                placeholder="0.00"
+                placeholder="0"
                 required
               />
             </div>

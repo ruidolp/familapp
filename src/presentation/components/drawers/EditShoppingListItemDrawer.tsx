@@ -119,7 +119,7 @@ export function EditShoppingListItemDrawer({
               </Button>
 
               <div className="text-5xl font-bold min-w-[120px] text-center">
-                {cantidad}
+                {decimalToFraction(cantidad) || Math.round(cantidad)}
               </div>
 
               <Button

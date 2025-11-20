@@ -35,7 +35,7 @@ export function CardInfoDrawer({
   onTransfer,
 }: CardInfoDrawerProps) {
   const t = useTranslations('billeteras')
-  const { formatNumber } = useCurrency()
+  const { formatNumber, simbolo } = useCurrency()
 
   if (!billetera) return null
 
@@ -62,7 +62,7 @@ export function CardInfoDrawer({
                 {t('balance.real')}
               </p>
               <p className={`text-2xl font-bold ${Number(billetera.saldo_real) < 0 ? 'text-red-600' : 'text-foreground'}`}>
-                ${formatNumber(Number(billetera.saldo_real))}
+                {simbolo}{formatNumber(Number(billetera.saldo_real))}
               </p>
             </div>
 
@@ -72,7 +72,7 @@ export function CardInfoDrawer({
                 {t('balance.projected')}
               </p>
               <p className={`text-2xl font-bold ${Number(billetera.saldo_proyectado) < 0 ? 'text-red-600' : 'text-foreground'}`}>
-                ${formatNumber(Number(billetera.saldo_proyectado))}
+                {simbolo}{formatNumber(Number(billetera.saldo_proyectado))}
               </p>
             </div>
 

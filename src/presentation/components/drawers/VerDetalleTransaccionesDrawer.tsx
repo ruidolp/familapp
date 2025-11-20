@@ -47,7 +47,7 @@ export function VerDetalleTransaccionesDrawer({
   sobreId,
   sobreName,
 }: VerDetalleTransaccionesDrawerProps) {
-  const { formatNumber } = useCurrency()
+  const { formatNumber, simbolo } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [transacciones, setTransacciones] = useState<Transaccion[]>([])
   const [totalMes, setTotalMes] = useState(0)
@@ -140,7 +140,7 @@ export function VerDetalleTransaccionesDrawer({
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-sm text-muted-foreground">Total mes actual</p>
-                    <p className="text-2xl font-bold text-blue-600">${formatNumber(totalMes)}</p>
+                    <p className="text-2xl font-bold text-blue-600">{simbolo}{formatNumber(totalMes)}</p>
                   </div>
                   <Badge variant="outline" className="text-base">
                     {transacciones.length} transacciones
@@ -187,7 +187,7 @@ export function VerDetalleTransaccionesDrawer({
 
                           {/* Monto */}
                           <p className="text-base font-semibold text-foreground ml-2">
-                            -${formatNumber(Number(transaccion.monto))}
+                            -{simbolo}{formatNumber(Number(transaccion.monto))}
                           </p>
                         </Card>
                       ))}

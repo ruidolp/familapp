@@ -139,7 +139,7 @@ export function SobreCard({
               {/* Barra de progreso */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-white/60">{porcentajeGastado.toFixed(1)}% {t('utilizado')}</span>
+                  <span className="text-xs text-white/60">{Math.round(porcentajeGastado)}% {t('utilizado')}</span>
                   <span className="text-xs text-white/60">{formatNumber(presupuesto)} {t('total')}</span>
                 </div>
                 <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden backdrop-blur">

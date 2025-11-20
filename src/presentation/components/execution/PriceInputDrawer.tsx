@@ -25,6 +25,7 @@ import { Input } from '@/presentation/components/ui/input'
 import { Label } from '@/presentation/components/ui/label'
 import { Calculator } from 'lucide-react'
 import { CalculatorDrawer } from './CalculatorDrawer'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 import type { LocalExecutionItem } from '@/domain/types/shopping-execution'
 
 interface PriceInputDrawerProps {
@@ -42,6 +43,7 @@ export function PriceInputDrawer({
   onSave,
   onMarkAsNotPurchased,
 }: PriceInputDrawerProps) {
+  const { decimales } = useCurrency()
   const [cantidad, setCantidad] = useState('')
   const [precioUnitario, setPrecioUnitario] = useState('')
   const [precioTotal, setPrecioTotal] = useState('')
@@ -67,7 +69,7 @@ export function PriceInputDrawer({
 
     if (!isNaN(unitario) && !isNaN(cant) && cant > 0) {
       const total = unitario * cant
-      setPrecioTotal(total.toFixed(2))
+      setPrecioTotal(total.toFixed(decimales))
     }
   }
 
@@ -80,7 +82,7 @@ export function PriceInputDrawer({
 
     if (!isNaN(total) && !isNaN(cant) && cant > 0) {
       const unitario = total / cant
-      setPrecioUnitario(unitario.toFixed(2))
+      setPrecioUnitario(unitario.toFixed(decimales))
     }
   }
 
@@ -95,7 +97,7 @@ export function PriceInputDrawer({
       const unitario = parseFloat(precioUnitario)
       if (!isNaN(unitario)) {
         const total = unitario * cant
-        setPrecioTotal(total.toFixed(2))
+        setPrecioTotal(total.toFixed(decimales))
       }
     }
     // If we have total, recalculate unitario
@@ -103,7 +105,7 @@ export function PriceInputDrawer({
       const total = parseFloat(precioTotal)
       if (!isNaN(total)) {
         const unitario = total / cant
-        setPrecioUnitario(unitario.toFixed(2))
+        setPrecioUnitario(unitario.toFixed(decimales))
       }
     }
   }

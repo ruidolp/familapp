@@ -718,7 +718,7 @@ export function CrearGastoDrawer({
                 min="0"
                 value={monto}
                 onChange={(e) => setMonto(e.target.value)}
-                placeholder="0.00"
+                placeholder="0"
                 required
                 className="text-base"
               />
@@ -729,7 +729,7 @@ export function CrearGastoDrawer({
               <Alert className="border-red-200 bg-red-50">
                 <AlertDescription className="text-red-700">
                   <p className="font-semibold mb-2">
-                    ⚠️ INFORMATIVO: Excede el presupuesto del sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; en ${formatNumber(presupuestoWarning.exceso)} ({presupuestoWarning.porcentaje.toFixed(2)}%)
+                    ⚠️ INFORMATIVO: Excede el presupuesto del sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; en ${formatNumber(presupuestoWarning.exceso)} ({Math.round(presupuestoWarning.porcentaje)}%)
                   </p>
                   <p className="text-sm">
                     Podrás ingresar el gasto de todas maneras, es solo informativo

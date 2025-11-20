@@ -35,6 +35,7 @@ import { Separator } from '@/presentation/components/ui/separator'
 import { Badge } from '@/presentation/components/ui/badge'
 import { DollarSign, Tag, Store } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 import {
   getPreferences,
   savePreferences,

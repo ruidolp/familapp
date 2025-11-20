@@ -151,7 +151,7 @@ export function AgregarPresupuestoDrawer({
                 min="0"
                 value={monto}
                 onChange={(e) => setMonto(e.target.value)}
-                placeholder="0.00"
+                placeholder="0"
                 required
                 className="text-base"
               />
@@ -199,7 +199,7 @@ export function AgregarPresupuestoDrawer({
                       min="0"
                       value={montoRecurrente}
                       onChange={(e) => setMontoRecurrente(e.target.value)}
-                      placeholder="0.00"
+                      placeholder="0"
                       className="text-base"
                     />
                   </div>

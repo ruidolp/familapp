@@ -31,6 +31,7 @@ import {
   type Billetera,
 } from '@/presentation/hooks/useBilleteras'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface CardManageDrawerProps {
   open: boolean

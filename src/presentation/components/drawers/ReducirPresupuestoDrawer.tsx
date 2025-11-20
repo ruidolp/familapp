@@ -39,7 +39,7 @@ export function ReducirPresupuestoDrawer({
   onSuccess,
 }: ReducirPresupuestoDrawerProps) {
   const t = useTranslations('common')
-  const { formatNumber } = useCurrency()
+  const { formatNumber, simbolo } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [monto, setMonto] = useState('')
   const [observacion, setObservacion] = useState('')
@@ -119,11 +119,11 @@ export function ReducirPresupuestoDrawer({
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-base text-muted-foreground">Monto Libre</p>
-                  <p className="text-xl font-bold">${formatNumber(Number(montoLibre))}</p>
+                  <p className="text-xl font-bold">{simbolo}{formatNumber(Number(montoLibre))}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-base text-muted-foreground">Presupuesto Asignado</p>
-                  <p className="text-xl font-bold">${formatNumber(Number(presupuestoAsignado))}</p>
+                  <p className="text-xl font-bold">{simbolo}{formatNumber(Number(presupuestoAsignado))}</p>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ export function ReducirPresupuestoDrawer({
                   min="0"
                   value={monto}
                   onChange={(e) => setMonto(e.target.value)}
-                  placeholder="0.00"
+                  placeholder="0"
                   required
                   className="text-base pl-8"
                 />
