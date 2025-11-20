@@ -31,11 +31,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/presentation/components/ui/select'
-import { Separator } from '@/presentation/components/ui/separator'
-import { Badge } from '@/presentation/components/ui/badge'
+import { Card } from '@/presentation/components/ui/card'
 import { DollarSign, Tag, Store } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
-import { useCurrency } from '@/presentation/providers/currency-provider'
 import {
   getPreferences,
   savePreferences,
@@ -313,39 +311,27 @@ export function ConfigureExecutionDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        className="flex flex-col h-[90vh] sm:max-w-[500px] sm:mx-auto"
-      >
-        <SheetHeader>
-          <SheetTitle>Configurar Compra</SheetTitle>
-          <SheetDescription>
-            Configura cómo quieres ejecutar esta compra
-          </SheetDescription>
+      <SheetContent className="flex h-[92vh] flex-col overflow-hidden sm:max-w-[480px]">
+        <SheetHeader className="text-left">
+          <SheetTitle className="text-lg font-semibold">Configurar compra</SheetTitle>
+          <SheetDescription>Prepara la compra antes de iniciar el conteo.</SheetDescription>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto px-4 mt-6 space-y-6 pb-4">
-          {/* Register in Budgets */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base font-medium">
-                  ¿Registrar en presupuestos?
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Vincula esta compra a un sobre y categoría
-                </p>
+        <div className="flex-1 space-y-5 overflow-y-auto py-5">
+          <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase text-muted-foreground">Presupuesto</p>
+                <p className="text-sm text-foreground">¿Registrar en sobres?</p>
+                <p className="text-xs text-muted-foreground">Asocia la compra a un sobre y categoría.</p>
               </div>
-              <Switch
-                checked={registerInBudget}
-                onCheckedChange={setRegisterInBudget}
-              />
+              <Switch checked={registerInBudget} onCheckedChange={setRegisterInBudget} />
             </div>
 
             {registerInBudget && (
-              <div className="space-y-4 pl-4 border-l-2 border-muted">
-                {/* Sobre Selection */}
+              <div className="space-y-4 rounded-xl bg-muted/40 p-3">
                 <div className="space-y-2">
-                  <Label htmlFor="sobre" className="text-sm font-medium">
+                  <Label htmlFor="sobre" className="text-xs uppercase text-muted-foreground">
                     Sobre
                   </Label>
                   <Select value={sobreId} onValueChange={setSobreId}>
@@ -362,10 +348,9 @@ export function ConfigureExecutionDrawer({
                   </Select>
                 </div>
 
-                {/* Categoria Selection */}
                 {sobreId && (
                   <div className="space-y-2">
-                    <Label htmlFor="categoria" className="text-sm font-medium">
+                    <Label htmlFor="categoria" className="text-xs uppercase text-muted-foreground">
                       Categoría
                     </Label>
                     <Select value={categoriaId} onValueChange={setCategoriaId}>
@@ -383,17 +368,14 @@ export function ConfigureExecutionDrawer({
                   </div>
                 )}
 
-                {/* Subcategoria/Marca Selection */}
                 {categoriaId && (
-                  <div className="space-y-2">
-                    <Label htmlFor="marca" className="text-sm font-medium flex items-center gap-2">
-                      <Store className="h-4 w-4" />
-                      Marca/Tienda
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
+                      <Store className="h-3.5 w-3.5" /> Marca / Tienda
                     </Label>
-
                     {subcategorias.length > 0 && (
                       <Select value={subcategoriaId} onValueChange={setSubcategoriaId}>
-                        <SelectTrigger id="marca">
+                        <SelectTrigger>
                           <SelectValue placeholder="Selecciona tienda" />
                         </SelectTrigger>
                         <SelectContent>
@@ -405,12 +387,10 @@ export function ConfigureExecutionDrawer({
                         </SelectContent>
                       </Select>
                     )}
-
-                    {/* Create new subcategoria */}
                     <div className="flex gap-2">
                       <Input
                         ref={inputRef}
-                        placeholder="O crea nueva marca..."
+                        placeholder="Crear nueva marca"
                         value={newSubcategoriaName}
                         onChange={e => setNewSubcategoriaName(e.target.value)}
                         onKeyDown={e => {
@@ -419,94 +399,73 @@ export function ConfigureExecutionDrawer({
                             handleCreateSubcategoria()
                           }
                         }}
-                        enterKeyHint="go"
                       />
                       <Button
-                        onClick={handleCreateSubcategoria}
-                        disabled={!newSubcategoriaName.trim() || creatingSubcategoria}
                         variant="outline"
+                        disabled={!newSubcategoriaName.trim() || creatingSubcategoria}
+                        onClick={handleCreateSubcategoria}
                       >
-                        {creatingSubcategoria ? 'Creando...' : 'Crear'}
+                        {creatingSubcategoria ? 'Creando...' : 'Agregar'}
                       </Button>
                     </div>
                   </div>
                 )}
               </div>
             )}
-          </div>
+          </Card>
 
-          <Separator />
-
-          {/* Referential Budget */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label className="text-base font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Presupuesto referencial
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Monto informativo para controlar el gasto
-                </p>
+          <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase text-muted-foreground">Presupuesto referencial</p>
+                <p className="text-sm text-foreground">Control visual del gasto</p>
               </div>
-              <Switch
-                checked={budgetEnabled}
-                onCheckedChange={setBudgetEnabled}
-              />
+              <Switch checked={budgetEnabled} onCheckedChange={setBudgetEnabled} />
             </div>
 
             {budgetEnabled && (
-              <div className="pl-4 border-l-2 border-muted">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase text-muted-foreground flex items-center gap-2">
+                  <DollarSign className="h-3.5 w-3.5" /> Monto objetivo
+                </Label>
                 <Input
                   type="number"
                   inputMode="decimal"
-                  placeholder="Monto del presupuesto"
+                  placeholder="Ej: 25000"
                   value={budgetAmount}
                   onChange={e => setBudgetAmount(e.target.value)}
                   className="text-lg"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Solo referencial, no bloqueará la compra
+                <p className="text-xs text-muted-foreground">
+                  Es solo informativo; no detendrá la compra.
                 </p>
               </div>
             )}
-          </div>
+          </Card>
 
-          <Separator />
-
-          {/* Price Input Setting */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-base font-medium flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                Agregar precios de productos
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Registra el precio de cada producto
-              </p>
+          <Card className="mx-1 space-y-3 rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Agregar precios</p>
+                <p className="text-xs text-muted-foreground">Registra el precio de cada producto.</p>
+              </div>
+              <Switch checked={enablePrices} onCheckedChange={setEnablePrices} />
             </div>
-            <Switch
-              checked={enablePrices}
-              onCheckedChange={setEnablePrices}
-            />
-          </div>
+            <p className="text-xs text-muted-foreground">
+              Las vistas y el cronómetro se pueden ajustar directamente durante la compra.
+            </p>
+          </Card>
         </div>
 
-        {/* Footer Buttons - Non-fixed, always at the end */}
-        <div className="border-t p-4 flex gap-3 bg-background">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1"
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            className="flex-1 bg-primary"
-          >
-            Iniciar Compra
-          </Button>
+        <div className="border-t bg-background p-4">
+          <div className="flex gap-3">
+            <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button className="flex-1" onClick={handleConfirm}>
+              Iniciar compra
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

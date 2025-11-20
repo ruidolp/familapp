@@ -361,32 +361,30 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     const executionId = (execution as any).localId || (execution as any).id
     const isLocal = (execution as any).isLocal
 
+    const executionToneClass = isLocal
+      ? 'border-primary/60 bg-primary/10'
+      : 'border-accent/40 bg-accent/10'
+
     return (
       <Card
         key={executionId}
-        className={`p-4 cursor-pointer hover:shadow-lg transition-shadow ${
-          isLocal
-            ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30'
-            : 'border-amber-200 dark:border-amber-900'
-        }`}
+        className={`p-4 cursor-pointer rounded-2xl hover:shadow-lg transition-shadow ${executionToneClass}`}
         onClick={() => handleOpenExecution(execution)}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Clock size={16} className="text-amber-600 dark:text-amber-400" />
-              <h3 className="font-semibold text-base truncate text-amber-900 dark:text-amber-100">
+            <div className="mb-1 flex items-center gap-2">
+              <Clock size={16} className="text-primary" />
+              <h3 className="flex-1 truncate text-base font-semibold text-primary">
                 {listName}
               </h3>
               {isLocal && (
-                <span className="text-xs bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-100 px-2 py-0.5 rounded">
+                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
                   Local
                 </span>
               )}
             </div>
-            <p className="text-xs text-amber-700 dark:text-amber-300 mb-2">
-              En progreso • {timeText}
-            </p>
+            <p className="mb-2 text-xs text-muted-foreground">En progreso • {timeText}</p>
             {(execution as any).store_name && (
               <p className="text-sm text-muted-foreground line-clamp-1">
                 📍 {(execution as any).store_name}
@@ -399,7 +397,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1"
+              className="gap-1 border-primary/40 text-primary hover:bg-primary/10"
               onClick={(e) => {
                 e.stopPropagation()
                 handleOpenExecution(execution)
@@ -449,18 +447,18 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     return (
       <Card
         key={(execution as any).localId || (execution as any).id}
-        className="p-4 cursor-pointer hover:shadow-lg transition-shadow border-emerald-200 dark:border-emerald-900"
+        className="p-4 cursor-pointer rounded-2xl border-secondary/50 bg-secondary/10 hover:shadow-lg transition-shadow"
         onClick={() => handleOpenHistory(execution)}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400" />
-              <h3 className="font-semibold text-base truncate text-emerald-900 dark:text-emerald-100">
+            <div className="mb-1 flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-secondary" />
+              <h3 className="font-semibold text-base truncate text-secondary">
                 {listName}
               </h3>
             </div>
-            <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-2">
+            <p className="mb-2 text-xs text-muted-foreground">
               Finalizada • {completedText}
             </p>
             {(execution as any).store_name && (
@@ -470,11 +468,10 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             )}
           </div>
 
-          {/* Action button */}
           <Button
             variant="outline"
             size="sm"
-            className="gap-1"
+            className="gap-1 border-secondary/40 text-secondary hover:bg-secondary/10"
             onClick={(e) => {
               e.stopPropagation()
               handleOpenHistory(execution)
@@ -541,7 +538,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             {/* Active Executions Section */}
             {activeExecutions.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 mb-3 pl-1">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-primary mb-3 pl-1">
                   ⏱️ Listas en curso ({activeExecutions.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -553,7 +550,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             {/* Completed Executions Section */}
             {completedExecutions.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-3 pl-1">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-secondary mb-3 pl-1">
                   ✓ Compras Finalizadas ({completedExecutions.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

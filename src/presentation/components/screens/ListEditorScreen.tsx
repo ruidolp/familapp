@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import {
   ArrowLeft,
   X,
@@ -9,8 +10,8 @@ import {
   Minus,
   AlertCircle,
   Loader2,
-  Square,
   ShoppingCart,
+  Calculator,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -25,6 +26,7 @@ import {
   ConfigureExecutionDrawer,
   type ExecutionConfig,
 } from '@/presentation/components/execution/ConfigureExecutionDrawer'
+import { CalculatorDrawer } from '@/presentation/components/execution/CalculatorDrawer'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import {
   getPreferences,
@@ -97,6 +99,7 @@ interface ItemSaveState {
 
 export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const router = useRouter()
+  const tSummary = useTranslations('shopping.listEditor.summary')
 
   // Data state
   const [data, setData] = useState<EditorData | null>(null)
@@ -113,6 +116,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const [optionsDrawerOpen, setOptionsDrawerOpen] = useState(false)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItemWithProduct | null>(null)
+  const [calculatorOpen, setCalculatorOpen] = useState(false)
 
   // Execute purchase drawer state
   const [configureExecutionOpen, setConfigureExecutionOpen] = useState(false)
@@ -127,6 +131,29 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // Touch/pointer tracking for scroll detection
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
   const MOVEMENT_THRESHOLD = 10 // pixels - if movement exceeds this, it's a scroll, not a click
+
+  const totalQuantity = useMemo(() => {
+    return items.reduce((sum, item) => {
+      const rawQuantity = item.cantidad as unknown
+      let numericValue = 0
+
+      if (typeof rawQuantity === 'number') {
+        numericValue = rawQuantity
+      } else if (typeof rawQuantity === 'string') {
+        const parsed = Number(rawQuantity)
+        numericValue = Number.isNaN(parsed) ? quantityToDecimal(rawQuantity) : parsed
+      } else if (rawQuantity !== null && rawQuantity !== undefined) {
+        const parsed = Number(rawQuantity)
+        numericValue = Number.isNaN(parsed) ? 0 : parsed
+      }
+
+      return sum + (Number.isFinite(numericValue) ? numericValue : 0)
+    }, 0)
+  }, [items])
+
+  const formattedTotalQuantity = useMemo(() => {
+    return new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 }).format(totalQuantity)
+  }, [totalQuantity])
 
   // Load preferences from IndexedDB on mount
   useEffect(() => {
@@ -741,36 +768,63 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="border-b p-4">
-        <div className="flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              router.back()
-            }}
-          >
-            <ArrowLeft size={20} />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-xl font-semibold">{data.listInfo.nombre}</h1>
-            {data.listInfo.descripcion && (
-              <p className="text-sm text-muted-foreground">
-                {data.listInfo.descripcion}
-              </p>
-            )}
+      <div className="p-4">
+        <Card className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+          <div className="flex items-start gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={tSummary('backLabel')}
+              onClick={() => {
+                router.back()
+              }}
+            >
+              <ArrowLeft size={20} />
+            </Button>
+            <div className="flex-1">
+              <p className="text-xs uppercase text-muted-foreground">{tSummary('activeLabel')}</p>
+              <h1 className="text-lg font-semibold text-foreground">{data.listInfo.nombre}</h1>
+              {data.listInfo.descripcion && (
+                <p className="text-sm text-muted-foreground">
+                  {data.listInfo.descripcion}
+                </p>
+              )}
+            </div>
           </div>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={() => setConfigureExecutionOpen(true)}
-            disabled={items.length === 0}
-            className="flex items-center gap-2"
-          >
-            <ShoppingCart size={16} />
-            <span className="hidden sm:inline">Ejecutar</span>
-          </Button>
-        </div>
+
+          <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+            <div className="rounded-xl border border-border/70 bg-muted/40 p-3">
+              <p className="text-xs uppercase text-muted-foreground">{tSummary('productsTitle')}</p>
+              <p className="text-2xl font-semibold text-foreground">{items.length}</p>
+              <p className="text-xs text-muted-foreground">{tSummary('productsSubtitle')}</p>
+            </div>
+            <div className="rounded-xl border border-border/70 bg-muted/40 p-3">
+              <p className="text-xs uppercase text-muted-foreground">{tSummary('quantityTitle')}</p>
+              <p className="text-2xl font-semibold text-foreground">{formattedTotalQuantity}</p>
+              <p className="text-xs text-muted-foreground">{tSummary('quantitySubtitle')}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              className="flex-1 gap-2"
+              onClick={() => setCalculatorOpen(true)}
+            >
+              <Calculator size={18} />
+              {tSummary('calculatorButton')}
+            </Button>
+            <Button
+              variant="default"
+              className="flex-1 gap-2"
+              onClick={() => setConfigureExecutionOpen(true)}
+              disabled={items.length === 0}
+            >
+              <ShoppingCart size={18} />
+              {tSummary('executeButton')}
+            </Button>
+          </div>
+        </Card>
       </div>
 
       {/* Items List */}
@@ -1094,6 +1148,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         userId={userId}
         onConfirm={handleExecutePurchase}
       />
+
+      <CalculatorDrawer open={calculatorOpen} onOpenChange={setCalculatorOpen} />
     </div>
   )
 }

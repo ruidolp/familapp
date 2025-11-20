@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
-import { X, Clock, MapPin, DollarSign } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { ReceiptText, MapPin, CalendarClock, TimerReset } from 'lucide-react'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
 
@@ -86,12 +88,6 @@ export function ExecutionHistoryDrawer({
     return serverItems
   }
 
-  // Helper para formatear tiempo
-  const formatTime = (date: Date | string) => {
-    const d = typeof date === 'string' ? new Date(date) : date
-    return d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
-  }
-
   // Helper para formatear duración
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -103,8 +99,6 @@ export function ExecutionHistoryDrawer({
 
   const items = getItems()
   // Check if execution is not synced - verify syncStatus field
-  const isNotSynced = 'syncStatus' in execution && execution.syncStatus !== 'synced'
-
   // Helper para normalizar items (local vs servidor)
   const normalizeItem = (item: any) => {
     // Si es un item local, ya tiene el formato correcto
@@ -154,128 +148,121 @@ export function ExecutionHistoryDrawer({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange} direction="right">
-      <SheetContent className="w-full sm:w-[500px] overflow-y-auto">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="flex items-center gap-2">
-            <Clock size={20} className="text-emerald-600" />
+      <SheetContent className="w-full sm:w-[500px] overflow-y-auto bg-background">
+        <SheetHeader className="mb-4">
+          <SheetTitle className="flex items-center gap-2 text-base font-semibold">
+            <ReceiptText className="h-5 w-5 text-muted-foreground" />
             {t('title')}
-            {isNotSynced && (
-              <span className="ml-auto text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">
-                No sincronizado
-              </span>
-            )}
           </SheetTitle>
         </SheetHeader>
 
-        {/* Header Info */}
-        <div className="space-y-4 mb-6">
-          {/* Purchase Date and Store */}
-          <div className="grid grid-cols-1 gap-4">
-            <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg">
-              <p className="text-xs text-muted-foreground mb-1">{t('purchaseDate')}</p>
-              <p className="font-semibold text-sm">
-                {startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })} {startDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-            {(execution as any).store_name && (
-              <div className="bg-purple-50 dark:bg-purple-950 p-3 rounded-lg">
-                <p className="text-xs text-purple-700 dark:text-purple-300 mb-1 flex items-center gap-1">
-                  <MapPin size={12} /> Tienda
+        <div className="space-y-4">
+          <Card className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase text-muted-foreground">{t('purchaseDate')}</p>
+                <p className="text-base font-semibold text-foreground">
+                  {startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                 </p>
-                <p className="font-semibold text-sm text-purple-900 dark:text-purple-100 truncate">
-                  {(execution as any).store_name}
+                <p className="text-sm text-muted-foreground">
+                  {startDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
+              <div className="text-right">
+                <p className="text-xs uppercase text-muted-foreground flex items-center gap-1 justify-end">
+                  <TimerReset className="h-3.5 w-3.5" />
+                  Duración
+                </p>
+                <p className="text-sm font-semibold text-foreground">{formatDuration(durationSeconds)}</p>
+              </div>
+            </div>
+
+            {(execution as any).store_name && (
+              <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-sm">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium text-foreground truncate">
+                  {(execution as any).store_name}
+                </span>
+              </div>
             )}
-          </div>
+          </Card>
+
+          <Card className="rounded-2xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase text-muted-foreground">Total</p>
+                <p className="text-3xl font-bold text-foreground">{formatNumber(totalPrice)}</p>
+              </div>
+              <div className="text-right text-sm text-muted-foreground">
+                <p className="flex items-center gap-1 justify-end">
+                  <CalendarClock className="h-4 w-4" />
+                  {t('purchaseDate')}
+                </p>
+                <p>
+                  {startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
 
-        {/* Items Section */}
-        <div className="mb-6">
-          <h3 className="font-semibold text-sm mb-3 text-foreground">
-            {t('purchasedProducts')} ({normalizedItems.length})
-          </h3>
-
-          {loadingItems ? (
-            <div className="text-center py-6 text-muted-foreground">
-              <p className="text-sm">Cargando productos...</p>
-            </div>
-          ) : normalizedItems.length > 0 ? (
-            <div className="space-y-2 max-h-[400px] overflow-y-auto">
-              {normalizedItems.map((item: any) => (
-                <div
-                  key={item.localId}
-                  className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-200 dark:border-slate-800"
-                >
-                  <div className="flex items-start justify-between mb-2">
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-foreground">
+              {t('purchasedProducts')} ({normalizedItems.length})
+            </h3>
+            {loadingItems && <span className="text-xs text-muted-foreground">Cargando...</span>}
+          </div>
+          <div className="space-y-3">
+            {loadingItems ? (
+              <Card className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                Cargando productos...
+              </Card>
+            ) : normalizedItems.length > 0 ? (
+              normalizedItems.map((item: any) => (
+                <Card key={item.localId} className="rounded-2xl border border-border bg-card p-4">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
-                      <p className="font-medium text-sm text-foreground">
-                        {item.product_name}
-                      </p>
+                      <p className="font-medium text-sm text-foreground">{item.product_name}</p>
                       {item.categoria_producto_nombre && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {item.categoria_producto_nombre}
                         </p>
                       )}
                     </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="space-y-1">
-                      {item.cantidad_comprada && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('quantity')}: {item.cantidad_comprada}{' '}
-                          {item.unidad_medida && `(${item.unidad_medida})`}
-                        </p>
-                      )}
-                      {item.precio_unitario && (
-                        <p className="text-xs text-muted-foreground">
-                          {t('unitPrice')}: {simbolo ?? ''}{item.precio_unitario.toFixed(decimales)}
-                        </p>
-                      )}
-                    </div>
-
                     {item.precio_total && (
-                      <div className="text-right">
-                        <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                          {simbolo ?? ''}{item.precio_total.toFixed(decimales)}
-                        </p>
-                      </div>
+                      <span className="text-base font-semibold text-foreground">
+                        {simbolo ?? ''}{item.precio_total.toFixed(decimales)}
+                      </span>
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-6 text-muted-foreground">
-              <p className="text-sm">{t('noPurchasedProducts')}</p>
-            </div>
-          )}
-        </div>
-
-        {/* Total Section */}
-        <div className="border-t pt-4 mb-6">
-          <div className="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950 p-4 rounded-lg">
-            <div className="flex items-center gap-2">
-              <DollarSign size={18} className="text-emerald-600 dark:text-emerald-400" />
-              <span className="font-semibold text-emerald-900 dark:text-emerald-100">
-                Total
-              </span>
-            </div>
-            <span className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
-              {simbolo ?? ''}{totalPrice.toFixed(decimales)}
-            </span>
+                  <Separator className="my-3" />
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+                    {item.cantidad_comprada && (
+                      <span>
+                        {t('quantity')}: {item.cantidad_comprada}
+                        {item.unidad_medida && ` ${item.unidad_medida}`}
+                      </span>
+                    )}
+                    {item.precio_unitario && (
+                      <span>
+                        {t('unitPrice')}: {simbolo ?? ''}{item.precio_unitario.toFixed(decimales)}
+                      </span>
+                    )}
+                    {item.marca && <span>{item.marca}</span>}
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <Card className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground text-center">
+                {t('noPurchasedProducts')}
+              </Card>
+            )}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="w-full"
-          >
-            <X size={16} className="mr-2" />
+        <div className="mt-6 flex justify-end">
+          <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
             Cerrar
           </Button>
         </div>

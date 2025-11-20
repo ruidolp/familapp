@@ -11,7 +11,7 @@
  * - Calculator button
  */
 
-import { Calculator } from 'lucide-react'
+import { Calculator, Clock3 } from 'lucide-react'
 import { Button } from '@/presentation/components/ui/button'
 import { Progress } from '@/presentation/components/ui/progress'
 import { useCurrency } from '@/presentation/providers/currency-provider'
@@ -44,75 +44,65 @@ export function ExecutionHeader({
   const isOverBudget = budgetEnabled && budgetAmount && totalSpent > budgetAmount
 
   return (
-    <div className="sticky top-0 z-10 bg-background border-b">
-      {/* Top Bar - Clean and minimal */}
-      <div className="flex items-center justify-between p-4 gap-2">
-        {/* Left section: List name */}
-        <div className="min-w-0 flex-1">
-          <h1 className="text-sm sm:text-base font-semibold truncate text-foreground/80">{listName}</h1>
-          {storeName && (
-            <p className="text-xs text-muted-foreground truncate">{storeName}</p>
-          )}
-        </div>
-
-        {/* Center section: Total Display - Responsive size */}
-        <div className="flex flex-col items-end gap-0 flex-shrink-0">
-          <span className="text-xs text-muted-foreground font-medium">Total</span>
-          <span className="text-lg sm:text-2xl font-bold text-primary whitespace-nowrap">
-            {formatNumber(totalSpent)}
-          </span>
-        </div>
-
-        {/* Right section: Action buttons */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9"
-            onClick={onCalculatorClick}
-          >
+    <div className="sticky top-0 z-10 border-b bg-background">
+      <div className="space-y-4 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">{listName}</p>
+            {storeName && <p className="text-sm font-medium text-foreground">{storeName}</p>}
+            {showTimer && (
+              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock3 className="h-3.5 w-3.5" />
+                <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
+              </div>
+            )}
+          </div>
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onCalculatorClick}>
             <Calculator className="h-4 w-4" />
           </Button>
         </div>
-      </div>
 
-      {/* Timer */}
-      {showTimer && (
-        <div className="px-4 pb-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Tiempo:</span>
-            <span className="font-mono font-bold text-foreground">
-              {timerFormatted}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Budget Progress */}
-      {budgetEnabled && budgetAmount && (
-        <div className="px-4 pb-3 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className={isOverBudget ? 'text-destructive font-semibold' : ''}>
-              Gastado: {formatNumber(totalSpent)}
-            </span>
-            <span className="text-muted-foreground">
-              Presupuesto: {formatNumber(budgetAmount)}
-            </span>
+        <div className={`grid gap-3 ${budgetEnabled && budgetAmount ? 'sm:grid-cols-2' : ''}`}>
+          <div className="rounded-2xl border border-border bg-card px-4 py-3">
+            <p className="text-xs uppercase text-muted-foreground">Total actual</p>
+            <p className="text-3xl font-bold text-primary">{formatNumber(totalSpent)}</p>
+            <p className="text-xs text-muted-foreground">Suma registrada hasta ahora.</p>
           </div>
 
-          <Progress
-            value={Math.min(budgetPercentage, 100)}
-            className="h-2"
-            indicatorClassName={isOverBudget ? 'bg-destructive' : 'bg-primary'}
-          />
-
-          {isOverBudget && (
-            <p className="text-xs text-destructive font-medium">
-              ¡Has excedido el presupuesto en {formatNumber(totalSpent - budgetAmount)}!
-            </p>
+          {budgetEnabled && budgetAmount && (
+            <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
+              <p className="text-xs uppercase text-muted-foreground">Presupuesto</p>
+              <p className={`text-2xl font-semibold ${isOverBudget ? 'text-destructive' : 'text-foreground'}`}>
+                {formatNumber(budgetAmount)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Restante: {formatNumber(Math.max(budgetAmount - totalSpent, 0))}
+              </p>
+            </div>
           )}
         </div>
-      )}
+
+        {budgetEnabled && budgetAmount && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className={isOverBudget ? 'text-destructive font-semibold' : 'text-muted-foreground'}>
+                {formatNumber(totalSpent)} gastado
+              </span>
+              <span className="text-muted-foreground">{budgetPercentage.toFixed(0)}% del presupuesto</span>
+            </div>
+            <Progress
+              value={Math.min(budgetPercentage, 120)}
+              className="h-2"
+              indicatorClassName={isOverBudget ? 'bg-destructive' : 'bg-primary'}
+            />
+            {isOverBudget && (
+              <p className="text-xs font-medium text-destructive">
+                Excedente: {formatNumber(totalSpent - budgetAmount)}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

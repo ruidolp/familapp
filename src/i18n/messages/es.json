@@ -1,65 +1,64 @@
 {
   "auth": {
     "login": {
-      "title": "Iniciar Sesión",
-      "description": "Ingresa tus credenciales para acceder a tu cuenta",
-      "identifier": "Email o Teléfono",
+      "title": "Iniciar sesión",
+      "description": "Entra a tu cuenta y sigue organizando tus finanzas 💸",
+      "identifier": "Email o teléfono",
       "identifierPlaceholder": "tu@email.com o +52 1234567890",
       "password": "Contraseña",
       "passwordPlaceholder": "••••••••",
-      "submit": "Iniciar Sesión",
+      "submit": "Iniciar sesión",
       "submitting": "Iniciando sesión...",
       "forgotPassword": "¿Olvidaste tu contraseña?",
-      "noAccount": "¿No tienes cuenta?",
-      "register": "Regístrate",
+      "noAccount": "¿Aún no tienes cuenta?",
+      "register": "Crear cuenta",
       "orContinueWith": "O continúa con",
-      "continueWithEmail": "Iniciar sesión con Email o Teléfono",
-      "selectMethod": "Selecciona tu método de inicio de sesión",
-      "backToOptions": "Volver a opciones de inicio de sesión",
+      "continueWithEmail": "Iniciar con email o teléfono",
+      "selectMethod": "Elige cómo quieres entrar",
+      "backToOptions": "Volver a opciones de inicio",
       "error": {
-        "title": "Error al iniciar sesión",
-        "invalidCredentials": "Credenciales inválidas. Por favor verifica tus datos.",
-        "generic": "Ocurrió un error al iniciar sesión. Intenta de nuevo."
+        "title": "No pudimos iniciar sesión",
+        "invalidCredentials": "Datos incorrectos. Revisa tu email o contraseña.",
+        "generic": "Ocurrió un problema al iniciar sesión. Intenta nuevamente."
       },
       "success": {
-        "title": "Bienvenido",
-        "description": "Inicio de sesión exitoso"
+        "title": "¡Bienvenida!",
+        "description": "Inicio de sesión correcto"
       }
     },
     "register": {
-      "title": "Crear Cuenta",
-      "description": "Completa el formulario para registrarte",
-      "selectMethod": "Selecciona tu método de registro",
-      "name": "Nombre Completo",
+      "title": "Crear cuenta",
+      "description": "Configura tu cuenta para organizar tus gastos ✨",
+      "selectMethod": "Elige cómo quieres registrarte",
+      "name": "Nombre completo",
       "namePlaceholder": "Tu nombre completo",
       "email": "Email",
       "emailPlaceholder": "tu@email.com",
       "phone": "Teléfono",
       "phonePlaceholder": "+52 1234567890",
       "password": "Contraseña",
-      "selectMethod": "Selecciona tu método de inicio de sesión",
       "passwordPlaceholder": "••••••••",
-      "confirmPassword": "Confirmar Contraseña",
-      "submit": "Crear Cuenta",
+      "confirmPassword": "Confirmar contraseña",
+      "submit": "Crear cuenta",
       "submitting": "Creando cuenta...",
       "hasAccount": "¿Ya tienes cuenta?",
-      "login": "Inicia sesión",
+      "login": "Iniciar sesión",
       "orRegisterWith": "O regístrate con",
-      "createWithEmail": "Crear cuenta con Email o Teléfono",
+      "createWithEmail": "Crear cuenta con email o teléfono",
       "backToOptions": "Volver a opciones de registro",
       "accountType": {
         "email": "Email",
         "phone": "Teléfono"
       },
       "error": {
-        "title": "Error al registrarse",
-        "description": "Ocurrió un error al crear la cuenta",
-        "generic": "Ocurrió un error al registrarse. Intenta de nuevo."
+        "title": "No pudimos crear tu cuenta",
+        "description": "Revisa los datos ingresados e inténtalo de nuevo.",
+        "generic": "Ocurrió un error al registrarte. Intenta nuevamente."
       },
       "success": {
         "title": "Cuenta creada",
-        "verify": "Verifica tu cuenta para continuar",
-        "created": "Tu cuenta ha sido creada exitosamente"
+        "verify": "Revisa tu email para confirmar tu cuenta",
+        "created": "Tu cuenta se creó correctamente"
       }
     },
     "oauth": {
@@ -69,122 +68,122 @@
       "facebookRegister": "Registrarse con Facebook"
     },
     "error": {
-      "title": "Error de Autenticación",
-      "description": "Ocurrió un error durante la autenticación",
-      "backToLogin": "Volver al Login",
+      "title": "Error de autenticación",
+      "description": "Hubo un problema al iniciar sesión",
+      "backToLogin": "Volver al inicio de sesión",
       "errors": {
         "Configuration": "Hay un problema con la configuración del servidor.",
-        "AccessDenied": "Acceso denegado. No tienes permiso para acceder a este recurso.",
-        "Verification": "El token de verificación ha expirado o ya fue usado.",
-        "OAuthSignin": "Error al iniciar sesión con OAuth.",
-        "OAuthCallback": "Error durante la autenticación OAuth.",
-        "OAuthCreateAccount": "No se pudo crear la cuenta OAuth.",
-        "EmailCreateAccount": "No se pudo crear la cuenta de email.",
-        "Callback": "Error durante el callback de autenticación.",
-        "OAuthAccountNotLinked": "Para confirmar tu identidad, inicia sesión con la misma cuenta que usaste originalmente.",
-        "EmailSignin": "No se pudo enviar el email de autenticación.",
-        "CredentialsSignin": "Credenciales inválidas. Verifica tu email y contraseña.",
-        "SessionRequired": "Por favor inicia sesión para acceder a esta página.",
-        "Default": "Ocurrió un error inesperado de autenticación."
+        "AccessDenied": "Acceso denegado. No tienes permiso para entrar aquí.",
+        "Verification": "El enlace de verificación expiró o ya fue usado.",
+        "OAuthSignin": "Error al iniciar sesión con tu cuenta externa.",
+        "OAuthCallback": "Error durante la autenticación externa.",
+        "OAuthCreateAccount": "No pudimos crear tu cuenta con ese proveedor.",
+        "EmailCreateAccount": "No pudimos crear la cuenta con ese email.",
+        "Callback": "Ocurrió un error al volver desde la autenticación.",
+        "OAuthAccountNotLinked": "Inicia sesión con la misma cuenta que usaste la primera vez.",
+        "EmailSignin": "No pudimos enviar el email para iniciar sesión.",
+        "CredentialsSignin": "Credenciales inválidas. Revisa tu email y contraseña.",
+        "SessionRequired": "Inicia sesión para ver esta página.",
+        "Default": "Ocurrió un error inesperado al autenticar."
       }
     }
   },
   "dashboard": {
-    "title": "Dashboard",
-    "welcome": "Bienvenido, {name}",
-    "signOut": "Cerrar Sesión",
+    "title": "Inicio",
+    "welcome": "Hola, {name} 👋",
+    "signOut": "Cerrar sesión",
     "userInfo": {
-      "title": "Información del Usuario",
-      "description": "Datos de tu cuenta",
+      "title": "Tu perfil",
+      "description": "Datos básicos de tu cuenta",
       "name": "Nombre",
       "email": "Email",
       "phone": "Teléfono",
-      "accountType": "Tipo de Cuenta"
+      "accountType": "Tipo de cuenta"
     },
     "stats": {
-      "title": "Estadísticas",
-      "description": "Tu actividad",
-      "comingSoon": "Panel de estadísticas próximamente..."
+      "title": "Resumen",
+      "description": "Tu actividad en la app",
+      "comingSoon": "Pronto verás aquí tus estadísticas 📊"
     },
     "actions": {
-      "title": "Acciones Rápidas",
-      "description": "Tareas comunes",
-      "showcase": "Ver Showcase de Componentes",
+      "title": "Acciones rápidas",
+      "description": "Atajos para lo que más usas",
+      "showcase": "Ver ejemplo de componentes",
       "settings": "Configuración",
       "help": "Ayuda"
     },
     "config": {
-      "title": "Configuración del Proyecto",
-      "description": "Información técnica",
+      "title": "Tecnología del proyecto",
+      "description": "Resumen técnico de la app",
       "framework": "Framework",
-      "database": "Base de Datos",
+      "database": "Base de datos",
       "auth": "Autenticación",
-      "ui": "UI",
+      "ui": "Interfaz",
       "validation": "Validación",
-      "mobile": "Mobile"
+      "mobile": "Versión móvil"
     },
     "subscription": {
-      "title": "Tu Suscripción",
-      "description": "Gestiona tu plan y facturación",
-      "currentPlan": "Plan Actual",
-      "linkedAccount": "Cuenta Vinculada",
-      "linkedToOwner": "Compartido por otro usuario",
-      "trialEnds": "Prueba Termina",
+      "title": "Tu plan",
+      "description": "Revisa y gestiona tu suscripción",
+      "currentPlan": "Plan actual",
+      "linkedAccount": "Cuenta vinculada",
+      "linkedToOwner": "Compartido por otra persona",
+      "trialEnds": "Fin de la prueba",
       "expiresAt": "Expira el",
       "upgradeToPremium": "Subir a Premium",
       "upgradeToFamiliar": "Subir a Familiar",
-      "downgrade": "Bajar de Plan",
-      "reactivate": "Reactivar Suscripción",
+      "downgrade": "Bajar de plan",
+      "reactivate": "Reactivar suscripción",
       "status": {
         "free": "Gratis",
         "trial": "Prueba",
         "active": "Activo",
         "expired": "Expirado",
         "cancelled": "Cancelado",
-        "payment_failed": "Pago Fallido"
+        "payment_failed": "Pago fallido"
       },
       "capabilities": {
-        "title": "Funcionalidades del Plan",
-        "description": "Qué incluye tu plan actual",
-        "view_dashboard": "Ver Dashboard",
-        "create_basic_items": "Crear Items Básicos",
-        "export_data": "Exportar Datos",
-        "advanced_reports": "Reportes Avanzados",
-        "invite_users": "Invitar Usuarios",
-        "shared_resources": "Recursos Compartidos",
-        "priority_support": "Soporte Prioritario",
+        "title": "Qué incluye tu plan",
+        "description": "Funciones disponibles hoy",
+        "view_dashboard": "Ver panel principal",
+        "create_basic_items": "Crear elementos básicos",
+        "export_data": "Exportar datos",
+        "advanced_reports": "Reportes avanzados",
+        "invite_users": "Invitar personas",
+        "shared_resources": "Recursos compartidos",
+        "priority_support": "Soporte prioritario",
         "api_access": "Acceso API",
-        "admin_controls": "Controles de Administrador",
-        "bulk_operations": "Operaciones en Lote"
+        "admin_controls": "Controles de administración",
+        "bulk_operations": "Operaciones masivas"
       },
       "limits": {
-        "title": "Límites de Uso",
+        "title": "Límites de uso",
         "projects": "Proyectos",
         "storage_mb": "Almacenamiento (MB)",
-        "items_per_project": "Items por Proyecto",
-        "api_calls_per_month": "Llamadas API por Mes"
+        "items_per_project": "Ítems por proyecto",
+        "api_calls_per_month": "Llamadas API por mes"
       }
     },
     "linkedUsers": {
-      "title": "Usuarios Vinculados",
-      "description": "Comparte tu suscripción con familia o equipo",
-      "empty": "Aún no hay usuarios vinculados. Genera un código de invitación para compartir tu plan.",
-      "generateCode": "Generar Código",
-      "viewCodes": "Ver Códigos"
+      "title": "Personas vinculadas",
+      "description": "Comparte tu plan con tu familia o equipo",
+      "empty": "Aún no compartes tu suscripción. Genera un código para invitar a alguien.",
+      "generateCode": "Generar código",
+      "viewCodes": "Ver códigos"
     },
     "upgrade": {
-      "title": "Mejora Tu Plan",
-      "description": "Elige el plan que mejor se adapte a tus necesidades",
-      "selectPlan": "Seleccionar Plan",
+      "title": "Mejora tu plan",
+      "description": "Elige el plan que se ajusta a tu hogar",
+      "selectPlan": "Seleccionar plan",
       "selectPlanDescription": "Elige entre Premium o Familiar",
-      "selectPeriod": "Seleccionar Período de Facturación",
-      "selectPeriodDescription": "Ahorra más con facturación anual",
+      "selectPeriod": "Seleccionar período",
+      "selectPeriodDescription": "Paga menos con facturación anual 🗓️",
       "plans": {
         "premium": {
-          "description": "Perfecto para individuos"
+          "description": "Ideal para una sola persona"
         },
         "familiar": {
-          "description": "Comparte con hasta 3 usuarios"
+          "description": "Comparte con tu familia o equipo"
         }
       },
       "period": {
@@ -195,172 +194,172 @@
         "save": "Ahorra"
       },
       "features": {
-        "title": "Qué Incluye",
-        "description": "Todas las características de tu plan seleccionado",
-        "view_dashboard": "Acceso al Dashboard",
-        "create_basic_items": "Crear Items Básicos",
-        "export_data": "Exportar Datos",
-        "advanced_reports": "Reportes Avanzados",
-        "invite_users": "Invitar Usuarios",
-        "shared_resources": "Recursos Compartidos",
-        "priority_support": "Soporte Prioritario",
+        "title": "Características del plan",
+        "description": "Todo lo que incluye el plan elegido",
+        "view_dashboard": "Acceso al panel",
+        "create_basic_items": "Crear elementos básicos",
+        "export_data": "Exportar datos",
+        "advanced_reports": "Reportes avanzados",
+        "invite_users": "Invitar personas",
+        "shared_resources": "Recursos compartidos",
+        "priority_support": "Soporte prioritario",
         "api_access": "Acceso API",
-        "admin_controls": "Controles de Administrador",
-        "bulk_operations": "Operaciones en Lote",
-        "shareWith": "Comparte con hasta {count} usuarios"
+        "admin_controls": "Controles de administración",
+        "bulk_operations": "Operaciones masivas",
+        "shareWith": "Comparte con hasta {count} personas"
       },
       "confirmUpgrade": "Mejorar por ${price}",
       "cancel": "Cancelar",
       "processing": {
         "title": "Procesando...",
-        "description": "Configurando tu suscripción",
+        "description": "Estamos actualizando tu plan",
         "button": "Procesando..."
       },
       "success": {
-        "title": "¡Mejora Exitosa!",
-        "description": "Tu plan ha sido mejorado"
+        "title": "¡Plan actualizado!",
+        "description": "Tu suscripción se mejoró correctamente"
       },
       "error": {
-        "title": "Error al Mejorar",
-        "description": "Hubo un error al mejorar tu plan"
+        "title": "No pudimos mejorar tu plan",
+        "description": "Intenta de nuevo en unos minutos."
       }
     },
     "downgrade": {
-      "title": "Bajar a Plan FREE",
-      "description": "¿Estás seguro de que deseas bajar de plan?",
+      "title": "Bajar a plan Free",
+      "description": "Elige si quieres volver al plan gratuito",
       "warning": {
-        "title": "Advertencia",
-        "description": "Esta acción cancelará inmediatamente tu suscripción de pago"
+        "title": "Importante",
+        "description": "Esta acción cancela de inmediato tu plan de pago ⚠️"
       },
       "willLose": {
-        "title": "Lo Que Perderás",
-        "description": "Al bajar al plan FREE, perderás acceso a:",
-        "features": "Características Premium",
-        "featuresDescription": "Reportes avanzados, acceso API, soporte prioritario",
-        "linkedUsers": "Vinculación de Usuarios",
-        "linkedUsersDescription": "Todos los usuarios vinculados serán desvinculados automáticamente",
-        "limits": "Límites Superiores",
-        "limitsDescription": "Tendrás límites reducidos de proyectos y almacenamiento",
-        "support": "Soporte Prioritario",
-        "supportDescription": "Volverás solo al soporte de la comunidad"
+        "title": "Qué cambiará",
+        "description": "Al bajar a Free perderás acceso a:",
+        "features": "Funciones Premium",
+        "featuresDescription": "Reportes avanzados, API y soporte prioritario",
+        "linkedUsers": "Personas vinculadas",
+        "linkedUsersDescription": "Las personas asociadas a tu plan serán desvinculadas",
+        "limits": "Límites superiores",
+        "limitsDescription": "Tendrás menos proyectos y menos espacio",
+        "support": "Soporte prioritario",
+        "supportDescription": "Volverás al soporte estándar"
       },
       "confirm": {
-        "title": "Confirmar Bajada de Plan",
-        "description": "Estás a punto de bajar de {planName} a FREE",
-        "currentPlan": "Plan Actual",
-        "newPlan": "Nuevo Plan"
+        "title": "Confirmar cambio de plan",
+        "description": "Bajarás de {planName} a Free",
+        "currentPlan": "Plan actual",
+        "newPlan": "Nuevo plan"
       },
-      "confirmButton": "Confirmar Bajada a FREE",
+      "confirmButton": "Confirmar cambio a Free",
       "processing": "Procesando...",
       "cancel": "Cancelar",
       "help": {
-        "title": "¿Necesitas Ayuda?",
-        "description": "Si tienes problemas con tu plan, estamos aquí para ayudar",
-        "contact": "Contacta con soporte antes de bajar de plan para ver si podemos resolver tus inquietudes"
+        "title": "¿Necesitas ayuda?",
+        "description": "Si tienes dudas con tu plan, podemos ayudarte antes de que lo cambies.",
+        "contact": "Contactar soporte"
       },
       "success": {
-        "title": "Bajada de Plan Exitosa",
-        "description": "Tu plan ha sido cambiado a FREE"
+        "title": "Plan cambiado",
+        "description": "Ahora estás usando el plan Free"
       },
       "error": {
-        "title": "Error al Bajar de Plan",
-        "description": "Hubo un error al bajar tu plan"
+        "title": "No pudimos cambiar el plan",
+        "description": "Intenta nuevamente más tarde."
       }
     }
   },
   "showcase": {
-    "title": "Components Showcase",
-    "description": "Demo de librerías modernas UI/UX",
+    "title": "Ejemplo de componentes",
+    "description": "Muestra de librerías modernas de UI/UX",
     "phosphor": {
       "title": "Phosphor Icons",
-      "description": "6,000+ iconos modernos con 6 estilos diferentes (thin, light, regular, bold, fill, duotone)",
-      "regular": "Regular Weight",
-      "bold": "Bold Weight",
-      "duotone": "Duotone Weight",
-      "allWeights": "Todos los Pesos Disponibles",
-      "thin": "Thin",
-      "light": "Light",
-      "fill": "Fill"
+      "description": "Más de 6.000 íconos modernos en varios estilos",
+      "regular": "Peso regular",
+      "bold": "Peso bold",
+      "duotone": "Peso duotone",
+      "allWeights": "Todos los pesos disponibles",
+      "thin": "Peso thin",
+      "light": "Peso light",
+      "fill": "Estilo relleno"
     },
     "tabler": {
       "title": "Tabler Icons",
-      "description": "5,000+ iconos outline style, perfecto para dashboards y complemento de Phosphor",
-      "icons": "Iconos de Tabler"
+      "description": "Íconos outline ideales para dashboards",
+      "icons": "Íconos de Tabler"
     },
     "carousel": {
       "title": "Embla Carousel (Swipe)",
-      "description": "Carousel ultra ligero (3kb) con gestos táctiles nativos",
-      "swipeTitle": "Swipe Horizontal",
-      "swipeDescription": "Desliza hacia los lados (touch o mouse)",
+      "description": "Carrusel liviano con gestos táctiles nativos",
+      "swipeTitle": "Swipe horizontal",
+      "swipeDescription": "Desliza hacia los lados para cambiar",
       "slide": "Slide {number}",
-      "swipeMore": "Swipe para ver más"
+      "swipeMore": "Desliza para ver más"
     },
     "charts": {
-      "title": "Recharts - Gráficos",
-      "description": "Gráficos modernos basados en D3 con componentes React nativos",
-      "line": "Line Chart",
-      "bar": "Bar Chart",
-      "pie": "Pie Chart",
-      "radar": "Radar Chart"
+      "title": "Gráficos Recharts",
+      "description": "Gráficos modernos basados en componentes React",
+      "line": "Gráfico de líneas",
+      "bar": "Gráfico de barras",
+      "pie": "Gráfico de torta",
+      "radar": "Gráfico radar"
     },
     "motion": {
       "title": "Framer Motion",
-      "description": "Animaciones fluidas y gestos táctiles",
-      "hoverScale": "Hover Scale",
-      "rotate": "Rotate Animation",
-      "drag": "Drag",
-      "hoverMe": "Hover me!"
+      "description": "Animaciones suaves y gestos táctiles",
+      "hoverScale": "Animación al pasar",
+      "rotate": "Rotación",
+      "drag": "Arrastrar",
+      "hoverMe": "Pasa el cursor aquí"
     },
     "drawer": {
       "title": "Vaul - Bottom Sheet",
-      "description": "Drawer desde abajo con gestos nativos (iOS/Android style)",
-      "open": "Abrir Bottom Sheet",
-      "demoTitle": "Bottom Sheet Demo",
-      "demoDescription": "Puedes hacer swipe hacia abajo para cerrar o usar gestos táctiles",
-      "content": "Contenido del Drawer",
-      "contentDescription": "Este componente funciona perfecto en iOS y Android con gestos nativos. Incluye snap points, momentum scrolling y haptic feedback.",
+      "description": "Panel inferior con gestos tipo iOS/Android",
+      "open": "Abrir bottom sheet",
+      "demoTitle": "Ejemplo de bottom sheet",
+      "demoDescription": "Desliza hacia abajo para cerrar o usa los gestos táctiles.",
+      "content": "Contenido del panel",
+      "contentDescription": "Funciona muy bien en móvil con gestos naturales y scroll suave.",
       "close": "Cerrar"
     },
     "spinners": {
       "title": "React Spinners",
-      "description": "Loaders modernos y livianos",
+      "description": "Indicadores de carga modernos y livianos",
       "clip": "Clip Loader",
       "pulse": "Pulse Loader",
       "beat": "Beat Loader"
     },
     "footer": {
-      "title": "Stack Moderno y Optimizado",
-      "description": "Todas estas librerías están optimizadas para mobile, Capacitor y desktop"
+      "title": "Stack moderno",
+      "description": "Todo pensado para móvil, web y Capacitor"
     }
   },
   "onboarding": {
-    "title": "¡Bienvenido! 👋",
-    "description": "Para comenzar, necesitamos configurar algunas preferencias básicas",
+    "title": "¡Bienvenida! 👋",
+    "description": "Configura algunos datos básicos para adaptar la app a tu realidad.",
     "fields": {
       "country": "País",
       "countryPlaceholder": "Selecciona tu país",
-      "currency": "Moneda Principal",
+      "currency": "Moneda principal",
       "currencyPlaceholder": "Selecciona tu moneda",
-      "currencyDescription": "Esta será la moneda que usarás para tus sobres",
-      "dayOfMonth": "¿Qué día del mes recibes tu dinero?",
-      "dayOfMonthDescription": "Este día tus gastos empezarán de cero cada mes. Puedes modificarlo luego",
+      "currencyDescription": "Usaremos esta moneda para tus presupuestos mensuales.",
+      "dayOfMonth": "¿Qué día del mes recibes dinero?",
+      "dayOfMonthDescription": "Ese día se reinicia tu ciclo de gastos cada mes.",
       "dayPlaceholder": "Selecciona un día"
     },
     "buttons": {
       "submit": "Comenzar",
       "submitting": "Guardando...",
-      "disclaimer": "Podrás cambiar estas preferencias más adelante"
+      "disclaimer": "Podrás cambiar estos datos más adelante."
     },
     "errors": {
-      "countryRequired": "Por favor selecciona tu país",
-      "currencyRequired": "Por favor selecciona tu moneda",
-      "dayRequired": "Por favor selecciona un día"
+      "countryRequired": "Selecciona tu país",
+      "currencyRequired": "Selecciona tu moneda",
+      "dayRequired": "Selecciona un día del mes"
     }
   },
   "common": {
     "loading": "Cargando...",
     "error": "Error",
-    "success": "Éxito",
+    "success": "Listo",
     "cancel": "Cancelar",
     "save": "Guardar",
     "close": "Cerrar",
@@ -377,201 +376,26 @@
     "usado": "Usado",
     "libre": "Libre",
     "utilizado": "utilizado",
-    "total": "total"
-  },
-  "shopping": {
-    "history": {
-      "title": "Historial de Compra",
-      "purchaseDate": "Fecha de Compra",
-      "quantity": "Cantidad",
-      "unitPrice": "Precio Unitario",
-      "purchasedProducts": "Productos Comprados",
-      "noPurchasedProducts": "No hay productos registrados"
-    }
-  },
-  "billeteras": {
-    "title": "Billeteras",
-    "loading": "Cargando billeteras...",
-    "empty": "Aún no tienes billeteras",
-    "emptyDescription": "Crea tu primera billetera para comenzar",
-    "actions": {
-      "addCard": "Agregar Billetera",
-      "transfer": "Transferir",
-      "deposit": "Depositar",
-      "delete": "Eliminar",
-      "edit": "Editar",
-      "info": "Información"
-    },
-    "create": {
-      "title": "Nueva Billetera",
-      "description": "Crea una nueva billetera para gestionar tu dinero",
-      "nameLabel": "Nombre",
-      "namePlaceholder": "Mi Billetera",
-      "typeLabel": "Tipo de Tarjeta",
-      "initialBalance": "Saldo Inicial",
-      "color": "Color",
-      "icon": "Icono",
-      "creating": "Creando...",
-      "submit": "Crear Billetera"
-    },
-    "fields": {
-      "name": "Nombre",
-      "namePlaceholder": "Mi Billetera",
-      "type": "Tipo de Tarjeta",
-      "shared": "Compartida",
-      "sharedDescription": "Permitir acceso a otros usuarios",
-      "interest": "Tiene Interés",
-      "interestDescription": "Esta billetera genera intereses",
-      "interestRate": "Tasa de Interés (Opcional)",
-      "interestRatePlaceholder": "5.5",
-      "initialBalance": "Saldo Inicial",
-      "initialBalancePlaceholder": "0.00",
-      "adjustBalance": "Ajustar Saldo",
-      "adjustPlaceholder": "+500 o -250",
-      "adjustHint": "Usa + para agregar o - para restar",
-      "amount": "Monto",
-      "amountPlaceholder": "100.00",
-      "description": "Descripción",
-      "descriptionPlaceholder": "Ej: Depósito en efectivo, Retiro cajero",
-      "wallet": "Billetera"
-    },
-    "types": {
-      "DEBITO": "Débito",
-      "CREDITO": "Crédito",
-      "EFECTIVO": "Efectivo",
-      "AHORRO": "Ahorro",
-      "INVERSION": "Inversión"
-    },
-    "balance": {
-      "real": "Saldo Real",
-      "projected": "Saldo Proyectado"
-    },
-    "create": {
-      "title": "Nueva Billetera",
-      "submit": "Crear Billetera",
-      "submitting": "Creando..."
-    },
-    "edit": {
-      "title": "Editar Billetera",
-      "submit": "Guardar Cambios",
-      "submitting": "Guardando..."
-    },
-    "transfer": {
-      "title": "Transferir Entre Billeteras",
-      "from": "Desde",
-      "to": "Hacia",
-      "amount": "Monto",
-      "amountPlaceholder": "100.00",
-      "submit": "Transferir",
-      "submitting": "Transfiriendo...",
-      "selectOrigin": "Selecciona billetera origen",
-      "selectDestination": "Selecciona billetera destino",
-      "noWallets": "Necesitas al menos 2 billeteras para transferir",
-      "invalidAmount": "Monto inválido"
-    },
-    "deposit": {
-      "title": "Depositar",
-      "tabLabel": "Depositar",
-      "description": "Registra ingresos o egresos de dinero",
-      "submit": "Registrar",
-      "submitting": "Registrando...",
-      "wallet": "Billetera"
-    },
-    "withdraw": {
-      "title": "Retirar",
-      "tabLabel": "Retirar",
-      "description": "Registra un retiro de dinero"
-    },
-    "delete": {
-      "title": "Eliminar Billetera",
-      "confirm": "¿Estás seguro?",
-      "warning": "Esta acción no se puede deshacer",
-      "linkedEnvelopes": "Sobres vinculados",
-      "linkedEnvelopesDescription": "Esta billetera está siendo usada por {count} sobre(s)",
-      "impactWarning": "Eliminar esta billetera afectará tus sobres",
-      "submit": "Eliminar Billetera",
-      "submitting": "Eliminando...",
-      "cancel": "Cancelar"
-    },
-    "contextual": {
-      "title": "Acciones Rápidas",
-      "transferDescription": "Entre tus billeteras",
-      "depositoLabel": "Nuevo DEPOSITO/RETIRO",
-      "depositoDescription": "Registra ingresos o egresos externos"
-    },
-    "notifications": {
-      "created": "Billetera creada exitosamente",
-      "updated": "Billetera actualizada exitosamente",
-      "deleted": "Billetera eliminada exitosamente",
-      "transferred": "Transferencia completada exitosamente",
-      "error": "Ocurrió un error",
-      "sameWallet": "No puedes transferir a la misma billetera",
-      "insufficientBalance": "Saldo insuficiente"
-    }
-  },
-  "gastos": {
-    "title": "Gastos",
-    "create": {
-      "title": "Registrar Gasto",
-      "description": "Crea un nuevo gasto en un sobre",
-      "amount": "💰 Monto del gasto",
-      "amountPlaceholder": "$",
-      "origin": "Origen del gasto",
-      "originPlaceholder": "Sobre",
-      "selectEnvelope": "Seleccionar sobre",
-      "selectEnvelopePlaceholder": "Sobre",
-      "category": "Categoría",
-      "addNewCategory": "+ Nueva",
-      "categoryNamePlaceholder": "Nombre de la categoría",
-      "categoryEmoji": "🏷️",
-      "creating": "Registrando...",
-      "submit": "Registrar Gasto",
-      "cancel": "Cancelar",
-      "details": "Detalle",
-      "brand": "Marca",
-      "brandPlaceholder": "Buscar o crear marca...",
-      "brandOptional": "opcional",
-      "pressEnter": "Presiona Enter para crear nueva marca",
-      "selectCategoryForBrands": "Selecciona una categoría para ver las marcas disponibles",
-      "comment": "Comentario",
-      "commentOptional": "opcional",
-      "commentPlaceholder": "Ej: Almuerzo en la oficina",
-      "errors": {
-        "amountGreaterThanZero": "Monto debe ser mayor a 0",
-        "selectEnvelope": "Selecciona un sobre",
-        "categoryRequired": "La categoría es obligatoria"
-      }
-    }
-  },
-  "sobres": {
-    "title": "Sobres",
-    "defaultEnvelopes": {
-      "hogar": "Hogar",
-      "personal": "Personal"
-    },
-    "usado": "Usado",
-    "libre": "Libre",
-    "utilizado": "utilizado",
     "total": "total",
     "menu": {
-      "increaseBudget": "Aumentar Presupuesto",
-      "reduceBudget": "Reducir Presupuesto",
-      "editCategories": "Editar Categorías",
-      "shoppingList": "Listado de Compras"
+      "increaseBudget": "Aumentar presupuesto",
+      "reduceBudget": "Reducir presupuesto",
+      "editCategories": "Editar categorías",
+      "shoppingList": "Lista de compras"
     },
     "emptyBudget": {
-      "message": "Asigne presupuesto",
-      "button": "Agregar Presupuesto"
+      "message": "Asigna un presupuesto a este sobre",
+      "button": "Agregar presupuesto"
     },
     "categories": {
       "loading": "Cargando categorías...",
       "title": "Categorías ({count})",
-      "empty": "Agrega categorías para este sobre para rastrear tus gastos por categoría",
-      "addButton": "Agregar Categorías"
+      "empty": "Agrega categorías para ver en qué se va tu dinero.",
+      "addButton": "Agregar categorías"
     },
     "create": {
-      "title": "Crear Nuevo Sobre",
-      "description": "Define el nombre y color de tu sobre. Luego asignarás presupuesto desde una billetera.",
+      "title": "Crear nuevo sobre",
+      "description": "Crea un sobre para organizar un tipo de gasto mensual.",
       "preview": "Vista previa",
       "previewBudget": "Presupuesto: $0.00",
       "identity": "Identidad del sobre",
@@ -579,9 +403,9 @@
       "namePlaceholder": "Ej: Comida, Transporte, Hogar",
       "color": "Color",
       "nextStep": "Siguiente paso",
-      "nextStepDescription": "Después de crear el sobre, podrás asignarle presupuesto desde tu billetera.",
+      "nextStepDescription": "Después podrás asignar un presupuesto mensual.",
       "creating": "Creando...",
-      "submit": "Crear Sobre",
+      "submit": "Crear sobre",
       "cancel": "Cancelar",
       "form": {
         "preview": "Vista previa",
@@ -596,7 +420,7 @@
       },
       "info": {
         "nextStep": "Siguiente paso",
-        "nextStepDescription": "Después de crear el sobre, podrás asignarle presupuesto desde tu billetera."
+        "nextStepDescription": "Luego podrás decidir cuánto dinero va a este sobre al mes."
       },
       "buttons": {
         "creating": "Creando...",
@@ -604,8 +428,8 @@
         "cancel": "Cancelar"
       },
       "errors": {
-        "configRequired": "Debes completar tu configuración inicial antes de crear sobres.",
-        "createFailed": "No pudimos crear el sobre. Inténtalo de nuevo."
+        "configRequired": "Completa tu configuración inicial antes de crear sobres.",
+        "createFailed": "No pudimos crear el sobre. Intenta nuevamente."
       },
       "success": {
         "created": "Sobre creado correctamente."
@@ -613,26 +437,26 @@
       "nameLabel": "Nombre del sobre",
       "typeLabel": "Tipo de sobre",
       "budgetLabel": "Presupuesto inicial ({currency})",
-      "icon": "Emoji / Ícono"
+      "icon": "Emoji / ícono"
     },
     "addBudget": {
-      "title": "Agregar Presupuesto",
-      "description": "Asigna presupuesto a {sobreName}",
-      "amount": "💰 Monto a agregar",
+      "title": "Agregar presupuesto",
+      "description": "Define cuánto dinero tendrá {sobreName} este mes 💰",
+      "amount": "Monto a agregar",
       "amountPlaceholder": "+$",
       "summary": "Resumen",
-      "available": "Disponible en billetera",
+      "available": "Disponible para este mes",
       "currentBudget": "Presupuesto actual",
       "newBudget": "Nuevo presupuesto",
       "detail": "Detalle",
-      "observation": "Observación",
+      "observation": "Nota",
       "observationOptional": "opcional",
       "observationPlaceholder": "Ej: Presupuesto inicial del mes",
       "advancedSettings": "Configuración avanzada",
-      "monthlyRecurring": "Monto recurrente mensual",
-      "monthlyDescription": "Configura un monto fijo que se asignará automáticamente cada mes a este sobre.",
+      "monthlyRecurring": "Monto fijo mensual",
+      "monthlyDescription": "Si quieres, este mismo monto se asignará automáticamente cada mes.",
       "saving": "Guardando...",
-      "submit": "Agregar Presupuesto",
+      "submit": "Agregar presupuesto",
       "cancel": "Cancelar",
       "sections": {
         "summary": "Resumen",
@@ -640,233 +464,400 @@
       },
       "form": {
         "amount": "Monto a agregar",
-        "availableInWallet": "Disponible en billetera",
+        "availableInWallet": "Disponible para este mes",
         "currentBudget": "Presupuesto actual",
         "newBudget": "Nuevo presupuesto",
-        "observation": "Observación",
+        "observation": "Nota",
         "optional": "opcional",
         "observationPlaceholder": "Ej: Presupuesto inicial del mes",
         "advancedConfig": "Configuración avanzada",
-        "recurringAmount": "Monto recurrente mensual",
-        "recurringAmountHelp": "Configura un monto fijo que se asignará automáticamente cada mes a este sobre."
+        "recurringAmount": "Monto mensual fijo",
+        "recurringAmountHelp": "Este monto se asignará automáticamente cada mes a este sobre."
       },
       "buttons": {
         "saving": "Guardando...",
-        "addBudget": "Agregar Presupuesto",
+        "addBudget": "Agregar presupuesto",
         "cancel": "Cancelar"
       },
       "errors": {
-        "amountGreaterThanZero": "Monto debe ser mayor a 0",
+        "amountGreaterThanZero": "El monto debe ser mayor a 0",
         "invalidAmount": "Monto inválido",
         "addFailed": "Error al agregar presupuesto"
       },
       "success": {
-        "added": "Presupuesto agregado a {sobreName} exitosamente"
+        "added": "Presupuesto agregado a {sobreName} correctamente"
       }
     },
     "reduceBudget": {
-      "title": "Reducir Presupuesto",
-      "description": "Reduce presupuesto de {sobreName}... Esta acción no afecta gastos registrados",
-      "freeMoney": "Monto Libre",
-      "assignedBudget": "Presupuesto Asignado",
+      "title": "Reducir presupuesto",
+      "description": "Ajusta el presupuesto de {sobreName}. No se modificarán los gastos ya registrados.",
+      "freeMoney": "Monto libre",
+      "assignedBudget": "Presupuesto asignado",
       "amountToReduce": "Monto a restar",
       "amountPlaceholder": "0",
-      "observation": "Observación",
+      "observation": "Nota",
       "observationPlaceholder": "Ej: Ajuste de presupuesto",
       "saving": "Guardando...",
-      "submit": "Guardar",
+      "submit": "Guardar cambios",
       "cancel": "Cancelar",
       "form": {
-        "freeAmount": "Monto Libre",
-        "assignedBudget": "Presupuesto Asignado",
+        "freeAmount": "Monto libre",
+        "assignedBudget": "Presupuesto asignado",
         "amountToReduce": "Monto a restar",
-        "observation": "Observación",
+        "observation": "Nota",
         "observationPlaceholder": "Ej: Ajuste de presupuesto"
       },
       "buttons": {
-        "save": "Guardar",
+        "save": "Guardar cambios",
         "saving": "Guardando...",
         "cancel": "Cancelar"
       },
       "errors": {
-        "amountGreaterThanZero": "Monto debe ser mayor a 0",
+        "amountGreaterThanZero": "El monto debe ser mayor a 0",
         "invalidAmount": "Monto inválido",
-        "reduceFailed": "Error al reducir presupuesto"
+        "reduceFailed": "Error al reducir el presupuesto"
       },
       "success": {
-        "reduced": "Presupuesto de {sobreName} reducido exitosamente"
+        "reduced": "Presupuesto de {sobreName} ajustado correctamente"
       }
     },
     "transactions": {
-      "title": "Detalle de Transacciones",
-      "description": "Transacciones de {sobreName}...",
-      "loading": "Cargando transacciones...",
-      "empty": "No hay transacciones aún",
-      "noTransactions": "No hay transacciones aún",
-      "monthTotal": "Total mes actual",
-      "totalCurrentMonth": "Total mes actual",
-      "transactionCount": "transacciones",
-      "transactionsCount": "{count} transacciones",
+      "title": "Detalle de movimientos",
+      "description": "Gastos y ajustes de {sobreName}",
+      "loading": "Cargando movimientos...",
+      "empty": "Aún no hay movimientos en este sobre",
+      "noTransactions": "Aún no hay movimientos",
+      "monthTotal": "Total del mes actual",
+      "totalCurrentMonth": "Total del mes actual",
+      "transactionCount": "movimientos",
+      "transactionsCount": "{count} movimientos",
       "noCategory": "Sin categoría",
       "close": "Cerrar",
       "buttons": {
         "close": "Cerrar"
       },
       "errors": {
-        "loadFailed": "Error al cargar transacciones"
+        "loadFailed": "Error al cargar movimientos"
+      }
+    }
+  },
+  "shopping": {
+    "history": {
+      "title": "Historial de compra",
+      "purchaseDate": "Fecha de compra",
+      "quantity": "Cantidad",
+      "unitPrice": "Precio unitario",
+      "purchasedProducts": "Productos comprados",
+      "noPurchasedProducts": "Aún no registras productos comprados"
+    },
+    "lists": {
+      "createNew": {
+        "title": "Nueva lista de compras",
+        "description": "Ponle un nombre o déjalo vacío y la app te ayudará 🛒",
+        "namePlaceholder": "Ej: Supermercado, Verduras, Útiles...",
+        "hint": "Si no escribes un nombre, se usará 'Sin nombre'.",
+        "unnamed": "Sin nombre {slug}",
+        "cancel": "Cancelar",
+        "creating": "Creando...",
+        "submit": "Crear lista"
+      },
+      "options": {
+        "title": "Opciones de vista",
+        "description": "Elige cómo quieres ver tu lista",
+        "groupByCategory": "Agrupar por categoría",
+        "showControls": "Mostrar cantidad",
+        "flatList": "Lista simple",
+        "close": "Cerrar"
+      }
+    },
+    "listEditor": {
+      "summary": {
+        "backLabel": "Volver",
+        "activeLabel": "Lista activa",
+        "productsTitle": "Total de productos",
+        "productsSubtitle": "Artículos planificados",
+        "quantityTitle": "Cantidad agregada",
+        "quantitySubtitle": "Unidades totales",
+        "calculatorButton": "Calculadora",
+        "executeButton": "Ejecutar compra"
+      }
+    },
+    "execution": {
+      "finalize": {
+        "title": "Resumen de compra",
+        "description": "Revisa todo antes de finalizar ✅",
+        "purchased": "Comprados",
+        "discarded": "Descartados",
+        "pending": "Pendientes",
+        "pendingMessage": "Tienes {count} producto(s) sin marcar. Decide si los compraste o no.",
+        "pendingWarning": "Tienes {count} producto(s) sin definir.",
+        "totalTime": "Tiempo total",
+        "calculatedTotal": "Total calculado",
+        "calculatedDesc": "Suma de los precios registrados",
+        "calculatedTotalDescription": "Total según los precios ingresados",
+        "manualTotal": "Total pagado (opcional)",
+        "manualTotalDesc": "Ingresa el total del ticket si es distinto",
+        "totalPaid": "Total pagado (opcional)",
+        "totalPaidDescription": "Ingresa el monto real del ticket si es diferente",
+        "finalizing": "Finalizando...",
+        "submit": "Finalizar y guardar",
+        "cancel": "Cancelar"
+      },
+      "settings": {
+        "title": "Configuración de compra",
+        "showTimer": "Mostrar cronómetro",
+        "showTimerDescription": "Ver tiempo que llevas comprando",
+        "showTimerDesc": "Ver tiempo que llevas comprando",
+        "addPrices": "Agregar precios",
+        "addPricesDescription": "Registrar el precio de cada producto",
+        "enablePrices": "Habilitar precios",
+        "enablePricesDesc": "Registrar el precio de cada producto",
+        "viewByCategories": "Ver por categorías",
+        "viewByCategoriesDescription": "Agrupar productos por categoría",
+        "showCategories": "Ver por categorías",
+        "showCategoriesDesc": "Agrupar productos por categoría",
+        "plainText": "Modo texto simple",
+        "plainTextDescription": "Vista compacta sin bordes",
+        "flatListMode": "Modo lista simple",
+        "flatListModeDesc": "Vista compacta sin bordes",
+        "close": "Cerrar"
+      }
+    }
+  },
+  "billeteras": {
+    "title": "Billeteras",
+    "loading": "Cargando billeteras...",
+    "empty": "Aún no tienes billeteras creadas",
+    "emptyDescription": "Crea tu primera billetera para registrar tus saldos.",
+    "actions": {
+      "addCard": "Nueva billetera",
+      "transfer": "Transferir",
+      "deposit": "Depositar / Retirar",
+      "delete": "Eliminar",
+      "edit": "Editar",
+      "info": "Ver detalle"
+    },
+    "create": {
+      "title": "Nueva billetera",
+      "description": "Agrupa aquí el dinero de una cuenta, tarjeta o efectivo.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "Ej: Banco, Efectivo casa",
+      "typeLabel": "Tipo de tarjeta",
+      "initialBalance": "Saldo inicial",
+      "color": "Color",
+      "icon": "Ícono",
+      "creating": "Creando...",
+      "submit": "Crear billetera"
+    },
+    "fields": {
+      "name": "Nombre",
+      "namePlaceholder": "Ej: Banco Estado, Efectivo",
+      "type": "Tipo de tarjeta",
+      "shared": "Compartida",
+      "sharedDescription": "Permitir que otras personas usen esta billetera",
+      "interest": "Genera interés",
+      "interestDescription": "Marca si esta billetera gana intereses",
+      "interestRate": "Tasa de interés (opcional)",
+      "interestRatePlaceholder": "5.5",
+      "initialBalance": "Saldo inicial",
+      "initialBalancePlaceholder": "0.00",
+      "adjustBalance": "Ajustar saldo",
+      "adjustPlaceholder": "+500 o -250",
+      "adjustHint": "Usa + para sumar y - para restar",
+      "amount": "Monto",
+      "amountPlaceholder": "100.00",
+      "description": "Descripción",
+      "descriptionPlaceholder": "Ej: Depósito, retiro, pago de tarjeta",
+      "wallet": "Billetera"
+    },
+    "types": {
+      "DEBITO": "Débito",
+      "CREDITO": "Crédito",
+      "EFECTIVO": "Efectivo",
+      "AHORRO": "Ahorro",
+      "INVERSION": "Inversión"
+    },
+    "balance": {
+      "real": "Saldo real",
+      "projected": "Saldo proyectado"
+    },
+    "edit": {
+      "title": "Editar billetera",
+      "submit": "Guardar cambios",
+      "submitting": "Guardando..."
+    },
+    "transfer": {
+      "title": "Transferir entre billeteras",
+      "from": "Desde",
+      "to": "Hacia",
+      "amount": "Monto",
+      "amountPlaceholder": "100.00",
+      "submit": "Transferir",
+      "submitting": "Transfiriendo...",
+      "selectOrigin": "Elige la billetera de origen",
+      "selectDestination": "Elige la billetera de destino",
+      "noWallets": "Necesitas al menos 2 billeteras para transferir.",
+      "invalidAmount": "Monto inválido"
+    },
+    "deposit": {
+      "title": "Registrar movimiento",
+      "tabLabel": "Depositar / Retirar",
+      "description": "Registra ingresos o egresos de dinero en esta billetera.",
+      "submit": "Registrar",
+      "submitting": "Registrando...",
+      "wallet": "Billetera"
+    },
+    "withdraw": {
+      "title": "Retirar",
+      "tabLabel": "Retirar",
+      "description": "Registra un retiro de dinero de esta billetera."
+    },
+    "delete": {
+      "title": "Eliminar billetera",
+      "confirm": "¿Estás segura de que quieres eliminarla?",
+      "warning": "Esta acción no se puede deshacer.",
+      "linkedEnvelopes": "Sobres vinculados",
+      "linkedEnvelopesDescription": "Esta billetera se usa en {count} sobre(s).",
+      "impactWarning": "Eliminarla puede afectar tus registros.",
+      "submit": "Eliminar billetera",
+      "submitting": "Eliminando...",
+      "cancel": "Cancelar"
+    },
+    "contextual": {
+      "title": "Acciones rápidas",
+      "transferDescription": "Mueve dinero entre tus billeteras",
+      "depositoLabel": "Nuevo depósito/retiro",
+      "depositoDescription": "Registra ingresos o egresos externos"
+    },
+    "notifications": {
+      "created": "Billetera creada correctamente",
+      "updated": "Billetera actualizada correctamente",
+      "deleted": "Billetera eliminada correctamente",
+      "transferred": "Transferencia realizada",
+      "error": "Ocurrió un error. Intenta de nuevo.",
+      "sameWallet": "No puedes transferir dentro de la misma billetera",
+      "insufficientBalance": "Saldo insuficiente"
+    }
+  },
+  "gastos": {
+    "title": "Gastos",
+    "create": {
+      "title": "Registrar gasto",
+      "description": "Registra un nuevo gasto en uno de tus sobres.",
+      "amount": "💰 Monto del gasto",
+      "amountPlaceholder": "$",
+      "origin": "Origen del gasto",
+      "originPlaceholder": "Sobre",
+      "selectEnvelope": "Seleccionar sobre",
+      "selectEnvelopePlaceholder": "Elige un sobre",
+      "category": "Categoría",
+      "addNewCategory": "+ Nueva categoría",
+      "categoryNamePlaceholder": "Nombre de la categoría",
+      "categoryEmoji": "🏷️",
+      "creating": "Registrando...",
+      "submit": "Registrar gasto",
+      "cancel": "Cancelar",
+      "details": "Detalle",
+      "brand": "Marca o lugar",
+      "brandPlaceholder": "Buscar o crear marca...",
+      "brandOptional": "opcional",
+      "pressEnter": "Presiona Enter para crear una nueva marca",
+      "selectCategoryForBrands": "Elige una categoría para ver las marcas disponibles.",
+      "comment": "Comentario",
+      "commentOptional": "opcional",
+      "commentPlaceholder": "Ej: Almuerzo, farmacia, encargo...",
+      "errors": {
+        "amountGreaterThanZero": "El monto debe ser mayor a 0",
+        "selectEnvelope": "Elige un sobre",
+        "categoryRequired": "La categoría es obligatoria"
       }
     }
   },
   "categorias": {
     "title": "Categorías",
     "add": {
-      "title": "Agregar Categorías",
-      "description": "Usados para categorizar gastos en {sobreName}",
+      "title": "Agregar categorías",
+      "description": "Usa categorías para entender mejor tus gastos en {sobreName}.",
       "categories": "Categorías",
-      "namePlaceholder": "Escribe categoría (Ej: Alimentación)",
+      "namePlaceholder": "Ej: Alimentación, Transporte...",
       "add": "✓",
       "checkmark": "✓",
-      "brands": "Agrega empresas por cada categoría",
-      "added": "Empresas agregadas",
+      "brands": "Agrega marcas o lugares por categoría",
+      "added": "Marcas agregadas",
       "addBrand": "Agregar empresa",
       "brandSearch": "Busca o crea empresa...",
       "adding": "Agregando...",
-      "addCategory": "Agregar Categoría",
+      "addCategory": "Agregar categoría",
       "addBrandLabel": "Agregando...",
-      "selectAtLeastOne": "Selecciona al menos una categoría para continuar",
+      "selectAtLeastOne": "Selecciona al menos una categoría",
       "saving": "Guardando...",
       "submit": "Guardar",
       "cancel": "Cancelar"
     },
     "edit": {
-      "title": "Editar Categoría",
-      "description": "Modifica el nombre y agrega marcas/empresas",
+      "title": "Editar categoría",
+      "description": "Cambia el nombre y las marcas asociadas.",
       "name": "Nombre",
       "namePlaceholder": "Ej: Alimentación",
-      "where": "¿Dónde compras?",
-      "whereDescription": "Agrega tus marcas recurrentes para que puedas medir tus gastos",
+      "where": "¿Dónde sueles comprar?",
+      "whereDescription": "Agrega tus marcas frecuentes para medir mejor tus gastos.",
       "brandsAdded": "Marcas agregadas",
       "addBrand": "Buscar o crear marca",
-      "brandNamePlaceholder": "Escribe nombre de marca (Ej: Walmart)",
+      "brandNamePlaceholder": "Ej: Walmart, supermercado local...",
       "add": "✓",
       "adding": "Agregando...",
-      "addBrand": "Agregar Marca",
       "saving": "Guardando...",
-      "submit": "Guardar",
+      "submit": "Guardar cambios",
       "cancel": "Cancelar"
-    }
-  },
-  "shopping": {
-    "history": {
-      "title": "Historial de Compra",
-      "purchaseDate": "Fecha de Compra",
-      "quantity": "Cantidad",
-      "unitPrice": "Precio Unitario",
-      "purchasedProducts": "Productos Comprados",
-      "noPurchasedProducts": "No hay productos registrados"
-    },
-    "lists": {
-      "createNew": {
-        "title": "Crear nueva lista de compras",
-        "description": "Dale un nombre a tu nueva lista (opcional)",
-        "namePlaceholder": "Ej: Supermercado, Verduras, etc...",
-        "hint": "Si no escribes un nombre, se creará como 'Sin nombre'",
-        "unnamed": "Sin nombre {slug}",
-        "cancel": "Cancelar",
-        "creating": "Creando...",
-        "submit": "Crear"
-      },
-      "options": {
-        "title": "Opciones de visualización",
-        "description": "Personaliza cómo se muestra la lista",
-        "groupByCategory": "Agrupar por categoría",
-        "showControls": "Mostrar controles de cantidad",
-        "flatList": "Listado plano",
-        "close": "Cerrar"
-      }
-    },
-    "execution": {
-      "finalize": {
-        "title": "Resumen de Compra",
-        "description": "Verifica los detalles antes de finalizar",
-        "purchased": "Comprados",
-        "discarded": "Descartados",
-        "pending": "Pendientes",
-        "pendingMessage": "Tienes {count} producto(s) sin definir. Considera marcarlos como comprados o descartados.",
-        "pendingWarning": "Tienes {count} producto(s) sin definir. Considera marcarlos como comprados o descartados.",
-        "totalTime": "Tiempo total",
-        "calculatedTotal": "Total Calculado",
-        "calculatedDesc": "Suma de todos los precios registrados",
-        "calculatedTotalDescription": "Suma de todos los precios registrados",
-        "manualTotal": "Total Pagado (opcional)",
-        "manualTotalDesc": "Ingresa el monto real del ticket si es diferente",
-        "totalPaid": "Total Pagado (opcional)",
-        "totalPaidDescription": "Ingresa el monto real del ticket si es diferente",
-        "finalizing": "Finalizando...",
-        "submit": "Finalizar y Sincronizar",
-        "cancel": "Cancelar"
-      },
-      "settings": {
-        "title": "Configuración",
-        "showTimer": "Mostrar cronómetro",
-        "showTimerDescription": "Ver tiempo transcurrido",
-        "addPrices": "Agregar precios",
-        "addPricesDescription": "Registrar precio de productos",
-        "viewByCategories": "Ver por categorías",
-        "viewByCategoriesDescription": "Agrupar productos por categoría",
-        "plainText": "Modo texto plano",
-        "plainTextDescription": "Vista compacta sin bordes",
-        "close": "Cerrar"
-      }
     }
   },
   "user": {
     "profile": {
-      "title": "Usuario",
-      "signOut": "Cerrar Sesión",
+      "title": "Perfil",
+      "signOut": "Cerrar sesión",
       "signOutDescription": "Salir de la aplicación"
     }
   },
   "modals": {
     "overspendWarning": {
-      "budgetExceeded": "Presupuesto Excedido",
-      "insufficientBalance": "Saldo Insuficiente",
+      "budgetExceeded": "Presupuesto excedido",
+      "insufficientBalance": "Saldo insuficiente",
       "budget": "Presupuesto",
       "spent": "Gastado",
       "excess": "Exceso: {percentage}%",
-      "currentBalance": "Saldo Actual",
-      "balanceAfter": "Saldo Después",
+      "currentBalance": "Saldo actual",
+      "balanceAfter": "Saldo después",
       "recommendations": "💡 Opciones recomendadas:",
       "budgetOptions": {
         "increase": "Aumentar el presupuesto del sobre",
-        "transfer": "Transferir budget desde otro sobre",
-        "record": "Registrar el gasto de todas formas (permitido)"
+        "transfer": "Mover presupuesto desde otro sobre",
+        "record": "Registrar el gasto de todas formas"
       },
       "balanceOptions": {
-        "deposit": "Realizar un depósito en la billetera",
-        "transfer": "Transferir dinero desde otra billetera",
-        "record": "Registrar el gasto de todas formas (permitido)"
+        "deposit": "Registrar un ingreso de dinero",
+        "transfer": "Mover dinero desde otra fuente",
+        "record": "Registrar el gasto de todas formas"
       },
       "showDetails": "Mostrar detalles",
       "hideDetails": "Ocultar detalles técnicos",
       "cancel": "Cancelar",
-      "addBudget": "Agregar Budget",
-      "recordAnyway": "Registrar de Todas Formas",
+      "addBudget": "Agregar presupuesto",
+      "recordAnyway": "Registrar de todas formas",
       "recommendedOptions": "💡 Opciones recomendadas:",
       "increaseBudget": "Aumentar el presupuesto del sobre",
       "transferBudget": "Transferir presupuesto desde otro sobre",
-      "makeDeposit": "Realizar un depósito en la billetera",
-      "transferMoney": "Transferir dinero desde otra billetera",
-      "registerAnyway": "Registrar el gasto de todas formas (permitido)",
-      "registerAnywayButton": "Registrar de Todas Formas",
+      "makeDeposit": "Registrar un ingreso de dinero",
+      "transferMoney": "Mover dinero desde otra fuente",
+      "registerAnyway": "Registrar el gasto de todas formas",
+      "registerAnywayButton": "Registrar de todas formas",
       "registering": "Registrando..."
     }
   },
   "buttons": {
-    "addBudget": "Agregar Presupuesto",
+    "addBudget": "Agregar presupuesto",
     "cancel": "Cancelar",
     "close": "Cerrar",
-    "createEnvelope": "Crear Sobre",
+    "createEnvelope": "Crear sobre",
     "creating": "Creando...",
     "disclaimer": "Podrás cambiar estas preferencias más adelante",
     "save": "Guardar",

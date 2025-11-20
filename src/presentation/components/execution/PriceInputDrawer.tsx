@@ -18,7 +18,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetFooter,
 } from '@/presentation/components/ui/sheet'
 import { Button } from '@/presentation/components/ui/button'
 import { Input } from '@/presentation/components/ui/input'
@@ -43,11 +42,15 @@ export function PriceInputDrawer({
   onSave,
   onMarkAsNotPurchased,
 }: PriceInputDrawerProps) {
-  const { decimales } = useCurrency()
+  const { decimales, formatNumber } = useCurrency()
   const [cantidad, setCantidad] = useState('')
   const [precioUnitario, setPrecioUnitario] = useState('')
   const [precioTotal, setPrecioTotal] = useState('')
   const [calculatorOpen, setCalculatorOpen] = useState(false)
+
+  const stepValue = decimales > 0
+    ? Number((1 / Math.pow(10, decimales)).toFixed(decimales))
+    : 1
 
   // Initialize values when item changes
   useEffect(() => {
@@ -137,103 +140,104 @@ export function PriceInputDrawer({
   return (
     <>
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="h-[500px] sm:max-w-[425px] sm:mx-auto">
-          <SheetHeader>
-            <SheetTitle className="text-left">
-              Precio: {item.product_name}
+        <SheetContent className="sm:max-w-[460px] p-0 flex h-[90vh] flex-col">
+          <SheetHeader className="border-b border-border bg-card px-6 py-4 text-left">
+            <SheetTitle className="text-base font-semibold">
+              Registrar precio
             </SheetTitle>
+            <p className="text-sm text-muted-foreground">{item.product_name}</p>
           </SheetHeader>
 
-          <div className="mt-6 space-y-4">
-            {/* Cantidad */}
-            <div className="space-y-2">
-              <Label htmlFor="cantidad" className="text-base font-medium">
-                Cantidad comprada
-              </Label>
-              <Input
-                id="cantidad"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                value={cantidad}
-                onChange={e => handleCantidadChange(e.target.value)}
-                placeholder="Cantidad"
-                className="text-lg h-12"
-              />
-              <p className="text-sm text-muted-foreground">
-                Planeado: {item.cantidad_planeada} {item.unidad_medida || 'unidad(es)'}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <div className="rounded-2xl border border-border/70 bg-card-accent px-4 py-3">
+              <p className="text-xs uppercase text-muted-foreground">Detalle del producto</p>
+              <p className="text-base font-semibold mt-1">{item.product_name}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {item.unidad_medida ? `${item.unidad_medida}` : 'Sin unidad definida'}
+                {item.marca ? ` • ${item.marca}` : ''}
               </p>
+              {item.precio_total && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Último total guardado:{' '}
+                  <span className="font-semibold text-primary">
+                    {formatNumber(item.precio_total)}
+                  </span>
+                </p>
+              )}
             </div>
 
-            {/* Precio Unitario */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="unitario" className="text-base font-medium">
-                  Precio unitario
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="cantidad" className="text-sm font-medium">
+                  Cantidad comprada
                 </Label>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCalculatorOpen(true)}
-                >
-                  <Calculator className="h-4 w-4 mr-2" />
-                  Calculadora
-                </Button>
-              </div>
-              <Input
-                id="unitario"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                value={precioUnitario}
-                onChange={e => handleUnitarioChange(e.target.value)}
-                placeholder="Precio por unidad"
-                className="text-lg h-12"
-              />
-            </div>
-
-            {/* Precio Total */}
-            <div className="space-y-2">
-              <Label htmlFor="total" className="text-base font-medium">
-                Precio total
-              </Label>
-              <Input
-                id="total"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                value={precioTotal}
-                onChange={e => handleTotalChange(e.target.value)}
-                placeholder="Precio total"
-                className="text-lg h-12 font-bold"
-              />
-            </div>
-
-            {/* Calculation Info */}
-            {precioUnitario && cantidad && (
-              <div className="bg-muted p-3 rounded-lg text-sm">
-                <p className="text-muted-foreground">
-                  {cantidad} × ${precioUnitario} = ${precioTotal}
+                <Input
+                  id="cantidad"
+                  type="number"
+                  inputMode="decimal"
+                  step={stepValue}
+                  value={cantidad}
+                  onChange={e => handleCantidadChange(e.target.value)}
+                  placeholder={String(item.cantidad_planeada || 1)}
+                  className="h-12 text-lg"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Planeado: {item.cantidad_planeada} {item.unidad_medida || 'unidad(es)'}
                 </p>
               </div>
-            )}
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="unitario" className="text-sm font-medium">
+                    Precio unitario
+                  </Label>
+                  <Button variant="ghost" size="sm" onClick={() => setCalculatorOpen(true)}>
+                    <Calculator className="mr-2 h-4 w-4" />
+                    Calculadora
+                  </Button>
+                </div>
+                <Input
+                  id="unitario"
+                  type="number"
+                  inputMode="decimal"
+                  step={stepValue}
+                  value={precioUnitario}
+                  onChange={e => handleUnitarioChange(e.target.value)}
+                  placeholder={item.precio_unitario ? String(item.precio_unitario) : 'Ej: 2500'}
+                  className="h-12 text-lg"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="total" className="text-sm font-medium">
+                  Precio total
+                </Label>
+                <Input
+                  id="total"
+                  type="number"
+                  inputMode="decimal"
+                  step={stepValue}
+                  value={precioTotal}
+                  onChange={e => handleTotalChange(e.target.value)}
+                  placeholder={item.precio_total ? String(item.precio_total) : 'Ej: 10000'}
+                  className="h-12 text-xl font-semibold"
+                />
+              </div>
+
+              {precioUnitario && cantidad && (
+                <div className="rounded-xl border border-border/70 bg-muted px-4 py-3 text-sm">
+                  <p className="text-muted-foreground">
+                    {cantidad} × {formatNumber(Number(precioUnitario) || 0)} ={' '}
+                    <span className="font-semibold text-foreground">
+                      {precioTotal ? formatNumber(Number(precioTotal) || 0) : formatNumber(0)}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
-          <SheetFooter className="absolute bottom-6 left-6 right-6 space-y-2">
-            {/* Marcar como no comprado button (only if purchased) */}
-            {item.status === 'purchased' && onMarkAsNotPurchased && (
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  onMarkAsNotPurchased()
-                  onOpenChange(false)
-                }}
-                className="w-full h-12 text-base"
-              >
-                Marcar como No Comprado
-              </Button>
-            )}
-
+          <div className="border-t border-border bg-background px-6 py-4 space-y-3">
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -250,7 +254,19 @@ export function PriceInputDrawer({
                 Guardar
               </Button>
             </div>
-          </SheetFooter>
+            {item.status === 'purchased' && onMarkAsNotPurchased && (
+              <Button
+                variant="ghost"
+                className="w-full text-sm text-destructive hover:text-destructive"
+                onClick={() => {
+                  onMarkAsNotPurchased()
+                  onOpenChange(false)
+                }}
+              >
+                Marcar como no comprado
+              </Button>
+            )}
+          </div>
         </SheetContent>
       </Sheet>
 

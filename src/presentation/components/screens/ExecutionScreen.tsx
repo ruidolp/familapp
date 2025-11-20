@@ -277,7 +277,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             {/* Purchased items section */}
             {purchasedItems.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 mb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-success mb-2">
                   ✓ Comprados ({purchasedItems.length})
                 </h3>
                 <div className="space-y-2">
@@ -297,7 +297,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             {/* Discarded items section */}
             {discardedItems.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 opacity-60">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-destructive/80 mb-2">
                   ✗ Descartados ({discardedItems.length})
                 </h3>
                 <div className="space-y-2">

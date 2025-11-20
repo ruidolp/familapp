@@ -774,6 +774,18 @@
         "close": "Close"
       }
     },
+    "listEditor": {
+      "summary": {
+        "backLabel": "Go back",
+        "activeLabel": "Active list",
+        "productsTitle": "Total products",
+        "productsSubtitle": "Planned items",
+        "quantityTitle": "Total quantity",
+        "quantitySubtitle": "Units added",
+        "calculatorButton": "Calculator",
+        "executeButton": "Start shopping"
+      }
+    },
     "execution": {
       "finalize": {
         "title": "Purchase Summary",
@@ -799,12 +811,19 @@
         "title": "Settings",
         "showTimer": "Show timer",
         "showTimerDescription": "See elapsed time",
+        "showTimerDesc": "See elapsed time",
         "addPrices": "Add prices",
         "addPricesDescription": "Record product prices",
+        "enablePrices": "Enable prices",
+        "enablePricesDesc": "Record product prices",
         "viewByCategories": "View by categories",
         "viewByCategoriesDescription": "Group products by category",
+        "showCategories": "Show categories",
+        "showCategoriesDesc": "Group products by category",
         "plainText": "Plain text mode",
         "plainTextDescription": "Compact view without borders",
+        "flatListMode": "Flat list mode",
+        "flatListModeDesc": "Compact view without borders",
         "close": "Close"
       }
     }

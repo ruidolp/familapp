@@ -471,17 +471,13 @@ export async function findCategoriasWithGastosBySobre(sobreId: string) {
     categorias.map(async (cat) => {
       const gastos = await db
         .selectFrom('transacciones')
-        .select([
-          db.fn.sum('monto').as('total'),
-          db.fn.count('id').as('compras'),
-        ])
+        .select(db.fn.sum('monto').as('total'))
         .where('categoria_id', '=', cat.id)
         .where('sobre_id', '=', sobreId)
         .where('deleted_at', 'is', null)
         .executeTakeFirst()
 
       const totalGastado = Number(gastos?.total || 0)
-      const compras = Number(gastos?.compras || 0)
       const presupuestoAsignado = Number(sobre.presupuesto_asignado || 0)
       const porcentaje =
         presupuestoAsignado > 0
@@ -492,7 +488,6 @@ export async function findCategoriasWithGastosBySobre(sobreId: string) {
         ...cat,
         gastado: totalGastado,
         porcentaje,
-        compras,
       }
     })
   )

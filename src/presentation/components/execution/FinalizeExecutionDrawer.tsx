@@ -7,7 +7,7 @@
  * Clean, modern design with proper scrolling and fixed buttons
  */
 
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   Sheet,
@@ -45,10 +45,14 @@ export function FinalizeExecutionDrawer({
   onConfirm,
 }: FinalizeExecutionDrawerProps) {
   const t = useTranslations()
-  const { formatNumber } = useCurrency()
+  const { formatNumber, decimales } = useCurrency()
   const [manualTotal, setManualTotal] = useState('')
   const [syncing, setSyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const stepValue = decimales > 0
+    ? Number((1 / Math.pow(10, decimales)).toFixed(decimales))
+    : 1
 
   const handleConfirm = async () => {
     setError(null)
@@ -69,139 +73,96 @@ export function FinalizeExecutionDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-[500px] flex flex-col p-0">
-        {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto">
-          {/* Header - No SheetHeader to avoid fixed height issues */}
-          <div className="p-6 pb-4">
-            <SheetTitle className="text-xl font-bold">{t('shopping.execution.finalize.title')}</SheetTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              {t('shopping.execution.finalize.description')}
+      <SheetContent className="sm:max-w-[520px] flex flex-col p-0">
+        <div className="border-b border-border bg-card px-6 py-5">
+          <SheetTitle className="text-lg font-semibold">
+            {t('shopping.execution.finalize.title')}
+          </SheetTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t('shopping.execution.finalize.description')}
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+          <div className="bg-card-accent border border-card-accent rounded-2xl px-6 py-7 text-center">
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              {t('shopping.execution.finalize.calculatedTotal')}
+            </p>
+            <p className="mt-2 text-4xl font-bold text-primary">
+              {totalCalculated > 0 ? formatNumber(totalCalculated) : formatNumber(0)}
+            </p>
+            <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
+              {t('shopping.execution.finalize.calculatedDesc')}
             </p>
           </div>
 
-          <div className="px-6 space-y-6">
-            {/* Summary Stats - More prominent */}
-            <div className="grid grid-cols-3 gap-3">
-              {/* Comprados */}
-              <div className="bg-emerald-50/50 dark:bg-emerald-950/30 p-4 rounded-lg text-center border border-emerald-200/60 dark:border-emerald-800/60">
-                <div className="flex items-center justify-center mb-1">
-                  <Check className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
-                  {purchasedCount}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{t('shopping.execution.finalize.purchased')}</p>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <StatusCard
+              icon={<Check className="h-5 w-5" />}
+              label={t('shopping.execution.finalize.purchased')}
+              value={purchasedCount}
+              variant="success"
+            />
+            <StatusCard
+              icon={<X className="h-5 w-5" />}
+              label={t('shopping.execution.finalize.discarded')}
+              value={discardedCount}
+              variant="muted"
+            />
+            <StatusCard
+              icon={<Clock className="h-5 w-5" />}
+              label={t('shopping.execution.finalize.pending')}
+              value={pendingCount}
+              variant={hasPendingItems ? 'warning' : 'muted'}
+            />
+          </div>
 
-              {/* Descartados */}
-              <div className="bg-muted border border-border p-4 rounded-lg text-center opacity-75">
-                <div className="flex items-center justify-center mb-1">
-                  <X className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="text-2xl font-bold text-foreground/70">
-                  {discardedCount}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{t('shopping.execution.finalize.discarded')}</p>
-              </div>
+          {hasPendingItems && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-xs sm:text-sm">
+                {t('shopping.execution.finalize.pendingWarning', { count: pendingCount })}
+              </AlertDescription>
+            </Alert>
+          )}
 
-              {/* Pendientes */}
-              <div className={cn(
-                'p-4 rounded-lg text-center border',
-                hasPendingItems
-                  ? 'bg-amber-50/50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/60'
-                  : 'bg-muted border-border opacity-50'
-              )}>
-                <div className="flex items-center justify-center mb-1">
-                  <span className={cn(
-                    'text-lg',
-                    hasPendingItems && 'text-amber-700 dark:text-amber-400 font-bold'
-                  )}>
-                    ⏳
-                  </span>
-                </div>
-                <div className={cn(
-                  'text-2xl font-bold',
-                  hasPendingItems
-                    ? 'text-amber-700 dark:text-amber-400'
-                    : 'text-foreground/70'
-                )}>
-                  {pendingCount}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">{t('shopping.execution.finalize.pending')}</p>
-              </div>
+          <div className="rounded-xl border border-border/80 bg-card px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              {t('shopping.execution.finalize.totalTime')}
             </div>
+            <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
+          </div>
 
-            {/* Warning for pending items */}
-            {hasPendingItems && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="text-xs sm:text-sm">
-                  {t('shopping.execution.finalize.pendingWarning', { count: pendingCount })}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            <Separator className="my-2" />
-
-            {/* Tiempo total */}
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{t('shopping.execution.finalize.totalTime')}</span>
-              </div>
-              <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
-            </div>
-
-            <Separator className="my-2" />
-
-            {/* Calculated Total - Highlighted */}
-            <div className="bg-primary/5 dark:bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <p className="text-xs text-muted-foreground mb-2">{t('shopping.execution.finalize.calculatedTotal')}</p>
-              <div className="text-3xl font-bold text-primary">
-                {totalCalculated > 0 ? formatNumber(totalCalculated) : '—'}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2">
-                {t('shopping.execution.finalize.calculatedDesc')}
+          <div className="space-y-3">
+            <div>
+              <Label htmlFor="manual-total" className="text-base font-medium">
+                {t('shopping.execution.finalize.manualTotal')}
+              </Label>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t('shopping.execution.finalize.manualTotalDesc')}
               </p>
             </div>
-
-            {/* Manual Total Input */}
-            <div className="space-y-3">
-              <div>
-                <Label htmlFor="manual-total" className="text-sm font-medium">
-                  {t('shopping.execution.finalize.manualTotal')}
-                </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t('shopping.execution.finalize.manualTotalDesc')}
-                </p>
-              </div>
-              <Input
-                id="manual-total"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                placeholder={totalCalculated > 0 ? formatNumber(totalCalculated) : '0.00'}
-                value={manualTotal}
-                onChange={(e) => setManualTotal(e.target.value)}
-                className="text-lg h-11"
-              />
-            </div>
-
-            {/* Error message */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Spacer for bottom buttons */}
-            <div className="h-4" />
+            <Input
+              id="manual-total"
+              type="number"
+              inputMode="decimal"
+              step={stepValue}
+              placeholder={formatNumber(Math.max(totalCalculated, 0))}
+              value={manualTotal}
+              onChange={(e) => setManualTotal(e.target.value)}
+              className="text-lg h-12"
+            />
           </div>
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
         </div>
 
-        {/* Fixed Footer Buttons */}
         <div className="border-t bg-background p-6 space-y-3">
           <Button
             onClick={handleConfirm}
@@ -229,5 +190,29 @@ export function FinalizeExecutionDrawer({
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+interface StatusCardProps {
+  icon: ReactNode
+  label: string
+  value: number
+  variant?: 'success' | 'warning' | 'muted'
+}
+
+function StatusCard({ icon, label, value, variant = 'muted' }: StatusCardProps) {
+  const baseClasses = 'rounded-xl border px-4 py-4 text-center flex flex-col items-center gap-2'
+  const variantClasses = {
+    success: 'border-success/30 bg-success/10 text-success',
+    warning: 'border-warning/30 bg-warning/10 text-warning',
+    muted: 'border-border bg-muted text-foreground',
+  } as const
+
+  return (
+    <div className={cn(baseClasses, variantClasses[variant])}>
+      <div className="flex items-center justify-center text-sm">{icon}</div>
+      <p className="text-2xl font-semibold leading-none">{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
+    </div>
   )
 }

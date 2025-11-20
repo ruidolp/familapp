@@ -10,6 +10,7 @@
  */
 
 import { useState, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Check, X, Tag } from 'lucide-react'
 import { cn } from '@/infrastructure/lib/utils'
 import { useCurrency } from '@/presentation/providers/currency-provider'
@@ -35,6 +36,7 @@ export function ExecutionItem({
   onPointerDown,
   onPointerMove,
 }: ExecutionItemProps) {
+  const t = useTranslations('shopping.execution.finalize')
   const { formatNumber } = useCurrency()
   const [pressing, setPressing] = useState(false)
   const longPressTimer = useRef<NodeJS.Timeout | null>(null)
@@ -134,6 +136,11 @@ export function ExecutionItem({
   const isPending = item.status === 'pending'
   const isPurchased = item.status === 'purchased'
   const isDiscarded = item.status === 'discarded'
+  const statusLabel = isPurchased
+    ? t('purchased')
+    : isDiscarded
+      ? t('discarded')
+      : null
 
   // Flat list mode - simplified view like editor
   if (flatListMode) {
@@ -144,39 +151,47 @@ export function ExecutionItem({
         onPointerUp={handlePointerUpInternal}
         onPointerCancel={handlePointerCancel}
         className={cn(
-          'flex items-start gap-2 px-2 py-1 hover:bg-muted cursor-pointer transition-colors',
-          isPurchased && 'text-emerald-700 dark:text-emerald-400',
+          'flex items-start gap-2 rounded-lg px-2 py-1 transition-colors hover:bg-muted cursor-pointer',
+          isPurchased && 'text-success',
           isDiscarded && 'opacity-60 line-through text-muted-foreground',
           pressing && 'bg-destructive/10'
         )}
       >
-        {/* Status indicator - small bullet */}
         <div className={cn(
-          "flex-shrink-0 mt-1 w-2 h-2 rounded-full",
-          isPending && "bg-muted-foreground/40",
-          isPurchased && "bg-emerald-600 dark:bg-emerald-500",
-          isDiscarded && "bg-muted-foreground/20"
+          'mt-1 h-2 w-2 flex-shrink-0 rounded-full',
+          isPending && 'bg-muted-foreground/40',
+          isPurchased && 'bg-success',
+          isDiscarded && 'bg-destructive/40'
         )} />
 
-        {/* Quantity */}
         <span className="font-medium flex-shrink-0">
           {formatQuantity(item.cantidad_comprada || item.cantidad_planeada)}
         </span>
 
-        {/* Product name and comment */}
         <span className="flex-1">
-          {item.product_name}
-          {(item.unidad_medida || item.marca) && (
-            <span className="text-muted-foreground">
-              {item.unidad_medida && ` (${item.unidad_medida})`}
-              {item.marca && ` - ${item.marca}`}
+          <span className="font-medium">
+            {item.product_name}
+            {(item.unidad_medida || item.marca) && (
+              <span className="text-muted-foreground">
+                {item.unidad_medida && ` (${item.unidad_medida})`}
+                {item.marca && ` - ${item.marca}`}
+              </span>
+            )}
+          </span>
+          {statusLabel && (
+            <span className={cn(
+              'ml-2 inline-flex items-center rounded-full border px-2 text-[10px] font-semibold uppercase tracking-tight',
+              isPurchased
+                ? 'border-success/40 bg-success/10 text-success'
+                : 'border-destructive/30 bg-destructive/10 text-destructive'
+            )}>
+              {statusLabel}
             </span>
           )}
         </span>
 
-        {/* Price (if available) */}
         {isPurchased && item.precio_total && (
-          <span className="text-xs font-medium flex-shrink-0">
+          <span className="flex-shrink-0 text-xs font-medium">
             {formatNumber(item.precio_total)}
           </span>
         )}
@@ -188,11 +203,11 @@ export function ExecutionItem({
   return (
     <div
       className={cn(
-        'flex items-center gap-2 p-2 border rounded-lg transition-all cursor-pointer',
-        isPending && 'bg-background border-border hover:border-primary',
-        isPurchased && 'bg-emerald-50/50 dark:bg-emerald-950/30 border-emerald-200/60 dark:border-emerald-800/60 hover:border-emerald-300/60',
-        isDiscarded && 'bg-muted border-border opacity-70 hover:border-muted-foreground',
-        pressing && 'scale-95 bg-destructive/10'
+        'flex items-center gap-3 rounded-xl border p-3 transition-all cursor-pointer',
+        isPending && 'bg-background border-border hover:border-primary/60',
+        isPurchased && 'border-success/30 bg-success/5',
+        isDiscarded && 'border-destructive/30 bg-destructive/5 text-muted-foreground',
+        pressing && 'scale-95 bg-destructive/5'
       )}
       onPointerDown={handlePointerDownInternal}
       onPointerMove={handlePointerMoveInternal}
@@ -201,7 +216,7 @@ export function ExecutionItem({
     >
       {/* Quantity */}
       <div className={cn(
-        "text-sm font-medium min-w-[2rem] text-center flex-shrink-0",
+        'text-sm font-medium min-w-[2.2rem] text-center flex-shrink-0',
         isDiscarded && 'line-through text-muted-foreground'
       )}>
         {formatQuantity(item.cantidad_comprada || item.cantidad_planeada)}
@@ -209,16 +224,28 @@ export function ExecutionItem({
 
       {/* Item Info */}
       <div className="flex-1 min-w-0">
-        <p className={cn(
-          'font-medium',
-          isDiscarded && 'line-through text-muted-foreground',
-          isPurchased && 'text-emerald-700 dark:text-emerald-400'
-        )}>
-          {item.product_name}
-        </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className={cn(
+            'font-medium',
+            isDiscarded && 'line-through text-muted-foreground',
+            isPurchased && 'text-success'
+          )}>
+            {item.product_name}
+          </p>
+          {statusLabel && (
+            <span className={cn(
+              'inline-flex items-center rounded-full border px-2 text-[10px] font-semibold uppercase tracking-tight',
+              isPurchased
+                ? 'border-success/40 bg-success/10 text-success'
+                : 'border-destructive/40 bg-destructive/10 text-destructive'
+            )}>
+              {statusLabel}
+            </span>
+          )}
+        </div>
 
         {/* Metadata (unidad, marca, agregado) and Price on same line */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
           {item.unidad_medida && (
             <span>{item.unidad_medida}</span>
           )}
@@ -241,7 +268,7 @@ export function ExecutionItem({
           {isPurchased && item.precio_total && (
             <>
               <span>•</span>
-              <span className="font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+              <span className="flex items-center gap-1 font-semibold text-success">
                 <Tag className="h-2.5 w-2.5" />
                 {formatNumber(item.precio_total)}
                 {item.precio_unitario && (
