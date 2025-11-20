@@ -1,7 +1,8 @@
 'use client'
 
+import { type CSSProperties } from 'react'
 import { Zap } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface CategoriaCardProps {
@@ -32,58 +33,60 @@ export function CategoriaCard({
   const porcentajeNum = Number(porcentaje) || 0
   const isOverspent = gastadoNum > presupuestoAsignado
 
-  const bgColor = color || '#3b82f6'
+  const accentColor = color || '#3b82f6'
+  const accentStyles = {
+    '--categoria-accent': accentColor,
+  } as CSSProperties
 
   return (
-    <Card
-      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow p-2 border-white/20 bg-white/10 backdrop-blur"
-      style={{ color: 'rgba(255,255,255,0.95)' }}
+    <div
+      className="group flex cursor-pointer items-stretch overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:bg-accent/5"
+      style={accentStyles}
       onClick={(e) => onClick?.(e)}
     >
-      <div className="space-y-1.5">
-        {/* Header: emoji + nombre | gastado + flash$ button */}
-        <div className="flex justify-between items-center gap-2">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {emoji && <span className="text-lg flex-shrink-0">{emoji}</span>}
-            <h4 className="font-medium text-sm truncate text-white">{nombre}</h4>
+      <div className="w-1 bg-[var(--categoria-accent)]" />
+      <div className="flex flex-1 flex-col gap-3 p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-1 items-center gap-2 text-sm font-medium text-foreground">
+            {emoji && <span className="text-base">{emoji}</span>}
+            <span className="truncate">{nombre}</span>
           </div>
-          <div className="text-right flex items-center gap-1 whitespace-nowrap flex-shrink-0">
-            <p className="text-sm font-bold text-white">
-              {formatNumber(gastadoNum)}
-            </p>
-            {/* Flash gasto button */}
-            <button
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            {formatNumber(gastadoNum)}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground"
               onClick={(e) => {
                 e.stopPropagation()
                 onFlashGasto?.(e)
               }}
-              className="hover:scale-110 transition-transform text-white/75 hover:text-white"
-              title="Agregar gasto rápido"
             >
-              <Zap size={16} className="fill-current" />
-            </button>
+              <Zap className="h-4 w-4" />
+              <span className="sr-only">Agregar gasto rápido</span>
+            </Button>
           </div>
         </div>
-
-        {/* Progress bar con % a la derecha */}
-        <div className="flex items-center gap-2">
-          <div className={`h-1.5 flex-1 rounded-full overflow-hidden ${
-            isOverspent ? 'bg-white/20' : 'bg-white/20'
-          }`}>
+        <div className="flex items-center gap-3">
+          <div className="relative h-1.5 flex-1 rounded-full bg-muted">
             <div
-              className={`h-full ${
-                isOverspent ? 'bg-yellow-300' : 'bg-green-300'
-              }`}
-              style={{ width: `${Math.min(porcentajeNum, 100)}%` }}
+              className="absolute inset-y-0 left-0 rounded-full"
+              style={{
+                width: `${Math.min(porcentajeNum, 100)}%`,
+                backgroundColor: isOverspent ? 'hsl(var(--destructive))' : accentColor,
+              }}
             />
           </div>
-          <span className={`text-xs font-medium whitespace-nowrap flex-shrink-0 ${
-            isOverspent ? 'text-yellow-100' : 'text-green-100'
-          }`}>
+          <span
+            className={`text-xs font-medium ${
+              isOverspent ? 'text-destructive' : 'text-muted-foreground'
+            }`}
+          >
             {porcentajeNum.toFixed(0)}%
           </span>
         </div>
       </div>
-    </Card>
+    </div>
   )
 }
