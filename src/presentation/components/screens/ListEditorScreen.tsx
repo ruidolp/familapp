@@ -183,14 +183,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     const target = container.querySelector<HTMLElement>(`[data-item-id="${lastAddedItemId}"]`)
 
     if (target) {
-      // Improved scroll calculation: position element near top with offset for header
-      const headerOffset = 100 // space for list header (title, buttons)
-      const desiredGap = 20 // small gap for better visibility
-      const scrollTop = Math.max(0, target.offsetTop - headerOffset - desiredGap)
-
-      container.scrollTo({
-        top: scrollTop,
+      // Use native scrollIntoView for reliable scrolling
+      // block: 'start' positions element at top of scrollable area
+      target.scrollIntoView({
         behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
       })
     }
 
@@ -789,7 +787,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div ref={itemsContainerRef} className="flex-1 overflow-y-auto p-4 pb-32 space-y-4">
+      <div ref={itemsContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4" style={{ paddingBottom: '500px' }}>
         {/* Header */}
         <div className="space-y-4">
           <div className="flex flex-wrap items-start gap-3">
@@ -848,7 +846,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
         ) : flatListMode ? (
           /* FLAT LIST MODE */
-          <Card className="p-2" style={{ minHeight: 'calc(100vh - 250px)' }}>
+          <Card className="p-2">
             <div className="space-y-0">
               {items.map((item) => {
                 const saveState = itemSaveState[item.id]
@@ -886,7 +884,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </Card>
         ) : groupByCategory ? (
           /* GROUPED BY CATEGORY MODE */
-          <div className="space-y-4" style={{ minHeight: 'calc(100vh - 250px)' }}>
+          <div className="space-y-4">
             {(() => {
               // Group items by category (prioritize final_category_id which includes catalog categories)
               const grouped = items.reduce((acc, item) => {
@@ -1014,7 +1012,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
         ) : (
           /* NORMAL CARD MODE */
-          <div className="space-y-1.5" style={{ minHeight: 'calc(100vh - 250px)' }}>
+          <div className="space-y-1.5">
             {items.map((item) => {
               const saveState = itemSaveState[item.id]
               const isSaving = saveState?.isSaving ?? false
