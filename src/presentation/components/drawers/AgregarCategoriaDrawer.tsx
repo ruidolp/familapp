@@ -447,7 +447,7 @@ export function AgregarCategoriaDrawer({
                     onBlur={() => {
                       setTimeout(() => setShowSuggestionsCategoria(false), 200)
                     }}
-                    className="typography-body bg-background text-foreground"
+                    className="typography-body"
                   />
 
                   {showSuggestionsCategoria && suggestionsCategoria.length > 0 && (
@@ -584,7 +584,7 @@ export function AgregarCategoriaDrawer({
                                 }, 200)
                               }}
                               enterKeyHint="go"
-                              className="typography-body bg-background text-foreground"
+                              className="typography-body"
                             />
 
                             {showSuggestions && suggestions.length > 0 && (

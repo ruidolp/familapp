@@ -399,7 +399,7 @@
       "returnError": "Error al devolver presupuesto"
     },
     "card": {
-      "active": "Sobre activo",
+      "active": "Sobre",
       "actions": {
         "title": "Acciones de {name}",
         "description": "Gestiona presupuesto y categorías rápidamente.",

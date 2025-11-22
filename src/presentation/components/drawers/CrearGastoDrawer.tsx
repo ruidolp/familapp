@@ -769,7 +769,7 @@ export function CrearGastoDrawer({
                       onChange={(e) => setMonto(e.target.value)}
                       placeholder={placeholderValue}
                       required
-                      className="pl-10 typography-h2 h-14 bg-background"
+                      className="pl-10 typography-h2 h-14"
                     />
                   </div>
                 </div>
@@ -791,7 +791,7 @@ export function CrearGastoDrawer({
                     value={comentario}
                     onChange={(e) => setComentario(e.target.value)}
                     placeholder={t('gastos.create.commentPlaceholder')}
-                    className="h-10 bg-background"
+                    className="h-10"
                   />
                 </div>
 

@@ -136,9 +136,11 @@ export function SobreCard({
         <div className="relative z-10 space-y-6">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-wide text-white/70">{t('card.active')}</p>
-              <h2 className="typography-h2 leading-snug">{nombre}</h2>
-              <p className="typography-body-sm text-white/80">
+              <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
+                {t('card.active')}
+              </p>
+              <h2 className="typography-h1 leading-tight">{nombre}</h2>
+              <p className="typography-caption font-semibold text-white/80">
                 {formatNumber(presupuesto)} {t('total')}
               </p>
             </div>
@@ -164,7 +166,7 @@ export function SobreCard({
                 </DrawerHeader>
                 <DrawerBody className="space-y-4">
                   <Card className="p-3 space-y-3 bg-muted/40">
-                    <p className="typography-caption uppercase tracking-wide text-muted-foreground">
+                    <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
                       {t('card.actions.budgetSection')}
                     </p>
                     <div className="flex flex-col gap-2">
@@ -209,7 +211,7 @@ export function SobreCard({
                   </Card>
 
                   <Card className="p-3 space-y-3 bg-muted/40">
-                    <p className="typography-caption uppercase tracking-wide text-muted-foreground">
+                    <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
                       {t('card.actions.organizationSection')}
                     </p>
                     <div className="flex flex-col gap-2">
@@ -253,18 +255,22 @@ export function SobreCard({
 
           <div className="grid grid-cols-2 gap-4 text-white">
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-wide text-white/70">{t('usado')}</p>
+              <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
+                {t('usado')}
+              </p>
               <p className="typography-h1">{formatNumber(gastadoNum)}</p>
-              <p className="text-xs text-white/80">{t('card.status.percentOfBudget', { percent: Math.round(porcentajeGastado) })}</p>
+              <p className="typography-caption font-semibold text-white/80">
+                {t('card.status.percentOfBudget', { percent: Math.round(porcentajeGastado) })}
+              </p>
             </div>
             <div className="text-right space-y-1">
-              <p className="text-xs uppercase tracking-wide text-white/70">
+              <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
                 {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
               </p>
-              <p className={`text-3xl font-bold ${libreEsPositivo ? '' : 'text-red-100'}`}>
+              <p className={`typography-h1 ${libreEsPositivo ? '' : 'text-red-100'}`}>
                 {formatNumber(libreEsPositivo ? presupuestoLibre : Math.abs(presupuestoLibre))}
               </p>
-              <p className="text-xs text-white/80">{t('card.status.available')}</p>
+              <p className="typography-caption font-semibold text-white/80">{t('card.status.available')}</p>
             </div>
           </div>
         </div>
@@ -272,7 +278,7 @@ export function SobreCard({
 
       <div className="flex flex-1 flex-col">
         <div className="space-y-3 px-4 pt-2 pb-1">
-          <div className="flex items-center gap-3 typography-caption uppercase tracking-wide text-muted-foreground">
+          <div className="flex items-center gap-3 typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
             <div className="h-px flex-1 bg-border" />
             <span>{t('categories.title', { count: categoriasOrdenadas.length })}</span>
             <div className="h-px flex-1 bg-border" />
@@ -280,10 +286,11 @@ export function SobreCard({
 
           {presupuesto <= 0 && (
             <div className="space-y-3 rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-center">
-              <p className="typography-body-sm text-muted-foreground">{t('emptyBudget.message')}</p>
+              <p className="typography-caption font-semibold text-muted-foreground">
+                {t('emptyBudget.message')}
+              </p>
               <Button
                 size="sm"
-                variant="outline"
                 onClick={(e) => {
                   e.stopPropagation()
                   onAgregarPresupuesto?.()
@@ -299,7 +306,7 @@ export function SobreCard({
 
         <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4">
           {categoriasLoading ? (
-            <div className="flex items-center justify-center rounded-2xl border border-border bg-muted/30 p-4 typography-body-sm text-muted-foreground">
+            <div className="flex items-center justify-center rounded-2xl border border-border bg-muted/30 p-4 typography-caption font-semibold text-muted-foreground">
               {t('categories.loading')}
             </div>
           ) : categoriasOrdenadas.length > 0 ? (
@@ -325,7 +332,6 @@ export function SobreCard({
               ))}
               <Button
                 size="sm"
-                variant="outline"
                 className="w-full gap-2"
                 onClick={(e) => {
                   e.stopPropagation()
@@ -338,10 +344,11 @@ export function SobreCard({
             </>
           ) : (
             <div className="space-y-3 rounded-2xl border border-border bg-muted/30 p-4 text-center">
-              <p className="typography-body-sm text-muted-foreground">{t('categories.empty')}</p>
+              <p className="typography-caption font-semibold text-muted-foreground">
+                {t('categories.empty')}
+              </p>
               <Button
                 size="sm"
-                variant="outline"
                 className="w-full gap-2"
                 onClick={(e) => {
                   e.stopPropagation()

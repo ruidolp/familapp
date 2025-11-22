@@ -44,6 +44,10 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
     const savedTab = localStorage.getItem('dashboard-active-tab') as TabType | null
     if (savedTab && ['listas', 'sobres', 'metricas', 'config'].includes(savedTab)) {
       setActiveTab(savedTab)
+    } else {
+      // Si no hay nada guardado, forzar 'sobres' por defecto
+      setActiveTab('sobres')
+      localStorage.setItem('dashboard-active-tab', 'sobres')
     }
 
     // Detectar si el usuario necesita onboarding
