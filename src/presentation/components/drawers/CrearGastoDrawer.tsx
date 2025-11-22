@@ -34,6 +34,7 @@ import {
   filterMarcas,
   updateMarcasCache,
 } from '@/infrastructure/utils/marcas-storage'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 const DEFAULT_CATEGORY_EMOJI = '📁'
 
@@ -87,6 +88,9 @@ export function CrearGastoDrawer({
 }: CrearGastoDrawerProps) {
   const t = useTranslations()
   const { selectedCategoryId, setSelectedCategoryId } = useCategoryContext()
+  const { decimales, formatNumber, simbolo } = useCurrency()
+  const stepValue = decimales > 0 ? Number((1 / Math.pow(10, decimales)).toFixed(decimales)) : 1
+  const placeholderValue = decimales > 0 ? (1 / Math.pow(10, decimales)).toFixed(decimales) : '0'
 
   const [loading, setLoading] = useState(false)
   const [sobres, setSobres] = useState<Sobre[]>([])
@@ -753,17 +757,17 @@ export function CrearGastoDrawer({
                   </Label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 typography-h2 text-muted-foreground">
-                      $
+                      {simbolo ?? ''}
                     </span>
                     <Input
                       ref={montoRef}
                       id="monto"
                       type="number"
-                      step="0.01"
+                      step={stepValue}
                       min="0"
                       value={monto}
                       onChange={(e) => setMonto(e.target.value)}
-                      placeholder="0.00"
+                      placeholder={placeholderValue}
                       required
                       className="pl-10 typography-h2 h-14 bg-background"
                     />
@@ -795,8 +799,7 @@ export function CrearGastoDrawer({
                   <Alert className="mt-2 border-border bg-muted">
                     <AlertDescription className="text-foreground">
                       <p className="font-medium">
-                        ⚠️ Excede el presupuesto en $
-                        {presupuestoWarning.exceso.toFixed(2)}
+                        ⚠️ Excede el presupuesto en {formatNumber(presupuestoWarning.exceso)}
                       </p>
                       <p className="text-xs mt-1 text-muted-foreground">
                         Sobre &quot;{presupuestoWarning.sobre?.nombre}&quot; •{' '}

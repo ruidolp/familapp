@@ -19,6 +19,7 @@ import { Card } from '@/components/ui/card'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface AgregarPresupuestoDrawerProps {
   open: boolean
@@ -49,6 +50,9 @@ export function AgregarPresupuestoDrawer({
   onSuccess,
 }: AgregarPresupuestoDrawerProps) {
   const t = useTranslations('sobres.addBudget')
+  const { formatNumber, simbolo, decimales } = useCurrency()
+  const stepValue = decimales > 0 ? Number((1 / Math.pow(10, decimales)).toFixed(decimales)) : 1
+  const placeholderValue = decimales > 0 ? (1 / Math.pow(10, decimales)).toFixed(decimales) : '0'
   const [loading, setLoading] = useState(false)
   const [monto, setMonto] = useState('')
   const [observacion, setObservacion] = useState('')
@@ -139,7 +143,7 @@ export function AgregarPresupuestoDrawer({
                       {t('form.availableInWallet')}
                     </p>
                     <p className="typography-h3">
-                      ${Number(montoLibre).toLocaleString('es-CL', { minimumFractionDigits: 2 })}
+                      {formatNumber(Number(montoLibre))}
                     </p>
                   </div>
                   <div className="space-y-1 text-right">
@@ -147,7 +151,7 @@ export function AgregarPresupuestoDrawer({
                       {t('form.currentBudget')}
                     </p>
                     <p className="typography-h3">
-                      ${Number(presupuestoAsignado).toLocaleString('es-CL', { minimumFractionDigits: 2 })}
+                      {formatNumber(Number(presupuestoAsignado))}
                     </p>
                   </div>
                 </div>
@@ -159,7 +163,7 @@ export function AgregarPresupuestoDrawer({
                         {t('form.newBudget')}
                       </span>
                       <span className="typography-h3 text-primary">
-                        ${nuevoTotal.toLocaleString('es-CL', { minimumFractionDigits: 2 })}
+                        {formatNumber(nuevoTotal)}
                       </span>
                     </div>
                   </div>
@@ -175,17 +179,17 @@ export function AgregarPresupuestoDrawer({
                 </Label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 typography-h2 text-muted-foreground">
-                    +$
+                    +{simbolo ?? ''}
                   </span>
                   <Input
                     ref={montoRef}
                     id="monto"
                     type="number"
-                    step="0.01"
+                    step={stepValue}
                     min="0"
                     value={monto}
                     onChange={(e) => setMonto(e.target.value)}
-                    placeholder="0.00"
+                    placeholder={placeholderValue}
                     required
                     className="pl-14 typography-h2 h-14 bg-background"
                   />
@@ -237,11 +241,11 @@ export function AgregarPresupuestoDrawer({
                         <Input
                           id="montoRecurrente"
                           type="number"
-                          step="0.01"
+                          step={stepValue}
                           min="0"
                           value={montoRecurrente}
                           onChange={(e) => setMontoRecurrente(e.target.value)}
-                          placeholder="0.00"
+                          placeholder={placeholderValue}
                           className="h-10"
                         />
                       </div>

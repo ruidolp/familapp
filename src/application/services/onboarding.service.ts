@@ -8,6 +8,7 @@
 import { buildOnboardingTemplate } from '@/infrastructure/config/onboarding-builder'
 import {
   createSobre,
+  addParticipanteToSobre,
   findSobresByUser,
 } from '@/infrastructure/database/queries/sobres.queries'
 import {
@@ -152,6 +153,13 @@ export async function initializeUserProfile(
         ...sobre,
         categorias: categoriaIds.length
       })
+
+      await addParticipanteToSobre(
+        sobre.id,
+        userId,
+        'OWNER',
+        Number(sobre.presupuesto_asignado) || 0
+      )
     }
 
     return {
