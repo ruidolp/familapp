@@ -179,20 +179,27 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   useEffect(() => {
     if (!lastAddedItemId || !itemsContainerRef.current) return
 
-    const container = itemsContainerRef.current
-    const target = container.querySelector<HTMLElement>(`[data-item-id="${lastAddedItemId}"]`)
+    // Use timeout to ensure DOM is fully updated before scrolling
+    const timeoutId = setTimeout(() => {
+      const container = itemsContainerRef.current
+      if (!container) return
 
-    if (target) {
-      // Use native scrollIntoView for reliable scrolling
-      // block: 'start' positions element at top of scrollable area
-      target.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest'
-      })
-    }
+      const target = container.querySelector<HTMLElement>(`[data-item-id="${lastAddedItemId}"]`)
 
-    setLastAddedItemId(null)
+      if (target) {
+        // Use native scrollIntoView for reliable scrolling
+        // block: 'start' positions element at top of scrollable area
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        })
+      }
+
+      setLastAddedItemId(null)
+    }, 100) // Small delay to ensure DOM is updated
+
+    return () => clearTimeout(timeoutId)
   }, [items, lastAddedItemId])
 
   // Save to localStorage as backup (not for restoration)
@@ -327,6 +334,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             : i
         )
       )
+
+      // Update lastAddedItemId to the new real ID so scroll doesn't break
+      setLastAddedItemId(realItem.id)
 
       setItemSaveState((prev) => {
         const newState = { ...prev }
@@ -803,11 +813,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             </Button>
 
             <div className="flex-1 min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-xs uppercase text-muted-foreground">{tSummary('activeLabel')}</p>
-                <p className="text-xs uppercase text-muted-foreground">
+              <div className="flex items-center justify-between gap-2 text-xs uppercase text-muted-foreground">
+                <span className="whitespace-nowrap">{tSummary('activeLabel')}</span>
+                <span className="whitespace-nowrap">
                   {tSummary('productsTitle')}
-                </p>
+                </span>
               </div>
               <div className="flex flex-wrap items-baseline justify-between gap-4">
                 <div className="flex-1 min-w-[200px]">
