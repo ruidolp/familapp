@@ -185,24 +185,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     if (target) {
       const bottomPadding = 160 // leave room for input fijo + teclado
       const targetBottom = target.offsetTop + target.offsetHeight
-      const containerHeight = container.clientHeight
-      const scrollHeight = container.scrollHeight
+      const scrollTop = Math.max(0, targetBottom - container.clientHeight + bottomPadding)
 
-      // Si el contenido es más corto que el contenedor (pocos items),
-      // hacer scroll al final del contenido
-      if (scrollHeight <= containerHeight) {
-        container.scrollTo({
-          top: scrollHeight,
-          behavior: 'smooth',
-        })
-      } else {
-        // Lógica normal para listas largas
-        const scrollTop = Math.max(0, targetBottom - containerHeight + bottomPadding)
-        container.scrollTo({
-          top: scrollTop,
-          behavior: 'smooth',
-        })
-      }
+      container.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth',
+      })
     }
 
     setLastAddedItemId(null)
