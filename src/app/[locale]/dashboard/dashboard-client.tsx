@@ -26,6 +26,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   const [activeTab, setActiveTab] = useState<TabType>('sobres')
   const [contextualOpen, setContextualOpen] = useState(false)
   const [menuAction, setMenuAction] = useState<string | null>(null)
+  const [listMenuAction, setListMenuAction] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
@@ -78,6 +79,11 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
 
   // Acción contextual del botón central (+)
   const handleContextualAction = (action?: string) => {
+    if (activeTab === 'listas') {
+      setListMenuAction('nueva-lista')
+      return
+    }
+
     if (action) {
       setMenuAction(action)
     }
@@ -97,7 +103,13 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   const renderActiveScreen = () => {
     switch (activeTab) {
       case 'listas':
-        return <ListasScreen userId={user.id} />
+        return (
+          <ListasScreen
+            userId={user.id}
+            menuAction={listMenuAction}
+            onMenuActionHandled={() => setListMenuAction(null)}
+          />
+        )
       case 'sobres':
         return (
           <SobresScreen
@@ -113,7 +125,13 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
       case 'config':
         return <ConfigScreen />
       default:
-        return <ListasScreen userId={user.id} />
+        return (
+          <ListasScreen
+            userId={user.id}
+            menuAction={listMenuAction}
+            onMenuActionHandled={() => setListMenuAction(null)}
+          />
+        )
     }
   }
 

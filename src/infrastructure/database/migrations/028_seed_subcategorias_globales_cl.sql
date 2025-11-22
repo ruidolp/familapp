@@ -120,6 +120,6 @@ INSERT INTO subcategorias_globales (nombre, pais, categoria_tipo, emoji) VALUES
   ('Apple TV+', 'CL', 'Entretenimiento', '📺'),
   ('Deezer', 'CL', 'Entretenimiento', '🎵'),
   ('Pluto TV', 'CL', 'Entretenimiento', '📺')
-ON CONFLICT (LOWER(nombre), pais) DO NOTHING;
+ON CONFLICT (LOWER(nombre), pais) WHERE deleted_at IS NULL DO NOTHING;
 
 COMMIT;

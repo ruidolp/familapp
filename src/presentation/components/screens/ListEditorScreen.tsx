@@ -11,7 +11,6 @@ import {
   AlertCircle,
   Loader2,
   ShoppingCart,
-  Calculator,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -26,7 +25,6 @@ import {
   ConfigureExecutionDrawer,
   type ExecutionConfig,
 } from '@/presentation/components/execution/ConfigureExecutionDrawer'
-import { CalculatorDrawer } from '@/presentation/components/execution/CalculatorDrawer'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import {
   getPreferences,
@@ -111,12 +109,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const [showInlineQty, setShowInlineQty] = useState(true)
   const [flatListMode, setFlatListMode] = useState(false)
   const [preferencesLoaded, setPreferencesLoaded] = useState(false)
+  const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null)
 
   // Drawers state
   const [optionsDrawerOpen, setOptionsDrawerOpen] = useState(false)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<ListItemWithProduct | null>(null)
-  const [calculatorOpen, setCalculatorOpen] = useState(false)
 
   // Execute purchase drawer state
   const [configureExecutionOpen, setConfigureExecutionOpen] = useState(false)
@@ -176,6 +174,27 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   useEffect(() => {
     loadEditorData()
   }, [listId])
+
+  // Auto-scroll to the last item added so it is visible above the keyboard/input
+  useEffect(() => {
+    if (!lastAddedItemId || !itemsContainerRef.current) return
+
+    const container = itemsContainerRef.current
+    const target = container.querySelector<HTMLElement>(`[data-item-id="${lastAddedItemId}"]`)
+
+    if (target) {
+      const bottomPadding = 160 // leave room for input fijo + teclado
+      const targetBottom = target.offsetTop + target.offsetHeight
+      const scrollTop = Math.max(0, targetBottom - container.clientHeight + bottomPadding)
+
+      container.scrollTo({
+        top: scrollTop,
+        behavior: 'smooth',
+      })
+    }
+
+    setLastAddedItemId(null)
+  }, [items, lastAddedItemId])
 
   // Save to localStorage as backup (not for restoration)
   useEffect(() => {
@@ -273,6 +292,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       id: tempId,
     }
 
+    setLastAddedItemId(tempId)
     // Add to local state immediately (optimistic)
     setItems((prev) => [...prev, itemWithTempId])
 
@@ -541,16 +561,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     } as unknown as Omit<ListItemWithProduct, 'id'> & { _productName: string }
 
     await createNewItem(newItem)
-
-    // Auto-scroll to bottom after adding item
-    setTimeout(() => {
-      if (itemsContainerRef.current) {
-        itemsContainerRef.current.scrollTo({
-          top: itemsContainerRef.current.scrollHeight,
-          behavior: 'smooth'
-        })
-      }
-    }, 100)
   }
 
   const handleDeleteItem = (itemId: string) => {
@@ -792,40 +802,35 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       <div ref={itemsContainerRef} className="flex-1 overflow-y-auto p-4 pb-32 space-y-4">
         {/* Header */}
         <Card className="space-y-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
-          <div className="flex items-start gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={tSummary('backLabel')}
-              onClick={() => {
-                router.back()
-              }}
-            >
-              <ArrowLeft size={20} />
-            </Button>
-            <div className="flex-1">
-              <p className="text-xs uppercase text-muted-foreground">{tSummary('activeLabel')}</p>
-              <h1 className="text-lg font-semibold text-foreground">{data.listInfo.nombre}</h1>
-              {data.listInfo.descripcion && (
-                <p className="text-sm text-muted-foreground">
-                  {data.listInfo.descripcion}
-                </p>
-              )}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex items-start gap-3 flex-1 min-w-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={tSummary('backLabel')}
+                onClick={() => {
+                  router.back()
+                }}
+              >
+                <ArrowLeft size={20} />
+              </Button>
+              <div className="flex-1 min-w-[200px]">
+                <p className="text-xs uppercase text-muted-foreground">{tSummary('activeLabel')}</p>
+                <h1 className="text-lg font-semibold text-foreground">{data.listInfo.nombre}</h1>
+                {data.listInfo.descripcion && (
+                  <p className="text-sm text-muted-foreground">
+                    {data.listInfo.descripcion}
+                  </p>
+                )}
+              </div>
             </div>
-            <Button
-              variant="outline"
-              className="gap-2"
-              onClick={() => setCalculatorOpen(true)}
-            >
-              <Calculator size={18} />
-              {tSummary('calculatorButton')}
-            </Button>
-          </div>
 
-          <div className="grid grid-cols-1 gap-3 text-sm">
-            <div className="rounded-xl border border-border/70 bg-muted/40 p-3">
+            <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3 min-w-[180px]">
               <p className="text-xs uppercase text-muted-foreground">{tSummary('productsTitle')}</p>
-              <p className="text-2xl font-semibold text-foreground">{items.length}</p>
+              <p className="text-lg font-semibold text-foreground leading-tight">{items.length}</p>
+              <p className="text-xs text-muted-foreground">
+                {tSummary('quantityTitle')}: {formattedTotalQuantity}
+              </p>
             </div>
           </div>
 
@@ -860,6 +865,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                 return (
                   <div
                     key={item.id}
+                    data-item-id={item.id}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}
                     onClick={(e) => handleItemClick(item, e)}
@@ -918,6 +924,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                         return (
                           <Card
                             key={item.id}
+                            data-item-id={item.id}
                             className={`p-2 transition-opacity ${
                               isSaving ? 'opacity-60' : ''
                             } ${hasError ? 'border-destructive/50 bg-destructive/5' : ''}`}
@@ -1023,6 +1030,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               return (
                 <Card
                   key={item.id}
+                  data-item-id={item.id}
                   className={`p-2 transition-opacity ${
                     isSaving ? 'opacity-60' : ''
                   } ${hasError ? 'border-destructive/50 bg-destructive/5' : ''}`}
@@ -1162,8 +1170,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         userId={userId}
         onConfirm={handleExecutePurchase}
       />
-
-      <CalculatorDrawer open={calculatorOpen} onOpenChange={setCalculatorOpen} />
     </div>
   )
 }

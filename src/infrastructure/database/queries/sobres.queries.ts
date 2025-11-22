@@ -447,7 +447,7 @@ export async function removeCategoriasFromSobre(sobreId: string, categoriaId: st
 
 /**
  * Obtener categorías de un sobre CON cálculo de gastos y porcentajes
- * Retorna: categorías ordenadas por porcentaje de gasto descendente
+ * Retorna: categorías ordenadas por número de compras descendente (más usadas primero)
  */
 export async function findCategoriasWithGastosBySobre(sobreId: string) {
   const sobre = await findSobreById(sobreId)
@@ -497,6 +497,6 @@ export async function findCategoriasWithGastosBySobre(sobreId: string) {
     })
   )
 
-  // Ordenar por porcentaje descendente
-  return categoriasWithGastos.sort((a, b) => b.porcentaje - a.porcentaje)
+  // Ordenar por número de compras descendente (más usado primero)
+  return categoriasWithGastos.sort((a, b) => b.compras - a.compras)
 }

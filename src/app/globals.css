@@ -257,4 +257,101 @@
   .border-card-accent {
     border-color: hsl(var(--card-accent));
   }
+
+  /* ========================================================================
+   * TYPOGRAPHY SYSTEM - Design Tokens
+   * ========================================================================
+   * Sistema de tipografía centralizado. Modificar aquí afecta toda la app.
+   */
+
+  /* TÍTULOS */
+  .typography-h1 {
+    @apply text-3xl font-bold;
+  }
+
+  .typography-h2 {
+    @apply text-2xl font-semibold;
+  }
+
+  .typography-h3 {
+    @apply text-lg font-semibold;
+  }
+
+  .typography-h4 {
+    @apply text-sm font-semibold uppercase tracking-wide;
+  }
+
+  /* DRAWER/SHEET ESPECÍFICOS */
+  .typography-drawer-title {
+    @apply text-lg font-semibold;
+  }
+
+  .typography-drawer-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .typography-section-title {
+    @apply text-sm font-semibold text-foreground;
+  }
+
+  /* TEXTO BODY */
+  .typography-body {
+    @apply text-base;
+  }
+
+  .typography-body-sm {
+    @apply text-sm;
+  }
+
+  .typography-body-lg {
+    @apply text-lg;
+  }
+
+  /* LABELS Y FORMULARIOS */
+  .typography-label {
+    @apply text-sm font-medium;
+  }
+
+  .typography-label-lg {
+    @apply text-base font-semibold;
+  }
+
+  /* METADATA Y PEQUEÑOS */
+  .typography-caption {
+    @apply text-xs font-medium;
+  }
+
+  .typography-metadata {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .typography-tiny {
+    @apply text-[10px] font-medium;
+  }
+
+  /* VALORES NUMÉRICOS */
+  .typography-number-lg {
+    @apply text-3xl font-bold;
+  }
+
+  .typography-number-md {
+    @apply text-xl font-semibold;
+  }
+
+  .typography-number-sm {
+    @apply text-base font-semibold;
+  }
+
+  .typography-number-input {
+    @apply text-2xl font-semibold;
+  }
+
+  /* BOTONES (opcional, ya definido en button.tsx) */
+  .typography-button {
+    @apply text-base font-medium;
+  }
+
+  .typography-button-sm {
+    @apply text-sm font-semibold;
+  }
 }

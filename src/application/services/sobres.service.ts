@@ -216,11 +216,21 @@ export async function actualizarSobre(
       return sobreResult
     }
 
+    const sobre = sobreResult.data
+
     // Verificar que el usuario es OWNER o ADMIN
+    // Primero verificar si es el creador del sobre
+    const isCreator = sobre.usuario_id === userId
+
+    // Luego verificar rol en sobres_usuarios
     const participantes = await findParticipantesBySobre(sobreId)
     const participante = participantes.find((p: any) => p.usuario_id === userId)
 
-    if (!participante || (participante.rol !== 'OWNER' && participante.rol !== 'ADMIN')) {
+    const hasPermission =
+      isCreator ||
+      (participante && (participante.rol === 'OWNER' || participante.rol === 'ADMIN'))
+
+    if (!hasPermission) {
       return {
         success: false,
         error: 'No tienes permiso para editar este sobre',

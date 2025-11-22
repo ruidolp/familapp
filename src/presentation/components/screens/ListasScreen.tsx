@@ -42,9 +42,11 @@ type ExecutionDisplay = ShoppingExecution | (LocalShoppingExecution & { isLocal:
 
 interface ListasScreenProps {
   userId: string
+  menuAction?: string | null
+  onMenuActionHandled?: () => void
 }
 
-export function ListasScreen({ userId }: ListasScreenProps) {
+export function ListasScreen({ userId, menuAction, onMenuActionHandled }: ListasScreenProps) {
   const router = useRouter()
   const { formatNumber } = useCurrency()
   const [lists, setLists] = useState<ShoppingList[]>([])
@@ -61,6 +63,14 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     fetchActiveExecutions()
     fetchCompletedExecutions()
   }, [])
+
+  // Listen for contextual menu actions (e.g., from bottom nav)
+  useEffect(() => {
+    if (menuAction === 'nueva-lista') {
+      setCreateDrawerOpen(true)
+      onMenuActionHandled?.()
+    }
+  }, [menuAction, onMenuActionHandled])
 
   const fetchLists = async () => {
     setLoading(true)
@@ -477,6 +487,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     const completedText = formatDate(endDate)
     const endTime = formatTime(endDate)
     const total = getExecutionTotal(execution)
+    const storeName = (execution as any).store_name
 
     return (
       <Card
@@ -495,31 +506,25 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             <p className="mb-2 text-xs text-muted-foreground">
               {completedText} {endTime && `· ${endTime}`}
             </p>
-            {(execution as any).store_name && (
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                📍 {(execution as any).store_name}
-              </p>
-            )}
-            {total !== null && (
-              <p className="text-sm font-semibold text-tertiary">
-                {formatNumber(total)}
-              </p>
+            {(storeName || total !== null) && (
+              <div className="mt-1 flex items-center gap-2 text-sm">
+                {storeName ? (
+                  <span className="flex-1 text-muted-foreground line-clamp-1">
+                    📍 {storeName}
+                  </span>
+                ) : (
+                  <span className="flex-1 text-muted-foreground">Total</span>
+                )}
+                {total !== null && (
+                  <span className="font-semibold text-tertiary whitespace-nowrap">
+                    {formatNumber(total)}
+                  </span>
+                )}
+              </div>
             )}
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1 min-w-[132px] border-tertiary/40 text-tertiary hover:bg-tertiary/10"
-              onClick={(e) => {
-                e.stopPropagation()
-                handleOpenHistory(execution)
-              }}
-            >
-              Ver detalles
-            </Button>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                 <Button

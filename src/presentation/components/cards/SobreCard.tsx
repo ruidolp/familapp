@@ -167,35 +167,38 @@ export function SobreCard({
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       {t('card.actions.budgetSection')}
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-2">
                       <Button
                         variant="secondary"
                         className="h-12 justify-start gap-2"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setAccionesOpen(false)
                           onAgregarPresupuesto?.()
                         }}
                       >
-                        <ArrowUpRight className="h-4 w-4 text-primary" />
+                        <ArrowUpRight className="h-4 w-4" />
                         {t('card.actions.increase')}
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         className="h-12 justify-start gap-2"
                         disabled={presupuestoLibre <= 0}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setAccionesOpen(false)
                           onDevolverPresupuesto?.()
                         }}
                       >
-                        <ArrowDownRight className="h-4 w-4 text-red-500" />
+                        <ArrowDownRight className="h-4 w-4" />
                         {t('card.actions.reduce')}
                       </Button>
                     </div>
                     <Button
-                      variant="ghost"
+                      variant="secondary"
                       className="h-12 justify-start gap-2"
-                      onClick={() => {
+                      onClick={(e) => {
+                          e.stopPropagation()
                           setAccionesOpen(false)
                           onVerDetalle?.()
                         }}
@@ -209,22 +212,24 @@ export function SobreCard({
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                       {t('card.actions.organizationSection')}
                     </p>
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="flex flex-col gap-2">
                       <Button
                         variant="secondary"
                         className="h-12 justify-start gap-2"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setAccionesOpen(false)
                           onEditarCategorias?.()
                         }}
                       >
-                        <Wallet className="h-4 w-4 text-primary" />
+                        <Wallet className="h-4 w-4" />
                         {t('card.actions.categoriesAndBrands')}
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         className="h-12 justify-start gap-2"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           setAccionesOpen(false)
                           onAgregarCategoria?.()
                         }}
