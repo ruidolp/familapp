@@ -317,6 +317,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             cantidad: newItem.cantidad,
             unidad_medida: newItem.unidad_medida,
             categoria_producto_id: newItem.categoria_producto_id,
+            categoria_global_id: newItem.final_category_id, // Enviar categoría del catálogo
             marca: newItem.marca,
             comentario: newItem.comentario,
           }),

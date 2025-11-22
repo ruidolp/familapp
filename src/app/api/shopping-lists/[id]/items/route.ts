@@ -85,6 +85,7 @@ export async function POST(
       cantidad,
       unidad_medida,
       categoria_producto_id,
+      categoria_global_id,
       marca,
       comentario,
     } = body
@@ -120,6 +121,7 @@ export async function POST(
       cantidad: cantidad || 1,
       unidad_medida,
       categoria_producto_id,
+      categoria_global_id,
       marca,
       comentario,
       item_order: nextOrder,

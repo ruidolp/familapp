@@ -147,6 +147,7 @@ export async function createShoppingListItem(data: {
   cantidad: number
   unidad_medida?: string
   categoria_producto_id?: string
+  categoria_global_id?: string | null
   marca?: string
   comentario?: string
   item_order: number
