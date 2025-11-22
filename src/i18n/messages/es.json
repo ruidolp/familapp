@@ -423,7 +423,7 @@
     },
     "categoryCard": {
       "purchases": "{count} compras",
-      "percentUsed": "{percent}% usado de tu presupuesto",
+      "percentUsed": "{percent}% del presupuesto",
       "quickExpense": "Agregar gasto rápido",
       "editCategory": "Editar categoría"
     },

@@ -258,7 +258,9 @@ export function SobreCard({
               <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
                 {t('usado')}
               </p>
-              <p className="typography-h1">{formatNumber(gastadoNum)}</p>
+              <p className="typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)]">
+                {formatNumber(gastadoNum)}
+              </p>
               <p className="typography-caption font-semibold text-white/80">
                 {t('card.status.percentOfBudget', { percent: Math.round(porcentajeGastado) })}
               </p>
@@ -267,7 +269,11 @@ export function SobreCard({
               <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
                 {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
               </p>
-              <p className={`typography-h1 ${libreEsPositivo ? '' : 'text-red-100'}`}>
+              <p
+                className={`typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)] ${
+                  libreEsPositivo ? '' : 'text-red-100'
+                }`}
+              >
                 {formatNumber(libreEsPositivo ? presupuestoLibre : Math.abs(presupuestoLibre))}
               </p>
               <p className="typography-caption font-semibold text-white/80">{t('card.status.available')}</p>

@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { CreateShoppingListDrawer } from '@/components/drawers/CreateShoppingListDrawer'
+import { EditShoppingListDrawer } from '@/components/drawers/EditShoppingListDrawer'
 import { ExecutionHistoryDrawer } from '@/components/drawers/ExecutionHistoryDrawer'
 import { notify } from '@/infrastructure/lib/notifications'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
@@ -56,12 +57,36 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false)
   const [selectedExecution, setSelectedExecution] = useState<ExecutionDisplay | null>(null)
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false)
+  const [editingList, setEditingList] = useState<ShoppingList | null>(null)
 
   // Cargar listas y ejecuciones al montar
   useEffect(() => {
     fetchLists()
     fetchActiveExecutions()
     fetchCompletedExecutions()
+  }, [])
+
+  // Refrescar cuando la ventana/tab vuelve a tener foco
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchLists()
+      fetchActiveExecutions()
+      fetchCompletedExecutions()
+    }
+
+    window.addEventListener('focus', handleFocus)
+    // También escuchar cambios de visibilidad (para móviles)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        handleFocus()
+      }
+    })
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      document.removeEventListener('visibilitychange', handleFocus)
+    }
   }, [])
 
   // Listen for contextual menu actions (e.g., from bottom nav)
@@ -227,6 +252,35 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     setHistoryDrawerOpen(true)
   }
 
+  const handleEditList = (list: ShoppingList) => {
+    setEditingList(list)
+    setEditDrawerOpen(true)
+  }
+
+  const handleUpdateList = async (nombre: string, descripcion?: string) => {
+    if (!editingList) return
+
+    try {
+      const response = await fetch(`/api/shopping-lists/${editingList.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre, descripcion }),
+      })
+
+      if (response.ok) {
+        notify.success('Lista actualizada')
+        setEditDrawerOpen(false)
+        setEditingList(null)
+        fetchLists()
+      } else {
+        notify.error('Error al actualizar lista')
+      }
+    } catch (error) {
+      console.error('Error updating list:', error)
+      notify.error('Error al actualizar lista')
+    }
+  }
+
   const handleDeleteList = async (listId: string, listName: string) => {
     if (!confirm(`¿Eliminar lista "${listName}"?`)) return
 
@@ -335,6 +389,14 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               }}
             >
               Abrir
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleEditList(list)
+              }}
+            >
+              Editar
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
@@ -637,6 +699,16 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
         open={createDrawerOpen}
         onOpenChange={handleCreateDrawerOpenChange}
       />
+
+      {/* Edit Shopping List Drawer */}
+      {editingList && (
+        <EditShoppingListDrawer
+          open={editDrawerOpen}
+          onOpenChange={setEditDrawerOpen}
+          list={editingList}
+          onSave={handleUpdateList}
+        />
+      )}
 
       {/* Execution History Drawer */}
       <ExecutionHistoryDrawer

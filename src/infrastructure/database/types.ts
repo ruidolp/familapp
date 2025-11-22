@@ -140,6 +140,23 @@ export interface IngresosRecurrentes {
   usuario_id: string;
 }
 
+export interface InvalidatedSessions {
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  /**
+   * Timestamp de invalidación - tokens emitidos antes de esta fecha deben refrescarse
+   */
+  invalidated_at: Generated<Timestamp>;
+  /**
+   * Motivo de invalidación (para debugging)
+   */
+  reason: string | null;
+  /**
+   * Usuario cuya sesión fue invalidada
+   */
+  user_id: string;
+}
+
 export interface InvitacionesSobres {
   created_at: Generated<Timestamp>;
   estado: Generated<string>;
@@ -213,6 +230,23 @@ export interface PaymentProducts {
    */
   price: Numeric;
   updated_at: Generated<Timestamp>;
+}
+
+export interface PendingPurchases {
+  completed_at: Timestamp | null;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  platform: string;
+  product_id: string;
+  /**
+   * pending: esperando webhook, completed: procesado, failed: error
+   */
+  status: Generated<string>;
+  /**
+   * originalTransactionId (Apple) o purchaseToken (Google)
+   */
+  transaction_id: string;
+  user_id: string;
 }
 
 export interface Periodos {
@@ -735,11 +769,13 @@ export interface DB {
   billeteras_transacciones: BilleterasTransacciones;
   categorias: Categorias;
   ingresos_recurrentes: IngresosRecurrentes;
+  invalidated_sessions: InvalidatedSessions;
   invitaciones_sobres: InvitacionesSobres;
   invitation_codes: InvitationCodes;
   linked_users: LinkedUsers;
   monedas: Monedas;
   payment_products: PaymentProducts;
+  pending_purchases: PendingPurchases;
   periodos: Periodos;
   plan_capabilities: PlanCapabilities;
   plan_limits: PlanLimits;

@@ -38,32 +38,37 @@ export function CategoriaCard({
   return (
     <>
       <div
-        className="flex cursor-pointer items-stretch gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-accent/5"
+        className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-border bg-card p-4 transition-colors hover:bg-accent/5"
         onClick={e => {
           onClick?.(e)
           onViewTransactions?.(id, nombre)
         }}
       >
-        <div className="flex flex-1 flex-col gap-2">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-1 items-center gap-2 typography-body font-semibold text-foreground">
-              {emoji && <span className="typography-body">{emoji}</span>}
-              <span className="truncate">{nombre}</span>
-            </div>
-            <span className="typography-label-lg text-foreground">{formatNumber(gastadoNum)}</span>
+        {/* Columna izquierda: 3 líneas de información */}
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex min-w-0 items-center gap-2 typography-body font-semibold text-foreground">
+            {emoji && <span className="typography-body">{emoji}</span>}
+            <span className="truncate">{nombre}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2 typography-metadata">
+          <div className="flex items-center gap-2 typography-body-sm text-muted-foreground">
             <span>{t('purchases', { count: compras })}</span>
-            <span>•</span>
+          </div>
+          <div className="flex items-center gap-2 typography-body-sm text-muted-foreground">
             <span>{t('percentUsed', { percent: porcentajeNum.toFixed(0) })}</span>
           </div>
         </div>
-        <div className="flex flex-col justify-center">
+
+        {/* Columna derecha: monto y botón Flash alineados */}
+        <div className="flex shrink-0 flex-col gap-2" style={{ alignItems: 'flex-end', width: 'auto' }}>
+          <span className="text-right tabular-nums tracking-tight typography-label-lg text-foreground" style={{ lineHeight: '1', paddingRight: '0px', marginRight: '0px', display: 'block', width: 'max-content' }}>
+            {formatNumber(gastadoNum)}
+          </span>
           <Button
             type="button"
             variant="outline"
             size="icon"
             className="h-12 w-12 rounded-full text-muted-foreground"
+            style={{ flexShrink: 0 }}
             onClick={(e) => {
               e.stopPropagation()
               onFlashGasto?.(e)

@@ -18,6 +18,7 @@ import { loginUser } from '@/application/services/auth.service'
 import { loginSchema } from '@/infrastructure/utils/validation'
 import { findUserByEmail, updateLastLogin } from '@/infrastructure/database/queries/user.queries'
 import { getUserActivePlan } from '@/application/services/subscriptions'
+import { isSessionInvalidated } from './session-manager'
 
 /**
  * Configuración de NextAuth
@@ -120,6 +121,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id
         token.accountType = (user.accountType as string) || ''
         token.phone = (user.phone as string) || ''
+        token.issuedAt = Math.floor(Date.now() / 1000) // Timestamp en segundos
+
+        // ✅ Cargar subscription 1 sola vez al login
+        const activePlan = await getUserActivePlan(user.id)
+        token.subscription = activePlan
+      }
+
+      // ✅ Verificar si la sesión fue invalidada (por webhook de App Store)
+      if (token.id && token.issuedAt) {
+        const invalidated = await isSessionInvalidated(
+          token.id as string,
+          token.issuedAt as number
+        )
+
+        if (invalidated) {
+          // Recargar subscription desde DB
+          const activePlan = await getUserActivePlan(token.id as string)
+          token.subscription = activePlan
+          token.issuedAt = Math.floor(Date.now() / 1000) // Actualizar timestamp
+        }
       }
 
       // OAuth sign in
@@ -138,10 +159,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.accountType = token.accountType as string
         session.user.phone = token.phone as string
 
-        // Obtener información de suscripción del usuario
-        try {
-          const activePlan = await getUserActivePlan(session.user.id)
+        // ✅ Leer subscription del token JWT (NO consultar DB)
+        const activePlan = token.subscription as any
 
+        if (activePlan) {
           session.user.subscription = {
             planSlug: activePlan.planSlug,
             planName: activePlan.planName,
@@ -150,12 +171,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             ownerId: activePlan.ownerId,
             capabilities: activePlan.capabilities,
             limits: activePlan.limits,
-            expiresAt: activePlan.expiresAt?.toISOString() || null,
-            trialEndsAt: activePlan.trialEndsAt?.toISOString() || null,
+            expiresAt: activePlan.expiresAt?.toISOString
+              ? activePlan.expiresAt.toISOString()
+              : activePlan.expiresAt || null,
+            trialEndsAt: activePlan.trialEndsAt?.toISOString
+              ? activePlan.trialEndsAt.toISOString()
+              : activePlan.trialEndsAt || null,
           }
-        } catch (error) {
-          console.error('Error loading subscription data:', error)
-          // Fallback a plan FREE si hay error
+        } else {
+          // Fallback a plan FREE si no existe en token
           session.user.subscription = {
             planSlug: 'free',
             planName: 'Free',

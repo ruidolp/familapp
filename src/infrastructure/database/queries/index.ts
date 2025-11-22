@@ -22,6 +22,7 @@ export * from './subscription-plan.queries'
 export * from './subscription.queries'
 export * from './invitation.queries'
 export * from './subscription-history.queries'
+export * from './pending-purchases.queries'
 
 // Theme queries
 export * from './theme.queries'

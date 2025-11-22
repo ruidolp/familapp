@@ -48,5 +48,18 @@ declare module 'next-auth/jwt' {
     id: string
     accountType: string
     phone: string
+    issuedAt: number
+    subscription: {
+      planId: string
+      planSlug: string
+      planName: string
+      status: SubscriptionStatus
+      isLinked: boolean
+      ownerId: string | null
+      capabilities: string[]
+      limits: Record<string, number | null>
+      expiresAt: Date | null
+      trialEndsAt: Date | null
+    }
   }
 }

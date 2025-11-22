@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/infrastructure/lib/auth'
+import { db } from '@/infrastructure/database/kysely'
 import { createShoppingExecution, getActiveExecutionsByUser, getCompletedExecutionsByUser } from '@/infrastructure/database/queries/shopping-lists.queries'
 
 /**
@@ -85,6 +86,18 @@ export async function POST(req: NextRequest) {
       started_at: started_at ? new Date(started_at) : new Date(),
       completed_at: completed_at ? new Date(completed_at) : null,
     })
+
+    // If execution is COMPLETED, increment the purchase_count of the shopping list
+    if (status === 'COMPLETED') {
+      await db
+        .updateTable('shopping_lists')
+        .set(eb => ({
+          purchase_count: eb('purchase_count', '+', 1),
+          updated_at: new Date(),
+        }))
+        .where('id', '=', shopping_list_id)
+        .execute()
+    }
 
     return NextResponse.json(
       {
