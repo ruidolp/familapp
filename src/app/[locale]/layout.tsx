@@ -23,6 +23,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Toaster as SonnerToaster } from 'sonner'
 import { getActiveThemes, getUserThemePreference } from '@/infrastructure/database/queries'
 import { auth } from '@/infrastructure/lib/auth'
+import { PWAInstaller } from '@/presentation/components/pwa-installer'
 import '@/app/globals.css'
 
 export const metadata: Metadata = {
@@ -113,24 +114,6 @@ export default async function LocaleLayout({
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').then(
-                    function(registration) {
-                      console.log('ServiceWorker registration successful');
-                    },
-                    function(err) {
-                      console.log('ServiceWorker registration failed: ', err);
-                    }
-                  );
-                });
-              }
-            `,
-          }}
-        />
       </head>
       <body className="bg-background text-foreground font-sans antialiased">
         <QueryProvider>
@@ -139,6 +122,7 @@ export default async function LocaleLayout({
               <CurrencyProvider>
                 <CategoryProvider>
                   <NextIntlClientProvider messages={messages}>
+                    <PWAInstaller />
                     {children}
                     <Toaster />
                     <SonnerToaster position="top-center" richColors />
