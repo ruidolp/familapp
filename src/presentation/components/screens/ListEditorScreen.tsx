@@ -183,15 +183,26 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     const target = container.querySelector<HTMLElement>(`[data-item-id="${lastAddedItemId}"]`)
 
     if (target) {
-      // Use scrollIntoView with block: 'center' for better visibility
-      // This works correctly even with few items in the list
-      setTimeout(() => {
-        target.scrollIntoView({
+      const bottomPadding = 160 // leave room for input fijo + teclado
+      const targetBottom = target.offsetTop + target.offsetHeight
+      const containerHeight = container.clientHeight
+      const scrollHeight = container.scrollHeight
+
+      // Si el contenido es más corto que el contenedor (pocos items),
+      // hacer scroll al final del contenido
+      if (scrollHeight <= containerHeight) {
+        container.scrollTo({
+          top: scrollHeight,
           behavior: 'smooth',
-          block: 'center',
-          inline: 'nearest'
         })
-      }, 100) // Small delay to ensure DOM has updated
+      } else {
+        // Lógica normal para listas largas
+        const scrollTop = Math.max(0, targetBottom - containerHeight + bottomPadding)
+        container.scrollTo({
+          top: scrollTop,
+          behavior: 'smooth',
+        })
+      }
     }
 
     setLastAddedItemId(null)
