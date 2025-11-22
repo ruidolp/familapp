@@ -57,16 +57,16 @@ export function ExecutionHeader({
               </div>
             )}
           </div>
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onCalculatorClick}>
-            <Calculator className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onCalculatorClick}>
+            <Calculator className="h-5 w-5" />
           </Button>
         </div>
 
-        <div className={`grid gap-3 ${budgetEnabled && budgetAmount ? 'sm:grid-cols-2' : ''}`}>
+        <div className={`grid gap-3 ${budgetEnabled && budgetAmount ? 'grid-cols-2' : ''}`}>
           <div className="rounded-2xl border border-border bg-card px-4 py-3">
             <p className="text-xs uppercase text-muted-foreground">Total actual</p>
             <p className="typography-h1 text-primary">{formatNumber(totalSpent)}</p>
-            <p className="typography-metadata">Suma registrada hasta ahora.</p>
+            <p className="typography-metadata">Suma parcial.</p>
           </div>
 
           {budgetEnabled && budgetAmount && (

@@ -893,6 +893,7 @@
           "brandLabel": "Brand / Store",
           "brandPlaceholder": "Select store",
         "brandInputPlaceholder": "Type the brand name",
+        "brandClearSelection": "Clear selection",
         "brandSubmit": "Add",
         "brandSubmitting": "Creating...",
         "brandError": "Error creating brand",

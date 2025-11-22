@@ -490,21 +490,37 @@ export function ConfigureExecutionDrawer({
                       </button>
                     </div>
                     {subcategorias.length > 0 ? (
-                      <Select value={subcategoriaId} onValueChange={setSubcategoriaId}>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('register.brandPlaceholder')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {subcategorias.map(s => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.emoji && <span className="mr-1">{s.emoji}</span>}
-                              <span className="truncate">{s.nombre}</span>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="grid grid-cols-2 gap-2">
+                        {subcategorias.map(s => (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => setSubcategoriaId(s.id)}
+                            className={[
+                              'min-h-[44px] w-full rounded-xl px-3 py-2 text-sm font-medium flex items-center gap-2 border transition-all text-left whitespace-normal break-words leading-tight',
+                              subcategoriaId === s.id
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-muted text-foreground border-transparent hover:bg-muted/80',
+                            ].join(' ')}
+                          >
+                            {s.emoji && <span className="text-lg">{s.emoji}</span>}
+                            <span className="flex-1">{s.nombre}</span>
+                          </button>
+                        ))}
+                      </div>
                     ) : (
-                      <p className="typography-metadata">{t('register.brandPlaceholder')}</p>
+                      <p className="typography-metadata text-muted-foreground italic">
+                        {t('register.brandPlaceholder')}
+                      </p>
+                    )}
+                    {subcategoriaId && (
+                      <button
+                        type="button"
+                        onClick={() => setSubcategoriaId('')}
+                        className="text-[11px] text-muted-foreground underline underline-offset-2"
+                      >
+                        {t('register.brandClearSelection')}
+                      </button>
                     )}
                     {showCreateBrand && brandCreationForm}
                   </div>
@@ -529,21 +545,28 @@ export function ConfigureExecutionDrawer({
                     </button>
                   </div>
                   {subcategorias.length > 0 ? (
-                    <Select value={subcategoriaId} onValueChange={setSubcategoriaId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('register.brandPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {subcategorias.map(s => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.emoji && <span className="mr-1">{s.emoji}</span>}
-                            <span className="truncate">{s.nombre}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-2 gap-2">
+                      {subcategorias.map(s => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setSubcategoriaId(s.id)}
+                          className={[
+                            'min-h-[44px] w-full rounded-xl px-3 py-2 text-sm font-medium flex items-center gap-2 border transition-all text-left whitespace-normal break-words leading-tight',
+                            subcategoriaId === s.id
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-muted text-foreground border-transparent hover:bg-muted/80',
+                          ].join(' ')}
+                        >
+                          {s.emoji && <span className="text-lg">{s.emoji}</span>}
+                          <span className="flex-1">{s.nombre}</span>
+                        </button>
+                      ))}
+                    </div>
                   ) : (
-                    <p className="typography-metadata">{t('register.brandPlaceholder')}</p>
+                    <p className="typography-metadata text-muted-foreground italic">
+                      {t('register.brandPlaceholder')}
+                    </p>
                   )}
                   {showCreateBrand && brandCreationForm}
                 </div>

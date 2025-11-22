@@ -183,14 +183,15 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     const target = container.querySelector<HTMLElement>(`[data-item-id="${lastAddedItemId}"]`)
 
     if (target) {
-      const bottomPadding = 160 // leave room for input fijo + teclado
-      const targetBottom = target.offsetTop + target.offsetHeight
-      const scrollTop = Math.max(0, targetBottom - container.clientHeight + bottomPadding)
-
-      container.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth',
-      })
+      // Use scrollIntoView with block: 'center' for better visibility
+      // This works correctly even with few items in the list
+      setTimeout(() => {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        })
+      }, 100) // Small delay to ensure DOM has updated
     }
 
     setLastAddedItemId(null)
@@ -264,7 +265,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             nombre: i.nombre || i._productName,
             cantidad: i.cantidad,
             categoria_producto_id: i.categoria_producto_id,
+            final_category_id: i.final_category_id,
           })),
+          itemsSinCategoria: data.items.filter(i => !i.final_category_id).length,
         })
         setData(data)
         setItems(data.items)
@@ -801,33 +804,39 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     <div className="flex flex-col h-full">
       <div ref={itemsContainerRef} className="flex-1 overflow-y-auto p-4 pb-32 space-y-4">
         {/* Header */}
-        <Card className="space-y-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={tSummary('backLabel')}
-                onClick={() => {
-                  router.back()
-                }}
-              >
-                <ArrowLeft size={20} />
-              </Button>
-              <div className="flex-1 min-w-[200px]">
-                <p className="text-xs uppercase text-muted-foreground">{tSummary('activeLabel')}</p>
-                <h1 className="typography-h3 text-foreground">{data.listInfo.nombre}</h1>
-                {data.listInfo.descripcion && (
-                  <p className="typography-body-sm text-muted-foreground">
-                    {data.listInfo.descripcion}
-                  </p>
-                )}
-              </div>
-            </div>
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-start gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={tSummary('backLabel')}
+              onClick={() => {
+                router.back()
+              }}
+            >
+              <ArrowLeft size={20} />
+            </Button>
 
-            <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3 min-w-[180px]">
-              <p className="text-xs uppercase text-muted-foreground">{tSummary('productsTitle')}</p>
-              <p className="typography-h3 text-foreground leading-tight">{items.length}</p>
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs uppercase text-muted-foreground">{tSummary('activeLabel')}</p>
+                <p className="text-xs uppercase text-muted-foreground">
+                  {tSummary('productsTitle')}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-baseline justify-between gap-4">
+                <div className="flex-1 min-w-[200px]">
+                  <h1 className="typography-h3 text-foreground">{data.listInfo.nombre}</h1>
+                </div>
+                <p className="typography-h3 text-foreground leading-tight text-right min-w-[80px]">
+                  {items.length}
+                </p>
+              </div>
+              {data.listInfo.descripcion && (
+                <p className="typography-body-sm text-muted-foreground">
+                  {data.listInfo.descripcion}
+                </p>
+              )}
             </div>
           </div>
 
@@ -842,7 +851,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               {tSummary('executeButton')}
             </Button>
           </div>
-        </Card>
+        </div>
 
         {/* Items List */}
         {items.length === 0 ? (

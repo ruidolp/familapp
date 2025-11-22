@@ -662,6 +662,7 @@
         "brandLabel": "Marca / Tienda",
         "brandPlaceholder": "Selecciona tienda",
         "brandInputPlaceholder": "Escribe el nombre de la marca",
+        "brandClearSelection": "Limpiar selección",
         "brandSubmit": "Agregar",
         "brandSubmitting": "Creando...",
         "brandError": "Error al crear marca",
