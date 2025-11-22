@@ -254,20 +254,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       const response = await fetch(`/api/shopping-lists/${listId}/editor-data`)
       if (response.ok) {
         const data: EditorData = await response.json()
-        console.log('📥 LOADED FROM SERVER:', {
-          listId,
-          itemCount: data.items.length,
-          categoriesCount: data.categories?.length || 0,
-          categories: data.categories,
-          items: data.items.map(i => ({
-            id: i.id,
-            nombre: i.nombre || i._productName,
-            cantidad: i.cantidad,
-            categoria_producto_id: i.categoria_producto_id,
-            final_category_id: i.final_category_id,
-          })),
-          itemsSinCategoria: data.items.filter(i => !i.final_category_id).length,
-        })
         setData(data)
         setItems(data.items)
         // Clear any draft conflict indicators
