@@ -75,10 +75,10 @@ export function FinalizeExecutionDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-[520px] flex flex-col p-0">
         <div className="border-b border-border bg-card px-6 py-5">
-          <SheetTitle className="text-lg font-semibold">
+          <SheetTitle className="typography-h3">
             {t('shopping.execution.finalize.title')}
           </SheetTitle>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="typography-body-sm text-muted-foreground mt-1">
             {t('shopping.execution.finalize.description')}
           </p>
         </div>
@@ -91,7 +91,7 @@ export function FinalizeExecutionDrawer({
             <p className="mt-2 text-4xl font-bold text-primary">
               {totalCalculated > 0 ? formatNumber(totalCalculated) : formatNumber(0)}
             </p>
-            <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
+            <p className="typography-body-sm text-muted-foreground mt-3 max-w-md mx-auto">
               {t('shopping.execution.finalize.calculatedDesc')}
             </p>
           </div>
@@ -120,14 +120,14 @@ export function FinalizeExecutionDrawer({
           {hasPendingItems && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-xs sm:text-sm">
+              <AlertDescription className="text-xs sm:typography-body-sm">
                 {t('shopping.execution.finalize.pendingWarning', { count: pendingCount })}
               </AlertDescription>
             </Alert>
           )}
 
           <div className="rounded-xl border border-border/80 bg-card px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 typography-body-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
               {t('shopping.execution.finalize.totalTime')}
             </div>
@@ -136,10 +136,10 @@ export function FinalizeExecutionDrawer({
 
           <div className="space-y-3">
             <div>
-              <Label htmlFor="manual-total" className="text-base font-medium">
+              <Label htmlFor="manual-total" className="typography-body font-medium">
                 {t('shopping.execution.finalize.manualTotal')}
               </Label>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="typography-metadata mt-1">
                 {t('shopping.execution.finalize.manualTotalDesc')}
               </p>
             </div>
@@ -151,7 +151,7 @@ export function FinalizeExecutionDrawer({
               placeholder={formatNumber(Math.max(totalCalculated, 0))}
               value={manualTotal}
               onChange={(e) => setManualTotal(e.target.value)}
-              className="text-lg h-12"
+              className="typography-body-lg h-12"
             />
           </div>
 
@@ -167,7 +167,7 @@ export function FinalizeExecutionDrawer({
           <Button
             onClick={handleConfirm}
             disabled={syncing || (totalCalculated === 0 && !manualTotal)}
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 typography-label-lg"
           >
             {syncing ? (
               <>
@@ -210,9 +210,9 @@ function StatusCard({ icon, label, value, variant = 'muted' }: StatusCardProps) 
 
   return (
     <div className={cn(baseClasses, variantClasses[variant])}>
-      <div className="flex items-center justify-center text-sm">{icon}</div>
-      <p className="text-2xl font-semibold leading-none">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <div className="flex items-center justify-center typography-body-sm">{icon}</div>
+      <p className="typography-h2 leading-none">{value}</p>
+      <p className="typography-metadata">{label}</p>
     </div>
   )
 }

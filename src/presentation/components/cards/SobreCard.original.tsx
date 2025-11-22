@@ -120,7 +120,7 @@ export function SobreCard({
                 {/* Usado */}
                 <div className="space-y-0.5">
                   <div className="text-xs text-white/70 font-medium uppercase tracking-wide">{t('usado')}</div>
-                  <div className="text-lg font-bold text-white">
+                  <div className="typography-number-md text-white">
                     {formatNumber(gastadoNum)}
                   </div>
                 </div>
@@ -210,7 +210,7 @@ export function SobreCard({
         {/* Card "Asigne Presupuesto" - cuando no hay presupuesto */}
         {presupuesto <= 0 && (
           <div className="p-4 rounded-lg bg-white/10 text-center space-y-3 backdrop-blur border border-white/20">
-            <p className="text-base text-white/75">
+            <p className="typography-body text-white/75">
               {t('emptyBudget.message')}
             </p>
             <Button
@@ -231,13 +231,13 @@ export function SobreCard({
         {/* Categorías */}
         {categoriasLoading ? (
           <div className="p-3 rounded-lg bg-white/10 text-center backdrop-blur">
-            <p className="text-base text-white/75">
+            <p className="typography-body text-white/75">
               {t('categories.loading')}
             </p>
           </div>
         ) : categoriasOrdenadas.length > 0 ? (
           <div className="space-y-3 flex-1 flex flex-col min-h-0">
-            <p className="text-base font-medium text-white/80">
+            <p className="typography-body font-medium text-white/80">
               {t('categories.title', { count: categoriasOrdenadas.length })}
             </p>
 
@@ -280,7 +280,7 @@ export function SobreCard({
           </div>
         ) : (
           <div className="p-3 rounded-lg bg-white/10 text-center backdrop-blur border border-white/20">
-            <p className="text-base text-white/75">
+            <p className="typography-body text-white/75">
               {t('categories.empty')}
             </p>
             {/* Agregar Categoría button - when no categories */}

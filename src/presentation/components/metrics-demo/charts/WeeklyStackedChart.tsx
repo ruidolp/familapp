@@ -13,7 +13,7 @@ import { DUMMY_WEEKLY_SPENDING } from '../data/dummy-data'
 export function WeeklyStackedChart() {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">📅 Gastos Semanales por Categoría</h3>
+      <h3 className="typography-h3 mb-4">📅 Gastos Semanales por Categoría</h3>
       <ResponsiveContainer width="100%" height={350}>
         <BarChart data={DUMMY_WEEKLY_SPENDING}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -35,7 +35,7 @@ export function WeeklyStackedChart() {
           <Bar dataKey="Otros" stackId="a" fill="#6b7280" />
         </BarChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="typography-metadata mt-2">
         Noviembre 2024 • 4 semanas completas
       </p>
     </Card>

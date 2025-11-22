@@ -13,7 +13,7 @@ import { DUMMY_CATEGORIES_SPENDING } from '../data/dummy-data'
 export function CategoriesBarChart() {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">📊 Top Categorías por Gasto</h3>
+      <h3 className="typography-h3 mb-4">📊 Top Categorías por Gasto</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={DUMMY_CATEGORIES_SPENDING} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -39,7 +39,7 @@ export function CategoriesBarChart() {
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="typography-metadata mt-2">
         Últimos 30 días • Total: ${DUMMY_CATEGORIES_SPENDING.reduce((a, b) => a + b.monto, 0).toLocaleString()}
       </p>
     </Card>

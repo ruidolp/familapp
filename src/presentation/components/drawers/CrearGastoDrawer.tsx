@@ -72,7 +72,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-5 w-1 bg-primary rounded-full" />
-      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+      <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
     </div>
   )
 }
@@ -494,13 +494,13 @@ export function CrearGastoDrawer({
                   <div className="space-y-2">
                     <Label
                       htmlFor="sobre"
-                      className="text-sm font-medium text-muted-foreground"
+                      className="typography-label text-muted-foreground"
                     >
                       {t('gastos.create.originPlaceholder')}
                     </Label>
                     {sobres.length === 1 ? (
                       <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
-                        <span className="text-lg">{sobreActual?.emoji}</span>
+                        <span className="typography-body-lg">{sobreActual?.emoji}</span>
                         <span className="font-medium">
                           {sobreActual?.nombre}
                         </span>
@@ -534,7 +534,7 @@ export function CrearGastoDrawer({
                   {/* Categoría */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium text-muted-foreground">
+                      <Label className="typography-label text-muted-foreground">
                         {t('gastos.create.category')}
                       </Label>
                       {!crearCategoriaMode && (
@@ -629,7 +629,7 @@ export function CrearGastoDrawer({
                   {categoriaSeleccionada && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium text-muted-foreground">
+                        <Label className="typography-label text-muted-foreground">
                           {t('gastos.create.brand')}
                         </Label>
                         <button
@@ -690,10 +690,10 @@ export function CrearGastoDrawer({
                                     key={`${sugerencia.id}-${idx}`}
                                     type="button"
                                     onClick={() => handleSelectMarcaSugerida(sugerencia)}
-                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted transition-colors text-left"
+                                    className="w-full flex items-center gap-2 px-3 py-2 typography-body-sm hover:bg-muted transition-colors text-left"
                                   >
                                     {sugerencia.emoji && (
-                                      <span className="text-base">{sugerencia.emoji}</span>
+                                      <span className="typography-body">{sugerencia.emoji}</span>
                                     )}
                                     <span className="flex-1">{sugerencia.nombre}</span>
                                   </button>
@@ -735,7 +735,7 @@ export function CrearGastoDrawer({
                   )}
 
                   {!categoriaSeleccionada && (
-                    <p className="text-sm text-muted-foreground italic">
+                    <p className="typography-body-sm text-muted-foreground italic">
                       {t('gastos.create.selectCategoryForBrands')}
                     </p>
                   )}
@@ -747,12 +747,12 @@ export function CrearGastoDrawer({
                 <div className="space-y-3">
                   <Label
                     htmlFor="monto"
-                    className="text-base font-semibold"
+                    className="typography-label-lg"
                   >
                     {t('gastos.create.amount')}
                   </Label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 typography-h2 text-muted-foreground">
                       $
                     </span>
                     <Input
@@ -765,7 +765,7 @@ export function CrearGastoDrawer({
                       onChange={(e) => setMonto(e.target.value)}
                       placeholder="0.00"
                       required
-                      className="pl-10 text-2xl font-semibold h-14 bg-background"
+                      className="pl-10 typography-h2 h-14 bg-background"
                     />
                   </div>
                 </div>
@@ -774,11 +774,11 @@ export function CrearGastoDrawer({
                   <div className="flex items-center justify-between">
                     <Label
                       htmlFor="comentario"
-                      className="text-sm font-medium text-muted-foreground"
+                      className="typography-label text-muted-foreground"
                     >
                       {t('gastos.create.comment')}
                     </Label>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="typography-metadata">
                       {t('gastos.create.commentOptional')}
                     </span>
                   </div>
@@ -820,7 +820,7 @@ export function CrearGastoDrawer({
               !categoriaSeleccionada ||
               !monto
             }
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 typography-label-lg"
           >
             {loading ? t('gastos.create.creating') : t('gastos.create.submit')}
           </Button>

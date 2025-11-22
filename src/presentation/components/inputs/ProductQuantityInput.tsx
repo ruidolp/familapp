@@ -169,7 +169,7 @@ export function ProductQuantityInput({
                   index === selectedIndex ? 'bg-muted' : ''
                 }`}
               >
-                <span className="text-sm">{product.nombre}</span>
+                <span className="typography-body-sm">{product.nombre}</span>
               </div>
             ))}
           </Card>

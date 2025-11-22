@@ -88,7 +88,7 @@ export function EmojiPicker({
         </Button>
       )}
 
-      {required && <span className="text-destructive text-sm">*</span>}
+      {required && <span className="text-destructive typography-body-sm">*</span>}
 
       {/* Dropdown con emojis */}
       {isOpen && (
@@ -96,7 +96,7 @@ export function EmojiPicker({
           <div className="space-y-3">
             {Object.entries(EMOJI_CATEGORIES).map(([category, emojis]) => (
               <div key={category}>
-                <p className="text-xs font-medium text-muted-foreground mb-2">{category}</p>
+                <p className="typography-caption text-muted-foreground mb-2">{category}</p>
                 <div className="grid grid-cols-10 gap-1">
                   {emojis.map((emoji, idx) => (
                     <button

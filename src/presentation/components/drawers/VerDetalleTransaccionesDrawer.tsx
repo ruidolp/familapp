@@ -159,11 +159,11 @@ export function VerDetalleTransaccionesDrawer({
         <DrawerBody>
           {loading ? (
             <div className="text-center py-8">
-              <p className="text-base text-muted-foreground">{t('loading')}</p>
+              <p className="typography-body text-muted-foreground">{t('loading')}</p>
             </div>
           ) : transacciones.length === 0 ? (
             <div className="text-center py-8 space-y-2">
-              <p className="text-base text-muted-foreground">{t('noTransactions')}</p>
+              <p className="typography-body text-muted-foreground">{t('noTransactions')}</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -171,10 +171,10 @@ export function VerDetalleTransaccionesDrawer({
               <Card className="p-4 border border-border bg-card/80 shadow-sm">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-sm text-muted-foreground">{t('totalCurrentMonth')}</p>
-                    <p className="text-2xl font-bold text-primary">{formatNumber(totalMes)}</p>
+                    <p className="typography-body-sm text-muted-foreground">{t('totalCurrentMonth')}</p>
+                    <p className="typography-h2 text-primary">{formatNumber(totalMes)}</p>
                   </div>
-                  <Badge variant="secondary" className="text-xs font-semibold">
+                  <Badge variant="secondary" className="typography-caption">
                     {t('transactionsCount', { count: transacciones.length })}
                   </Badge>
                 </div>
@@ -184,7 +184,7 @@ export function VerDetalleTransaccionesDrawer({
               <div className="space-y-4">
                 {fechasOrdenadas.map((fecha) => (
                   <div key={fecha} className="space-y-3">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{fecha}</h3>
+                    <h3 className="typography-body-sm font-semibold text-muted-foreground uppercase tracking-wide">{fecha}</h3>
 
                     <div className="space-y-2">
                       {transaccionesAgrupadas[fecha].map((transaccion) => (
@@ -200,21 +200,21 @@ export function VerDetalleTransaccionesDrawer({
                             {/* Icono de categoría */}
                             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                               {transaccion.categoria?.emoji ? (
-                                <span className="text-base">{transaccion.categoria.emoji}</span>
+                                <span className="typography-body">{transaccion.categoria.emoji}</span>
                               ) : (
-                                <span className="text-base">💰</span>
+                                <span className="typography-body">💰</span>
                               )}
                           </div>
 
                           {/* Información de la transacción */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-base font-medium text-foreground">
+                            <p className="typography-body font-medium text-foreground">
                               {transaccion.categoria?.nombre ||
                                 transaccion.subcategoria?.nombre ||
                                 t('noCategory')}
                             </p>
                             {(transaccion.subcategoria?.nombre || transaccion.descripcion) && (
-                              <p className="text-sm text-muted-foreground truncate">
+                              <p className="typography-body-sm text-muted-foreground truncate">
                                 {transaccion.subcategoria?.nombre || ''}
                                 {transaccion.subcategoria?.nombre && transaccion.descripcion ? ' • ' : ''}
                                 {transaccion.descripcion || ''}
@@ -225,11 +225,11 @@ export function VerDetalleTransaccionesDrawer({
 
                           {/* Monto */}
                           <div className="flex items-center gap-2">
-                            <p className="text-base font-semibold text-destructive ml-2">
+                            <p className="typography-label-lg text-destructive ml-2">
                               {formatNumber(-Number(transaccion.monto))}
                             </p>
                             {deletingId === transaccion.id && (
-                              <span className="text-xs text-muted-foreground">{t('deleting')}</span>
+                              <span className="typography-metadata">{t('deleting')}</span>
                             )}
                           </div>
                         </Card>
@@ -259,20 +259,20 @@ export function VerDetalleTransaccionesDrawer({
           </DrawerHeader>
           <DrawerBody>
             <div className="rounded-xl border border-border bg-card/70 p-4 space-y-1">
-              <p className="text-sm font-medium text-foreground">
+              <p className="typography-label text-foreground">
                 {selectedTransaccion?.categoria?.nombre ||
                   selectedTransaccion?.subcategoria?.nombre ||
                   t('noCategory')}
               </p>
               {(selectedTransaccion?.subcategoria?.nombre || selectedTransaccion?.descripcion) && (
-                <p className="text-sm text-muted-foreground">
+                <p className="typography-body-sm text-muted-foreground">
                   {selectedTransaccion?.subcategoria?.nombre || ''}
                   {selectedTransaccion?.subcategoria?.nombre && selectedTransaccion?.descripcion ? ' • ' : ''}
                   {selectedTransaccion?.descripcion || ''}
                 </p>
               )}
               {selectedTransaccion && (
-                <p className="text-base font-semibold text-destructive">
+                <p className="typography-label-lg text-destructive">
                   {formatNumber(-Number(selectedTransaccion.monto))}
                 </p>
               )}

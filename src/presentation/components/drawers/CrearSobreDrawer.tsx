@@ -43,7 +43,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-5 w-1 bg-primary rounded-full" />
-      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+      <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
     </div>
   )
 }
@@ -157,19 +157,19 @@ export function CrearSobreDrawer({
             <Card className="p-5 bg-card-accent">
               <div className="flex items-center gap-4">
                 <div 
-                  className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-bold transition-colors"
+                  className="w-16 h-16 rounded-xl flex items-center justify-center text-white typography-h2 transition-colors"
                   style={{ backgroundColor: sobreColor }}
                 >
                   {sobreName.trim() ? sobreName.trim().charAt(0).toUpperCase() : '📁'}
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                  <p className="typography-metadata uppercase tracking-wide mb-1">
                     {t('form.preview')}
                   </p>
-                  <p className="text-xl font-semibold">
+                  <p className="typography-number-md">
                     {sobreName.trim() || t('form.envelopeName')}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="typography-body-sm text-muted-foreground">
                     {t('form.budget')}: $0.00
                   </p>
                 </div>
@@ -183,7 +183,7 @@ export function CrearSobreDrawer({
               <Card className="p-4 space-y-4 bg-card-elevated">
                 {/* Nombre */}
                 <div className="space-y-2">
-                  <Label htmlFor="nombre-sobre" className="text-sm font-medium text-muted-foreground">
+                  <Label htmlFor="nombre-sobre" className="typography-label text-muted-foreground">
                     {t('form.name')}
                   </Label>
                   <Input
@@ -193,13 +193,13 @@ export function CrearSobreDrawer({
                     onChange={(e) => setSobreName(e.target.value)}
                     placeholder={t('form.namePlaceholder')}
                     required
-                    className="h-11 text-base"
+                    className="h-11 typography-body"
                   />
                 </div>
 
                 {/* Color */}
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium text-muted-foreground">
+                  <Label className="typography-label text-muted-foreground">
                     {t('form.color')}
                   </Label>
                   
@@ -267,8 +267,8 @@ export function CrearSobreDrawer({
             {/* INFO */}
             <Card className="p-4 bg-muted border-border">
               <div className="flex gap-3">
-                <span className="text-lg">💡</span>
-                <div className="text-sm">
+                <span className="typography-body-lg">💡</span>
+                <div className="typography-body-sm">
                   <p className="font-medium mb-1">{t('info.nextStep')}</p>
                   <p className="text-muted-foreground">
                     {t('info.nextStepDescription')}
@@ -283,7 +283,7 @@ export function CrearSobreDrawer({
           <Button
             onClick={handleCrearSobre}
             disabled={loading || !sobreName.trim()}
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 typography-label-lg"
           >
             {loading ? t('buttons.creating') : t('buttons.createEnvelope')}
           </Button>

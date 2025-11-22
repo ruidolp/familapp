@@ -142,22 +142,22 @@ export function PriceInputDrawer({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent className="sm:max-w-[460px] p-0 flex h-[90vh] flex-col">
           <SheetHeader className="border-b border-border bg-card px-6 py-4 text-left">
-            <SheetTitle className="text-base font-semibold">
+            <SheetTitle className="typography-label-lg">
               Registrar precio
             </SheetTitle>
-            <p className="text-sm text-muted-foreground">{item.product_name}</p>
+            <p className="typography-body-sm text-muted-foreground">{item.product_name}</p>
           </SheetHeader>
 
           <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
             <div className="rounded-2xl border border-border/70 bg-card-accent px-4 py-3">
               <p className="text-xs uppercase text-muted-foreground">Detalle del producto</p>
-              <p className="text-base font-semibold mt-1">{item.product_name}</p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="typography-label-lg mt-1">{item.product_name}</p>
+              <p className="typography-metadata mt-1">
                 {item.unidad_medida ? `${item.unidad_medida}` : 'Sin unidad definida'}
                 {item.marca ? ` • ${item.marca}` : ''}
               </p>
               {item.precio_total && (
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="typography-metadata mt-2">
                   Último total guardado:{' '}
                   <span className="font-semibold text-primary">
                     {formatNumber(item.precio_total)}
@@ -168,7 +168,7 @@ export function PriceInputDrawer({
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="cantidad" className="text-sm font-medium">
+                <Label htmlFor="cantidad" className="typography-label">
                   Cantidad comprada
                 </Label>
                 <Input
@@ -179,16 +179,16 @@ export function PriceInputDrawer({
                   value={cantidad}
                   onChange={e => handleCantidadChange(e.target.value)}
                   placeholder={String(item.cantidad_planeada || 1)}
-                  className="h-12 text-lg"
+                  className="h-12 typography-body-lg"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="typography-metadata">
                   Planeado: {item.cantidad_planeada} {item.unidad_medida || 'unidad(es)'}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="unitario" className="text-sm font-medium">
+                  <Label htmlFor="unitario" className="typography-label">
                     Precio unitario
                   </Label>
                   <Button variant="ghost" size="sm" onClick={() => setCalculatorOpen(true)}>
@@ -204,12 +204,12 @@ export function PriceInputDrawer({
                   value={precioUnitario}
                   onChange={e => handleUnitarioChange(e.target.value)}
                   placeholder={item.precio_unitario ? String(item.precio_unitario) : 'Ej: 2500'}
-                  className="h-12 text-lg"
+                  className="h-12 typography-body-lg"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="total" className="text-sm font-medium">
+                <Label htmlFor="total" className="typography-label">
                   Precio total
                 </Label>
                 <Input
@@ -220,12 +220,12 @@ export function PriceInputDrawer({
                   value={precioTotal}
                   onChange={e => handleTotalChange(e.target.value)}
                   placeholder={item.precio_total ? String(item.precio_total) : 'Ej: 10000'}
-                  className="h-12 text-xl font-semibold"
+                  className="h-12 typography-number-md"
                 />
               </div>
 
               {precioUnitario && cantidad && (
-                <div className="rounded-xl border border-border/70 bg-muted px-4 py-3 text-sm">
+                <div className="rounded-xl border border-border/70 bg-muted px-4 py-3 typography-body-sm">
                   <p className="text-muted-foreground">
                     {cantidad} × {formatNumber(Number(precioUnitario) || 0)} ={' '}
                     <span className="font-semibold text-foreground">
@@ -242,14 +242,14 @@ export function PriceInputDrawer({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="flex-1 h-12 text-base"
+                className="flex-1 h-12 typography-body"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleSave}
                 disabled={!precioTotal && !precioUnitario}
-                className="flex-1 h-12 text-base font-semibold"
+                className="flex-1 h-12 typography-label-lg"
               >
                 Guardar
               </Button>
@@ -257,7 +257,7 @@ export function PriceInputDrawer({
             {item.status === 'purchased' && onMarkAsNotPurchased && (
               <Button
                 variant="ghost"
-                className="w-full text-sm text-destructive hover:text-destructive"
+                className="w-full typography-body-sm text-destructive hover:text-destructive"
                 onClick={() => {
                   onMarkAsNotPurchased()
                   onOpenChange(false)

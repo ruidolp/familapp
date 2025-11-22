@@ -34,7 +34,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-5 w-1 bg-primary rounded-full" />
-      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+      <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
     </div>
   )
 }
@@ -135,18 +135,18 @@ export function AgregarPresupuestoDrawer({
               <Card className="p-4 space-y-4 bg-card-elevated">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    <p className="typography-metadata uppercase tracking-wide">
                       {t('form.availableInWallet')}
                     </p>
-                    <p className="text-lg font-semibold">
+                    <p className="typography-h3">
                       ${Number(montoLibre).toLocaleString('es-CL', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                   <div className="space-y-1 text-right">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    <p className="typography-metadata uppercase tracking-wide">
                       {t('form.currentBudget')}
                     </p>
-                    <p className="text-lg font-semibold">
+                    <p className="typography-h3">
                       ${Number(presupuestoAsignado).toLocaleString('es-CL', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
@@ -155,10 +155,10 @@ export function AgregarPresupuestoDrawer({
                 {monto && parseFloat(monto) > 0 && (
                   <div className="border-t border-dashed border-border pt-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-muted-foreground">
+                      <span className="typography-label text-muted-foreground">
                         {t('form.newBudget')}
                       </span>
-                      <span className="text-xl font-bold text-primary">
+                      <span className="typography-h3 text-primary">
                         ${nuevoTotal.toLocaleString('es-CL', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
@@ -170,11 +170,11 @@ export function AgregarPresupuestoDrawer({
             {/* MONTO - Card Accent */}
             <Card className="p-5 bg-card-accent border-primary/20">
               <div className="space-y-3">
-                <Label htmlFor="monto" className="text-base font-semibold">
+                <Label htmlFor="monto" className="typography-label-lg">
                   💰 {t('form.amount')}
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 typography-h2 text-muted-foreground">
                     +$
                   </span>
                   <Input
@@ -187,7 +187,7 @@ export function AgregarPresupuestoDrawer({
                     onChange={(e) => setMonto(e.target.value)}
                     placeholder="0.00"
                     required
-                    className="pl-14 text-2xl font-semibold h-14 bg-background"
+                    className="pl-14 typography-h2 h-14 bg-background"
                   />
                 </div>
               </div>
@@ -200,10 +200,10 @@ export function AgregarPresupuestoDrawer({
               <Card className="p-4 space-y-4 bg-card-elevated">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="observacion" className="text-sm font-medium text-muted-foreground">
+                    <Label htmlFor="observacion" className="typography-label text-muted-foreground">
                       {t('form.observation')}
                     </Label>
-                    <span className="text-xs text-muted-foreground">{t('form.optional')}</span>
+                    <span className="typography-metadata">{t('form.optional')}</span>
                   </div>
                   <Input
                     id="observacion"
@@ -220,7 +220,7 @@ export function AgregarPresupuestoDrawer({
                     onClick={() => setExpandedConfig(!expandedConfig)}
                     className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
                   >
-                    <span className="text-sm font-medium">{t('form.advancedConfig')}</span>
+                    <span className="typography-label">{t('form.advancedConfig')}</span>
                     {expandedConfig ? (
                       <ChevronUp className="h-4 w-4 text-muted-foreground" />
                     ) : (
@@ -231,7 +231,7 @@ export function AgregarPresupuestoDrawer({
                   {expandedConfig && (
                     <div className="border-t border-border p-4 space-y-3 bg-muted/30">
                       <div className="space-y-2">
-                        <Label htmlFor="montoRecurrente" className="text-sm font-medium text-muted-foreground">
+                        <Label htmlFor="montoRecurrente" className="typography-label text-muted-foreground">
                           {t('form.recurringAmount')}
                         </Label>
                         <Input
@@ -245,7 +245,7 @@ export function AgregarPresupuestoDrawer({
                           className="h-10"
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground leading-relaxed">
+                      <p className="typography-metadata leading-relaxed">
                         {t('form.recurringAmountHelp')}
                       </p>
                     </div>
@@ -260,7 +260,7 @@ export function AgregarPresupuestoDrawer({
           <Button
             onClick={handleSubmit}
             disabled={loading || !monto}
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 typography-label-lg"
           >
             {loading ? t('buttons.saving') : t('buttons.addBudget')}
           </Button>

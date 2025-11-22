@@ -89,7 +89,7 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
   return (
     <div className="h-full flex items-center justify-between px-4 border-b bg-card">
       {/* Título dinámico */}
-      <div className="flex-1 min-w-0 mr-4 text-base font-semibold text-foreground">
+      <div className="flex-1 min-w-0 mr-4 typography-label-lg text-foreground">
         {typeof getTitulo() === 'string' ? (
           <h1 className="truncate">
             {getTitulo()}
@@ -108,7 +108,7 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           {/* Header del menú */}
-          <div className="px-2 py-1.5 flex items-center gap-2 text-sm font-semibold">
+          <div className="px-2 py-1.5 flex items-center gap-2 typography-body-sm font-semibold">
             <Palette className="h-4 w-4" />
             <span>Temas</span>
           </div>
@@ -133,7 +133,7 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
                         backgroundColor: `hsl(${theme.colors.primary})`,
                       }}
                     />
-                    <span className="text-sm">{theme.name}</span>
+                    <span className="typography-body-sm">{theme.name}</span>
                   </div>
                   {currentTheme === theme.slug && (
                     <Check className="h-4 w-4 text-primary" />
@@ -142,7 +142,7 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
               </DropdownMenuItem>
             ))
           ) : (
-            <div className="px-2 py-1.5 text-sm text-muted-foreground">
+            <div className="px-2 py-1.5 typography-body-sm text-muted-foreground">
               No themes available
             </div>
           )}

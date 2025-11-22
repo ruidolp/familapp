@@ -198,21 +198,21 @@ export function ExecutionHistoryDrawer({
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max-h-[90vh] sm:max-h-[82vh] sm:max-w-5xl sm:mx-auto sm:rounded-3xl sm:border sm:border-border/80 sm:px-0 sm:shadow-2xl bg-background">
         <SheetHeader className="px-4 pb-2 pt-3 sm:px-8">
-          <SheetTitle className="flex items-center gap-2 text-base font-semibold">
+          <SheetTitle className="flex items-center gap-2 typography-label-lg">
             <ReceiptText className="h-5 w-5 text-muted-foreground" />
             {t('title')}
           </SheetTitle>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium">
+          <div className="flex flex-wrap items-center gap-3 typography-body-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 typography-caption">
               <CalendarClock className="h-3.5 w-3.5" />
               {formattedDateTime}
             </span>
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 typography-caption">
               <TimerReset className="h-3.5 w-3.5" />
               {formatDuration(durationSeconds)}
             </span>
             {storeName && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium">
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 typography-caption">
                 <MapPin className="h-3.5 w-3.5" />
                 {storeName}
               </span>
@@ -230,7 +230,7 @@ export function ExecutionHistoryDrawer({
                     {formatNumber(purchaseTotal)}
                   </p>
                   {manualTotal !== null && calculatedTotal !== null && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="typography-body-sm text-muted-foreground">
                       Compra asistida: {formatNumber(calculatedTotal)}
                     </p>
                   )}
@@ -252,11 +252,11 @@ export function ExecutionHistoryDrawer({
                 {estimatedBudget !== null && (
                   <div className="rounded-xl border border-border/60 bg-background px-3 py-3">
                     <p className="text-[11px] uppercase text-muted-foreground">Presupuesto asignado</p>
-                    <p className="text-base font-semibold text-foreground">
+                    <p className="typography-label-lg text-foreground">
                       {formatNumber(estimatedBudget)}
                     </p>
                     {budgetDelta !== null && (
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="typography-metadata mt-1">
                         {budgetDelta > 0
                           ? `Te pasaste por ${formatNumber(budgetDelta)}`
                           : `Ahorro de ${formatNumber(Math.abs(budgetDelta))}`}
@@ -271,15 +271,15 @@ export function ExecutionHistoryDrawer({
 
           <div className="rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-foreground">
+              <h3 className="typography-body-sm font-semibold text-foreground">
                 {t('purchasedProducts')} ({normalizedItems.length})
               </h3>
-              {loadingItems && <span className="text-xs text-muted-foreground">Cargando...</span>}
+              {loadingItems && <span className="typography-metadata">Cargando...</span>}
             </div>
 
             <div className="space-y-3">
               {loadingItems ? (
-                <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 typography-body-sm text-muted-foreground">
                   Cargando productos...
                 </Card>
               ) : normalizedItems.length > 0 ? (
@@ -288,14 +288,14 @@ export function ExecutionHistoryDrawer({
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold text-sm text-foreground">{item.product_name}</p>
+                          <p className="font-semibold typography-body-sm text-foreground">{item.product_name}</p>
                           {item.marca && (
                             <Badge variant="secondary" className="border border-primary/40 bg-primary/10 text-primary">
                               {item.marca}
                             </Badge>
                           )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-2 typography-metadata">
                           {item.categoria_producto_nombre && (
                             <Badge variant="outline" className="border-border/70 text-xs">
                               {item.categoria_producto_nombre}
@@ -309,17 +309,17 @@ export function ExecutionHistoryDrawer({
                         </div>
                       </div>
                       {item.precio_total && (
-                        <span className="text-base font-semibold text-foreground">
+                        <span className="typography-label-lg text-foreground">
                           {simbolo ?? ''}{item.precio_total.toFixed(decimales)}
                         </span>
                       )}
                     </div>
                     <Separator className="my-3" />
-                    <div className="grid gap-3 sm:grid-cols-2 text-xs text-muted-foreground">
+                    <div className="grid gap-3 sm:grid-cols-2 typography-metadata">
                       {item.cantidad_comprada && (
                         <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
                           <p className="text-[11px] uppercase">Cantidad</p>
-                          <p className="text-sm font-semibold text-foreground">
+                          <p className="typography-body-sm font-semibold text-foreground">
                             {item.cantidad_comprada}
                             {item.unidad_medida ? ` ${item.unidad_medida}` : ''}
                           </p>
@@ -328,7 +328,7 @@ export function ExecutionHistoryDrawer({
                       {item.precio_unitario && (
                         <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
                           <p className="text-[11px] uppercase">{t('unitPrice')}</p>
-                          <p className="text-sm font-semibold text-foreground">
+                          <p className="typography-body-sm font-semibold text-foreground">
                             {simbolo ?? ''}{item.precio_unitario.toFixed(decimales)}
                           </p>
                         </div>
@@ -337,7 +337,7 @@ export function ExecutionHistoryDrawer({
                   </Card>
                 ))
               ) : (
-                <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground text-center">
+                <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 typography-body-sm text-muted-foreground text-center">
                   {t('noPurchasedProducts')}
                 </Card>
               )}

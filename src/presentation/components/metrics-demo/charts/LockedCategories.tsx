@@ -14,7 +14,7 @@ import { DUMMY_LOCKED_CATEGORIES } from '../data/dummy-data'
 export function LockedCategories() {
   const chart = (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">📊 Análisis Detallado por Categoría</h3>
+      <h3 className="typography-h3 mb-4">📊 Análisis Detallado por Categoría</h3>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={DUMMY_LOCKED_CATEGORIES} layout="vertical">
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -36,7 +36,7 @@ export function LockedCategories() {
           <Bar dataKey="monto" fill="#8b5cf6" radius={[0, 8, 8, 0]} />
         </BarChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2 text-center">
+      <p className="typography-metadata mt-2 text-center">
         Análisis completo con tendencias, comparaciones y proyecciones
       </p>
     </Card>

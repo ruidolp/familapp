@@ -60,18 +60,18 @@ export function CardDeleteConfirm({
             <p className="font-medium text-foreground">
               {billetera.nombre}
             </p>
-            <p className="text-base">{t('delete.warning')}</p>
+            <p className="typography-body">{t('delete.warning')}</p>
 
             {/* Mostrar impacto si hay sobres vinculados */}
             {hasLinkedEnvelopes && (
               <div className="rounded-lg bg-muted p-3 space-y-2">
-                <p className="text-base font-medium text-foreground">
+                <p className="typography-body font-medium text-foreground">
                   {t('delete.linkedEnvelopes')}
                 </p>
-                <p className="text-base">
+                <p className="typography-body">
                   {t('delete.linkedEnvelopesDescription', { count: envelopesCount })}
                 </p>
-                <p className="text-base text-red-600">
+                <p className="typography-body text-red-600">
                   {t('delete.impactWarning')}
                 </p>
               </div>

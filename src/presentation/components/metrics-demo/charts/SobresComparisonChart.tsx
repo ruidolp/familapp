@@ -13,7 +13,7 @@ import { DUMMY_SOBRES_COMPARISON } from '../data/dummy-data'
 export function SobresComparisonChart() {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">💰 Presupuesto vs Gastado por Sobre</h3>
+      <h3 className="typography-h3 mb-4">💰 Presupuesto vs Gastado por Sobre</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={DUMMY_SOBRES_COMPARISON}>
           <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -36,7 +36,7 @@ export function SobresComparisonChart() {
           <Bar dataKey="disponible" fill="#10b981" name="Disponible" radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="typography-metadata mt-2">
         Total presupuestado: ${DUMMY_SOBRES_COMPARISON.reduce((a, b) => a + b.presupuesto, 0).toLocaleString()}
       </p>
     </Card>

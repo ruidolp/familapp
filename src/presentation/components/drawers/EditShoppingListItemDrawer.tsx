@@ -157,7 +157,7 @@ export function EditShoppingListItemDrawer({
                 </SelectContent>
               </Select>
               {categoriaId && (
-                <p className="text-xs text-muted-foreground">
+                <p className="typography-metadata">
                   {categories.find(c => c.id === categoriaId)?._type === 'global' ? '🌍 Categoría global' : '👤 Categoría personal'}
                 </p>
               )}
@@ -172,7 +172,7 @@ export function EditShoppingListItemDrawer({
               placeholder="Ej: Marca específica, notas especiales..."
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
-              className="w-full p-2 border rounded text-sm"
+              className="w-full p-2 border rounded typography-body-sm"
               rows={3}
             />
           </div>

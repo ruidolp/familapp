@@ -46,7 +46,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-5 w-1 bg-primary rounded-full" />
-      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+      <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
     </div>
   )
 }
@@ -129,7 +129,7 @@ export function EditarCategoriaDrawer({
                 <Card className="p-4 space-y-4 bg-card-elevated">
                   {/* Nombre con Emoji */}
                   <div className="space-y-2">
-                    <Label htmlFor="nombre" className="text-sm font-medium text-muted-foreground">
+                    <Label htmlFor="nombre" className="typography-label text-muted-foreground">
                       {t('categorias.edit.nameLabel')}
                     </Label>
                     <div className="flex gap-2 items-center">
@@ -154,7 +154,7 @@ export function EditarCategoriaDrawer({
 
                 <Card className="p-4 bg-card-elevated">
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium text-muted-foreground">
+                    <Label className="typography-label text-muted-foreground">
                       {t('categorias.edit.colorLabel')}
                     </Label>
                     <div className="grid grid-cols-4 gap-3">
@@ -191,7 +191,7 @@ export function EditarCategoriaDrawer({
           <Button
             onClick={handleSubmit}
             disabled={loading || !nombre.trim()}
-            className="w-full h-12 text-base font-semibold"
+            className="w-full h-12 typography-label-lg"
           >
             {loading ? t('categorias.edit.saving') : t('categorias.edit.submit')}
           </Button>

@@ -49,9 +49,9 @@ export function ExecutionHeader({
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">{listName}</p>
-            {storeName && <p className="text-sm font-medium text-foreground">{storeName}</p>}
+            {storeName && <p className="typography-label text-foreground">{storeName}</p>}
             {showTimer && (
-              <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <div className="mt-1 flex items-center gap-1 typography-metadata">
                 <Clock3 className="h-3.5 w-3.5" />
                 <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
               </div>
@@ -65,8 +65,8 @@ export function ExecutionHeader({
         <div className={`grid gap-3 ${budgetEnabled && budgetAmount ? 'sm:grid-cols-2' : ''}`}>
           <div className="rounded-2xl border border-border bg-card px-4 py-3">
             <p className="text-xs uppercase text-muted-foreground">Total actual</p>
-            <p className="text-3xl font-bold text-primary">{formatNumber(totalSpent)}</p>
-            <p className="text-xs text-muted-foreground">Suma registrada hasta ahora.</p>
+            <p className="typography-h1 text-primary">{formatNumber(totalSpent)}</p>
+            <p className="typography-metadata">Suma registrada hasta ahora.</p>
           </div>
 
           {budgetEnabled && budgetAmount && (
@@ -75,7 +75,7 @@ export function ExecutionHeader({
               <p className={`text-2xl font-semibold ${isOverBudget ? 'text-destructive' : 'text-foreground'}`}>
                 {formatNumber(budgetAmount)}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="typography-metadata">
                 Restante: {formatNumber(Math.max(budgetAmount - totalSpent, 0))}
               </p>
             </div>
@@ -96,7 +96,7 @@ export function ExecutionHeader({
               indicatorClassName={isOverBudget ? 'bg-destructive' : 'bg-primary'}
             />
             {isOverBudget && (
-              <p className="text-xs font-medium text-destructive">
+              <p className="typography-caption text-destructive">
                 Excedente: {formatNumber(totalSpent - budgetAmount)}
               </p>
             )}

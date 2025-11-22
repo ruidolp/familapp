@@ -123,11 +123,11 @@ function SettingRow({ icon, title, description, control }: SettingRowProps) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="space-y-1">
-        <Label className="text-base font-semibold flex items-center gap-2">
+        <Label className="typography-label-lg flex items-center gap-2">
           {icon}
           {title}
         </Label>
-        <p className="text-sm text-muted-foreground leading-snug">
+        <p className="typography-body-sm text-muted-foreground leading-snug">
           {description}
         </p>
       </div>

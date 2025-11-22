@@ -40,7 +40,7 @@ export function PauseExecutionDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="sm:max-w-[450px]">
         <SheetHeader className="space-y-3">
-          <SheetTitle className="text-xl font-bold flex items-center gap-2">
+          <SheetTitle className="typography-h3 flex items-center gap-2">
             <PauseCircle className="h-5 w-5 text-primary" />
             {t('title')}
           </SheetTitle>
@@ -53,10 +53,10 @@ export function PauseExecutionDrawer({
                 <AlertCircle className="h-4 w-4 text-primary" />
               </div>
               <div className="space-y-2">
-                <p className="text-sm text-foreground">
+                <p className="typography-body-sm text-foreground">
                   {t('cardSummary')}
                 </p>
-                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                <ul className="typography-body-sm text-muted-foreground space-y-1 list-disc list-inside">
                   <li>{t('autoSave')}</li>
                   <li>{t('resumeHint')}</li>
                 </ul>

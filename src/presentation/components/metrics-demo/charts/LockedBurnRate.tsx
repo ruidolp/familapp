@@ -16,7 +16,7 @@ export function LockedBurnRate() {
 
   const chart = (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">🔥 Burn Rate - Días Restantes</h3>
+      <h3 className="typography-h3 mb-4">🔥 Burn Rate - Días Restantes</h3>
       <ResponsiveContainer width="100%" height={250}>
         <RadialBarChart
           cx="50%"
@@ -51,10 +51,10 @@ export function LockedBurnRate() {
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="text-center mt-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="typography-body-sm text-muted-foreground">
           Gasto diario: ${DUMMY_BURN_RATE.gasto_diario.toLocaleString()}
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="typography-metadata mt-1">
           {DUMMY_BURN_RATE.porcentaje_usado}% del presupuesto usado
         </p>
       </div>

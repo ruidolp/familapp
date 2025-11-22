@@ -47,7 +47,7 @@ export function ProfileDrawer({
             <User className="w-12 h-12 text-white" />
           </div>
 
-          <DrawerTitle className="text-2xl font-bold text-center font-display">
+          <DrawerTitle className="typography-h2 text-center font-display">
             {userName || t('user.profile.title')}
           </DrawerTitle>
 
@@ -73,10 +73,10 @@ export function ProfileDrawer({
                 <LogOut className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1 text-left">
-                <p className="text-lg font-semibold text-red-700 font-display">
+                <p className="typography-h3 text-red-700 font-display">
                   {t('user.profile.signOut')}
                 </p>
-                <p className="text-base text-red-600">
+                <p className="typography-body text-red-600">
                   {t('user.profile.signOutDescription')}
                 </p>
               </div>

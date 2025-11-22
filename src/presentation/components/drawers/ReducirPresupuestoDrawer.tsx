@@ -34,7 +34,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
       <div className="h-5 w-1 bg-primary rounded-full" />
-      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+      <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
     </div>
   )
 }
@@ -130,18 +130,18 @@ export function ReducirPresupuestoDrawer({
               <Card className="p-4 space-y-4 bg-card-elevated">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    <p className="typography-metadata uppercase tracking-wide">
                       {t('form.freeAmount')}
                     </p>
-                    <p className="text-lg font-semibold">
+                    <p className="typography-h3">
                       {simbolo ?? ''}{formatNumber(Number(montoLibre))}
                     </p>
                   </div>
                   <div className="space-y-1 text-right">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                    <p className="typography-metadata uppercase tracking-wide">
                       {t('form.assignedBudget')}
                     </p>
-                    <p className="text-lg font-semibold">
+                    <p className="typography-h3">
                       {simbolo ?? ''}{formatNumber(Number(presupuestoAsignado))}
                     </p>
                   </div>
@@ -152,11 +152,11 @@ export function ReducirPresupuestoDrawer({
             {/* MONTO A RESTAR */}
             <Card className="p-5 bg-card-accent border-destructive/20">
               <div className="space-y-3">
-                <Label htmlFor="monto" className="text-base font-semibold">
+                <Label htmlFor="monto" className="typography-label-lg">
                   💸 {t('form.amountToReduce')}
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 typography-h2 text-muted-foreground">
                     -$
                   </span>
                   <Input
@@ -169,7 +169,7 @@ export function ReducirPresupuestoDrawer({
                     onChange={(e) => setMonto(e.target.value)}
                     placeholder="0.00"
                     required
-                    className="pl-14 text-2xl font-semibold h-14 bg-background"
+                    className="pl-14 typography-h2 h-14 bg-background"
                   />
                 </div>
               </div>
@@ -181,10 +181,10 @@ export function ReducirPresupuestoDrawer({
 
               <Card className="p-4 space-y-2 bg-card-elevated">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="observacion" className="text-sm font-medium text-muted-foreground">
+                  <Label htmlFor="observacion" className="typography-label text-muted-foreground">
                     {t('form.observation')}
                   </Label>
-                  <span className="text-xs text-muted-foreground">{t('form.optional')}</span>
+                  <span className="typography-metadata">{t('form.optional')}</span>
                 </div>
                 <Input
                   id="observacion"

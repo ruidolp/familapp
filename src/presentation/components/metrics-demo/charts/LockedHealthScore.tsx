@@ -20,7 +20,7 @@ export function LockedHealthScore() {
 
   const chart = (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">🏆 Score de Salud Financiera</h3>
+      <h3 className="typography-h3 mb-4">🏆 Score de Salud Financiera</h3>
       <ResponsiveContainer width="100%" height={280}>
         <RadialBarChart
           cx="50%"
@@ -66,8 +66,8 @@ export function LockedHealthScore() {
         </RadialBarChart>
       </ResponsiveContainer>
       <div className="mt-2 text-center">
-        <p className="text-sm font-semibold text-primary">¡Buen trabajo!</p>
-        <p className="text-xs text-muted-foreground">Tu salud financiera está en buen estado</p>
+        <p className="typography-body-sm font-semibold text-primary">¡Buen trabajo!</p>
+        <p className="typography-metadata">Tu salud financiera está en buen estado</p>
       </div>
     </Card>
   )

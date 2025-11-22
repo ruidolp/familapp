@@ -46,19 +46,19 @@ export function LockedMetric({ children, isLocked = true, progress, message }: L
           </div>
 
           {/* Título */}
-          <h3 className="text-lg font-semibold">Desbloquea esta métrica</h3>
+          <h3 className="typography-h3">Desbloquea esta métrica</h3>
 
           {/* Barra de progreso */}
           <div className="space-y-2">
             <Progress value={percentage} className="h-2" />
-            <p className="text-sm font-medium">
+            <p className="typography-label">
               {progress.current} / {progress.required} {progress.label}
             </p>
           </div>
 
           {/* Mensaje motivacional */}
           <div className="bg-primary/10 rounded-lg p-3">
-            <p className="text-sm">{message}</p>
+            <p className="typography-body-sm">{message}</p>
           </div>
         </div>
       </div>

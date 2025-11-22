@@ -192,7 +192,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
 
       {/* Auto-saving indicator */}
       {autoSaving && (
-        <div className="px-4 py-2 bg-muted text-xs text-muted-foreground flex items-center gap-2">
+        <div className="px-4 py-2 bg-muted typography-metadata flex items-center gap-2">
           <Loader2 className="h-3 w-3 animate-spin" />
           Guardando...
         </div>
@@ -200,7 +200,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
 
       {/* Error message */}
       {error && (
-        <div className="px-4 py-2 bg-destructive/10 text-sm text-destructive">
+        <div className="px-4 py-2 bg-destructive/10 typography-body-sm text-destructive">
           {error}
         </div>
       )}
@@ -230,7 +230,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
           <div className="space-y-6 mt-4">
             {Object.entries(itemsByCategory).map(([category, items]) => (
               <div key={category}>
-                <h2 className="text-sm font-semibold text-muted-foreground mb-2 sticky top-0 bg-background py-2">
+                <h2 className="typography-body-sm font-semibold text-muted-foreground mb-2 sticky top-0 bg-background py-2">
                   {category || 'Sin categoría'} ({items.length})
                 </h2>
                 <div className="space-y-2">
@@ -253,7 +253,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             {/* Pending items section */}
             {pendingItems.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                <h3 className="typography-caption uppercase tracking-wide text-muted-foreground mb-2">
                   Por Comprar ({pendingItems.length})
                 </h3>
                 <div className="space-y-2">
@@ -273,7 +273,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             {/* Purchased items section */}
             {purchasedItems.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-success mb-2">
+                <h3 className="typography-caption uppercase tracking-wide text-success mb-2">
                   ✓ Comprados ({purchasedItems.length})
                 </h3>
                 <div className="space-y-2">
@@ -293,7 +293,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             {/* Discarded items section */}
             {discardedItems.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-destructive/80 mb-2">
+                <h3 className="typography-caption uppercase tracking-wide text-destructive/80 mb-2">
                   ✗ Descartados ({discardedItems.length})
                 </h3>
                 <div className="space-y-2">
@@ -333,7 +333,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             <Pause className="h-5 w-5" />
           </Button>
           <Button
-            className="flex-1 h-12 text-base font-semibold"
+            className="flex-1 h-12 typography-label-lg"
             onClick={() => setFinalizeOpen(true)}
           >
             Finalizar Compra

@@ -14,7 +14,7 @@ import { DUMMY_PROJECTION } from '../data/dummy-data'
 export function LockedProjection() {
   const chart = (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">🔮 Proyección de Fin de Mes</h3>
+      <h3 className="typography-h3 mb-4">🔮 Proyección de Fin de Mes</h3>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={DUMMY_PROJECTION}>
           <defs>
@@ -62,7 +62,7 @@ export function LockedProjection() {
           />
         </AreaChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2 text-center">
+      <p className="typography-metadata mt-2 text-center">
         Proyección basada en tendencia actual • Fin de mes estimado: $450.000
       </p>
     </Card>

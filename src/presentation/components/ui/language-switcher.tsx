@@ -58,7 +58,7 @@ export function LanguageSwitcher() {
             <span className="mr-2">{lang.flag}</span>
             <span>{lang.name}</span>
             {lang.code === locale && (
-              <span className="ml-auto text-sm text-muted-foreground">✓</span>
+              <span className="ml-auto typography-body-sm text-muted-foreground">✓</span>
             )}
           </DropdownMenuItem>
         ))}

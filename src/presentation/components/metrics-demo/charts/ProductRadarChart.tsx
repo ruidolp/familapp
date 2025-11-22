@@ -13,7 +13,7 @@ import { DUMMY_PRODUCT_RADAR } from '../data/dummy-data'
 export function ProductRadarChart() {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">🎯 Análisis de Productos - Frecuencia vs Gasto</h3>
+      <h3 className="typography-h3 mb-4">🎯 Análisis de Productos - Frecuencia vs Gasto</h3>
       <ResponsiveContainer width="100%" height={300}>
         <RadarChart data={DUMMY_PRODUCT_RADAR}>
           <PolarGrid stroke="hsl(var(--muted))" />
@@ -43,7 +43,7 @@ export function ProductRadarChart() {
           />
         </RadarChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="typography-metadata mt-2">
         Análisis basado en últimos 3 meses
       </p>
     </Card>

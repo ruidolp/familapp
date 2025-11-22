@@ -39,7 +39,7 @@ export function ConfigScreen() {
 
   return (
     <div className="p-4 space-y-6">
-      <h2 className="text-2xl font-bold text-foreground">Configuración</h2>
+      <h2 className="typography-h2 text-foreground">Configuración</h2>
 
       {/* Sección de Temas */}
       <div className="rounded-lg border bg-card">
@@ -49,11 +49,11 @@ export function ConfigScreen() {
           onClick={() => setShowThemes(prev => !prev)}
           disabled={isLoading}
         >
-          <div className="flex items-center gap-2 text-sm font-semibold">
+          <div className="flex items-center gap-2 typography-body-sm font-semibold">
             <Palette className="h-5 w-5" />
             <span>Temas</span>
             {currentTheme && (
-              <span className="text-xs text-muted-foreground">({currentTheme})</span>
+              <span className="typography-metadata">({currentTheme})</span>
             )}
           </div>
           <span className={`text-xs text-muted-foreground transition-transform ${showThemes ? 'rotate-90' : ''}`}>
@@ -77,7 +77,7 @@ export function ConfigScreen() {
                         backgroundColor: `hsl(${theme.colors.primary})`,
                       }}
                     />
-                    <span className="text-sm font-medium">{theme.name}</span>
+                    <span className="typography-label">{theme.name}</span>
                   </div>
                   {currentTheme === theme.slug && (
                     <Check className="h-5 w-5 text-primary" />
@@ -85,7 +85,7 @@ export function ConfigScreen() {
                 </button>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-2">
+              <p className="typography-body-sm text-muted-foreground text-center py-2">
                 No hay temas disponibles
               </p>
             )}
@@ -95,7 +95,7 @@ export function ConfigScreen() {
 
       {/* Sección de Sesión */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
-        <h3 className="text-lg font-semibold">Sesión</h3>
+        <h3 className="typography-h3">Sesión</h3>
 
         <Button
           variant="destructive"

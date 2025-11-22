@@ -44,11 +44,11 @@ export function CategoriaCard({
         {/* Header: emoji + nombre | gastado + flash$ button */}
         <div className="flex justify-between items-center gap-2">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {emoji && <span className="text-lg flex-shrink-0">{emoji}</span>}
-            <h4 className="font-medium text-sm truncate text-white">{nombre}</h4>
+            {emoji && <span className="typography-body-lg flex-shrink-0">{emoji}</span>}
+            <h4 className="font-medium typography-body-sm truncate text-white">{nombre}</h4>
           </div>
           <div className="text-right flex items-center gap-1 whitespace-nowrap flex-shrink-0">
-            <p className="text-sm font-bold text-white">
+            <p className="typography-body-sm font-bold text-white">
               {formatNumber(gastadoNum)}
             </p>
             {/* Flash gasto button */}

@@ -50,7 +50,7 @@ export function ListOptionsDrawer({
         <div className="px-4 py-6 space-y-6">
           {/* Agrupar por categoría */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="group-category" className="text-base">
+            <Label htmlFor="group-category" className="typography-body">
               {t('shopping.lists.options.groupByCategory')}
             </Label>
             <Switch
@@ -62,7 +62,7 @@ export function ListOptionsDrawer({
 
           {/* Mostrar controles de cantidad */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="show-qty-buttons" className="text-base">
+            <Label htmlFor="show-qty-buttons" className="typography-body">
               {t('shopping.lists.options.showControls')}
             </Label>
             <Switch
@@ -74,7 +74,7 @@ export function ListOptionsDrawer({
 
           {/* Listado plano */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="flat-list-mode" className="text-base">
+            <Label htmlFor="flat-list-mode" className="typography-body">
               {t('shopping.lists.options.flatList')}
             </Label>
             <Switch

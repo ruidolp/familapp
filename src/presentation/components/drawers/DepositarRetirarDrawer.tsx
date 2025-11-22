@@ -148,7 +148,7 @@ export function DepositarRetirarDrawer({
               </Select>
               {/* Mostrar saldo_proyectado de la billetera seleccionada */}
               {billeteraId && billeteras.find(b => b.id === billeteraId) && (
-                <div className="text-base text-muted-foreground">
+                <div className="typography-body text-muted-foreground">
                   {t('balance.projected')}: <span className="font-semibold text-foreground">
                     {simbolo ?? ''}{formatNumber(Number(billeteras.find(b => b.id === billeteraId)?.saldo_proyectado || 0))}
                   </span>
@@ -162,7 +162,7 @@ export function DepositarRetirarDrawer({
                 {t('fields.amount')} <span className="text-red-500">*</span>
               </Label>
               <div className="flex items-center gap-2">
-                <span className="text-xl font-semibold w-8 text-center">
+                <span className="typography-number-md w-8 text-center">
                   {symbolo}
                 </span>
                 <Input

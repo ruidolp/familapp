@@ -447,7 +447,7 @@ export function AgregarCategoriaDrawer({
                     onBlur={() => {
                       setTimeout(() => setShowSuggestionsCategoria(false), 200)
                     }}
-                    className="text-base bg-background text-foreground"
+                    className="typography-body bg-background text-foreground"
                   />
 
                   {showSuggestionsCategoria && suggestionsCategoria.length > 0 && (
@@ -458,7 +458,7 @@ export function AgregarCategoriaDrawer({
                           <button
                             key={cat.id}
                             onClick={() => handleSelectCategoria(cat)}
-                            className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2 text-base"
+                            className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2 typography-body"
                             type="button"
                           >
                             <span className={isSelected ? 'text-green-600' : 'text-muted-foreground'}>
@@ -497,7 +497,7 @@ export function AgregarCategoriaDrawer({
                     <button
                       key={cat.id}
                       onClick={() => handleSelectCategoria(cat)}
-                      className="h-10 w-full rounded-lg px-3 text-sm font-medium flex items-center gap-2 border border-tertiary/40 bg-tertiary/10 text-tertiary hover:bg-tertiary/15 transition-colors"
+                      className="h-10 w-full rounded-lg px-3 typography-label flex items-center gap-2 border border-tertiary/40 bg-tertiary/10 text-tertiary hover:bg-tertiary/15 transition-colors"
                       type="button"
                     >
                       <span>{renderEmojiBox(cat.emoji, 'sm')}</span>
@@ -529,7 +529,7 @@ export function AgregarCategoriaDrawer({
                         className="p-3 space-y-3 border-tertiary/40 bg-tertiary/10"
                       >
                         <div className="flex items-center gap-2">
-                          <p className="text-base font-semibold text-tertiary flex items-center gap-2">
+                          <p className="typography-label-lg text-tertiary flex items-center gap-2">
                             {renderEmojiBox(categoria.emoji, 'sm')}
                             <span>{categoria.nombre}</span>
                           </p>
@@ -538,13 +538,13 @@ export function AgregarCategoriaDrawer({
                         {/* Empresas agregadas */}
                         {marcasDelCategoria.length > 0 && (
                           <div className="space-y-2">
-                            <Label className="text-sm text-tertiary">{t('categorias.add.added')}</Label>
+                            <Label className="typography-body-sm text-tertiary">{t('categorias.add.added')}</Label>
                             <div className="grid grid-cols-2 gap-2">
                               {marcasDelCategoria.map((marca) => (
                               <button
                                 key={marca.id}
                                 type="button"
-                                className="h-9 w-full rounded-lg px-3 text-xs font-medium flex items-center gap-2 border border-tertiary/40 bg-tertiary/20 text-tertiary"
+                                className="h-9 w-full rounded-lg px-3 typography-caption flex items-center gap-2 border border-tertiary/40 bg-tertiary/20 text-tertiary"
                               >
                                 <span>{renderEmojiBox(marca.emoji, 'sm')}</span>
                                 <span className="truncate">{marca.nombre}</span>
@@ -556,7 +556,7 @@ export function AgregarCategoriaDrawer({
 
                         {/* Input para buscar/crear empresa */}
                         <div className="space-y-2">
-                          <Label htmlFor={`marca-${categoria.id}`} className="text-sm">
+                          <Label htmlFor={`marca-${categoria.id}`} className="typography-body-sm">
                             {t('categorias.add.addBrand')}
                           </Label>
                           <div className="relative">
@@ -584,7 +584,7 @@ export function AgregarCategoriaDrawer({
                                 }, 200)
                               }}
                               enterKeyHint="go"
-                              className="text-base bg-background text-foreground"
+                              className="typography-body bg-background text-foreground"
                             />
 
                             {showSuggestions && suggestions.length > 0 && (
@@ -593,7 +593,7 @@ export function AgregarCategoriaDrawer({
                                   <button
                                     key={`${marca.id}-${idx}`}
                                     onClick={() => handleSelectMarcaPorCategoria(categoria.id, marca)}
-                                    className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2 text-base"
+                                    className="w-full text-left px-3 py-2 hover:bg-muted flex items-center gap-2 typography-body"
                                     type="button"
                                   >
                                     <span>{renderEmojiBox(marca.emoji, 'sm')}</span>

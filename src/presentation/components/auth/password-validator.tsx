@@ -64,7 +64,7 @@ export function PasswordValidator({ password, className = '' }: PasswordValidato
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <p className="text-base font-medium text-muted-foreground">
+      <p className="typography-body font-medium text-muted-foreground">
         La contraseña debe cumplir con:
       </p>
       <ul className="space-y-1.5">

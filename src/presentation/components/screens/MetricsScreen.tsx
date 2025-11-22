@@ -35,8 +35,8 @@ export function MetricsScreen() {
       <div className="p-4 space-y-6">
         {/* Header */}
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold">📊 Métricas</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="typography-h2">📊 Métricas</h1>
+          <p className="typography-body-sm text-muted-foreground">
             Demo de gráficos - Evaluación de formatos y diseños
           </p>
         </div>
@@ -46,7 +46,7 @@ export function MetricsScreen() {
         {/* SECCIÓN 1: TRANSACCIONES Y SOBRES */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">🏷️ Transacciones y Sobres</h2>
+            <h2 className="typography-number-md">🏷️ Transacciones y Sobres</h2>
             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
               5 gráficos
             </span>
@@ -68,7 +68,7 @@ export function MetricsScreen() {
         {/* SECCIÓN 2: LISTAS Y COMPRAS */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">🛒 Listas y Compras</h2>
+            <h2 className="typography-number-md">🛒 Listas y Compras</h2>
             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
               5 gráficos
             </span>
@@ -90,13 +90,13 @@ export function MetricsScreen() {
         {/* SECCIÓN 3: EJEMPLOS BLOQUEADOS */}
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">🔒 Métricas Bloqueadas</h2>
+            <h2 className="typography-number-md">🔒 Métricas Bloqueadas</h2>
             <span className="text-xs bg-destructive/10 text-destructive px-2 py-1 rounded-full">
               4 ejemplos
             </span>
           </div>
 
-          <p className="text-sm text-muted-foreground">
+          <p className="typography-body-sm text-muted-foreground">
             Estos gráficos muestran el efecto de desbloqueo progresivo con overlay y blur
           </p>
 
@@ -110,8 +110,8 @@ export function MetricsScreen() {
 
         {/* Footer Info */}
         <div className="mt-8 p-4 bg-muted/50 rounded-lg border border-border">
-          <h3 className="text-sm font-semibold mb-2">ℹ️ Acerca de esta demo</h3>
-          <ul className="text-xs text-muted-foreground space-y-1">
+          <h3 className="typography-body-sm font-semibold mb-2">ℹ️ Acerca de esta demo</h3>
+          <ul className="typography-metadata space-y-1">
             <li>• 14 gráficos totales usando Recharts</li>
             <li>• 10 gráficos normales (5 transacciones + 5 listas)</li>
             <li>• 4 gráficos con efecto de desbloqueo (blur + overlay)</li>

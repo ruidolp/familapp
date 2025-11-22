@@ -15,7 +15,7 @@ const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'
 export function TreemapChart() {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">🗺️ Mapa de Gastos por Tienda y Categoría</h3>
+      <h3 className="typography-h3 mb-4">🗺️ Mapa de Gastos por Tienda y Categoría</h3>
       <ResponsiveContainer width="100%" height={350}>
         <Treemap
           data={DUMMY_TREEMAP_DATA}
@@ -75,7 +75,7 @@ export function TreemapChart() {
           />
         </Treemap>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="typography-metadata mt-2">
         Distribución jerárquica: Tienda → Categoría de Producto
       </p>
     </Card>

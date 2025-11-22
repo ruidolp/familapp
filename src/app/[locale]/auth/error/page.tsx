@@ -58,7 +58,7 @@ export default async function AuthErrorPage({
           <CardDescription>{errorInfo.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="rounded-lg bg-muted p-4 text-sm">
+          <div className="rounded-lg bg-muted p-4 typography-body-sm">
             <p className="font-medium">Código de error:</p>
             <p className="text-muted-foreground">{error || 'Unknown'}</p>
           </div>

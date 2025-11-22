@@ -191,7 +191,7 @@ export function ExecutionItem({
         </span>
 
         {isPurchased && item.precio_total && (
-          <span className="flex-shrink-0 text-xs font-medium">
+          <span className="flex-shrink-0 typography-caption">
             {formatNumber(item.precio_total)}
           </span>
         )}
@@ -245,7 +245,7 @@ export function ExecutionItem({
         </div>
 
         {/* Metadata (unidad, marca, agregado) and Price on same line */}
-        <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-2 typography-metadata">
           {item.unidad_medida && (
             <span>{item.unidad_medida}</span>
           )}
@@ -294,7 +294,7 @@ export function ExecutionItem({
             e.stopPropagation()
             onTap(item)
           }}
-          className="flex-shrink-0 px-2 py-1 text-xs font-medium text-primary border border-primary rounded hover:bg-primary/10 touch-auto"
+          className="flex-shrink-0 px-2 py-1 typography-caption text-primary border border-primary rounded hover:bg-primary/10 touch-auto"
         >
           Editar
         </button>

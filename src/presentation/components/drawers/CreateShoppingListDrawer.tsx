@@ -124,9 +124,9 @@ export function CreateShoppingListDrawer({
             onKeyDown={handleKeyDown}
             disabled={isLoading}
             autoFocus
-            className="text-base"
+            className="typography-body"
           />
-          <p className="text-xs text-muted-foreground mt-3">
+          <p className="typography-metadata mt-3">
             {t('shopping.lists.createNew.hint')}
           </p>
         </div>

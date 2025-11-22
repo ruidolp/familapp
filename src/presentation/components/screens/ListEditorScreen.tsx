@@ -816,9 +816,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
               </Button>
               <div className="flex-1 min-w-[200px]">
                 <p className="text-xs uppercase text-muted-foreground">{tSummary('activeLabel')}</p>
-                <h1 className="text-lg font-semibold text-foreground">{data.listInfo.nombre}</h1>
+                <h1 className="typography-h3 text-foreground">{data.listInfo.nombre}</h1>
                 {data.listInfo.descripcion && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="typography-body-sm text-muted-foreground">
                     {data.listInfo.descripcion}
                   </p>
                 )}
@@ -827,10 +827,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
             <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3 min-w-[180px]">
               <p className="text-xs uppercase text-muted-foreground">{tSummary('productsTitle')}</p>
-              <p className="text-lg font-semibold text-foreground leading-tight">{items.length}</p>
-              <p className="text-xs text-muted-foreground">
-                {tSummary('quantityTitle')}: {formattedTotalQuantity}
-              </p>
+              <p className="typography-h3 text-foreground leading-tight">{items.length}</p>
             </div>
           </div>
 
@@ -851,7 +848,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <p>Lista vacía</p>
-            <p className="text-sm">Agrega items usando el campo de abajo</p>
+            <p className="typography-body-sm">Agrega items usando el campo de abajo</p>
           </div>
         ) : flatListMode ? (
           /* FLAT LIST MODE */
@@ -910,7 +907,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                 return (
                   <div key={catId}>
                     {/* Category Header */}
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-2 px-1">
+                    <h3 className="typography-body-sm font-semibold text-muted-foreground mb-2 px-1">
                       {categoryName}
                     </h3>
 
@@ -946,7 +943,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                                 )}
 
                                 {/* Quantity */}
-                                <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
+                                <div className="typography-label min-w-[2rem] text-center flex-shrink-0">
                                   {decimalToFraction(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad) || Math.round(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad)}
                                 </div>
 
@@ -997,7 +994,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                               {/* Line 2: Comment (if exists) - indented */}
                               {item.comentario && (
-                                <div className="text-xs text-muted-foreground pl-12 leading-tight">
+                                <div className="typography-metadata pl-12 leading-tight">
                                   {item.comentario}
                                 </div>
                               )}
@@ -1052,7 +1049,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                       )}
 
                       {/* Quantity */}
-                      <div className="text-sm font-medium min-w-[2rem] text-center flex-shrink-0">
+                      <div className="typography-label min-w-[2rem] text-center flex-shrink-0">
                         {decimalToFraction(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad) || Math.round(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad)}
                       </div>
 
@@ -1103,7 +1100,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                     {/* Line 2: Comment (if exists) - indented under product name */}
                     {item.comentario && (
-                      <div className="text-xs text-muted-foreground pl-12 leading-tight">
+                      <div className="typography-metadata pl-12 leading-tight">
                         {item.comentario}
                       </div>
                     )}

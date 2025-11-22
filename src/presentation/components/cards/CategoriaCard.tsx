@@ -46,13 +46,13 @@ export function CategoriaCard({
       >
         <div className="flex flex-1 flex-col gap-2">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-1 items-center gap-2 text-sm font-semibold text-foreground">
-              {emoji && <span className="text-base">{emoji}</span>}
+            <div className="flex flex-1 items-center gap-2 typography-body font-semibold text-foreground">
+              {emoji && <span className="typography-body">{emoji}</span>}
               <span className="truncate">{nombre}</span>
             </div>
-            <span className="text-base font-semibold text-foreground">{formatNumber(gastadoNum)}</span>
+            <span className="typography-label-lg text-foreground">{formatNumber(gastadoNum)}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 typography-metadata">
             <span>{t('purchases', { count: compras })}</span>
             <span>•</span>
             <span>{t('percentUsed', { percent: porcentajeNum.toFixed(0) })}</span>

@@ -74,7 +74,7 @@ export function OverspendWarningModal({
           {isOverspend && (
             <Alert variant="destructive">
               <AlertDescription className="space-y-2">
-                <div className="grid grid-cols-2 gap-2 text-base">
+                <div className="grid grid-cols-2 gap-2 typography-body">
                   <div>
                     <p className="text-muted-foreground">{t('modals.overspendWarning.budget')}</p>
                     <p className="font-bold">
@@ -100,7 +100,7 @@ export function OverspendWarningModal({
           {isNegativeWallet && (
             <Alert variant="destructive">
               <AlertDescription className="space-y-2">
-                <div className="grid grid-cols-2 gap-2 text-base">
+                <div className="grid grid-cols-2 gap-2 typography-body">
                   <div>
                     <p className="text-muted-foreground">{t('modals.overspendWarning.currentBalance')}</p>
                     <p className="font-bold">
@@ -120,8 +120,8 @@ export function OverspendWarningModal({
 
           {/* Opciones recomendadas */}
           <div className="bg-blue-50 rounded-lg p-3 space-y-2">
-            <p className="text-base font-medium text-blue-900">{t('modals.overspendWarning.recommendedOptions')}</p>
-            <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+            <p className="typography-body font-medium text-blue-900">{t('modals.overspendWarning.recommendedOptions')}</p>
+            <ul className="typography-body-sm text-blue-800 space-y-1 list-disc list-inside">
               {isOverspend && (
                 <>
                   <li>{t('modals.overspendWarning.increaseBudget')}</li>
@@ -142,13 +142,13 @@ export function OverspendWarningModal({
           {/* Botón para mostrar más detalles */}
           <button
             onClick={() => setShowDetails(!showDetails)}
-            className="text-sm text-muted-foreground hover:text-foreground underline"
+            className="typography-body-sm text-muted-foreground hover:text-foreground underline"
           >
             {showDetails ? t('modals.overspendWarning.hideDetails') : t('modals.overspendWarning.showDetails')}
           </button>
 
           {showDetails && (
-            <div className="bg-slate-50 rounded p-2 text-sm font-mono space-y-1 max-h-32 overflow-y-auto">
+            <div className="bg-slate-50 rounded p-2 typography-body-sm font-mono space-y-1 max-h-32 overflow-y-auto">
               <p>tipo: {warning.type}</p>
               {warning.details.sobreNombre && (
                 <p>sobre: {warning.details.sobreNombre}</p>

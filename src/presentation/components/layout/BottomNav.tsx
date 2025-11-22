@@ -86,7 +86,7 @@ export function BottomNav({
           <DrawerContent className="pb-6">
             <div className="mx-auto w-full max-w-md pt-2">
               <DrawerHeader className="pb-0 text-center">
-                <DrawerTitle className="text-base font-semibold">
+                <DrawerTitle className="typography-label-lg">
                   {t('title')}
                 </DrawerTitle>
                 <DrawerDescription>
@@ -99,22 +99,22 @@ export function BottomNav({
               <div className="flex flex-col gap-6 px-4 py-6">
                 {/* ACCIÓN GLOBAL: NUEVO SOBRE */}
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase text-muted-foreground text-left">
+                  <p className="typography-caption uppercase text-muted-foreground text-left">
                     Crear otro sobre
                   </p>
                   <Button
                     variant="secondary"
-                    className="h-14 rounded-2xl border border-border bg-card px-4 text-left text-sm font-semibold text-foreground"
+                    className="h-14 rounded-2xl border border-border bg-card px-4 text-left typography-body-sm font-semibold text-foreground"
                     onClick={() => handleSobresAction('nuevo-sobre')}
                   >
                     <div className="flex items-center gap-3">
                       <FolderPlus className="h-4 w-4 text-primary" />
                       <div className="flex flex-col items-start">
-                        <span className="text-sm font-semibold">
+                        <span className="typography-body-sm font-semibold">
                           Crear nuevo sobre
                         </span>
                         {currentSobreName && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="typography-metadata">
                             ¿Nuevo objetivo? Sepáralo de “{currentSobreName}”
                           </span>
                         )}
@@ -125,7 +125,7 @@ export function BottomNav({
 
                 <Separator />
 
-                <p className="text-xs font-semibold uppercase text-muted-foreground text-left">
+                <p className="typography-caption uppercase text-muted-foreground text-left">
                   {currentSobreName
                     ? `Operaciones en ${currentSobreName}`
                     : 'Operaciones del sobre'}
@@ -136,7 +136,7 @@ export function BottomNav({
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Button
                       variant="secondary"
-                      className="h-14 rounded-2xl border border-border bg-background px-4 text-left text-sm font-semibold text-foreground"
+                      className="h-14 rounded-2xl border border-border bg-background px-4 text-left typography-body-sm font-semibold text-foreground"
                       onClick={() => handleSobresAction('nueva-categoria')}
                     >
                       <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export function BottomNav({
                     </Button>
 
                     <Button
-                      className="h-14 rounded-2xl px-4 text-left text-sm font-semibold"
+                      className="h-14 rounded-2xl px-4 text-left typography-body-sm font-semibold"
                       onClick={() => handleSobresAction('nuevo-gasto')}
                     >
                       <div className="flex items-center gap-3">

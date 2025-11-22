@@ -162,7 +162,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* País */}
             <div className="space-y-2">
-              <Label htmlFor="country" className="text-base font-medium">
+              <Label htmlFor="country" className="typography-body font-medium">
                 {t('fields.country')} <span className="text-red-500">*</span>
               </Label>
               <Select value={paisSeleccionado} onValueChange={handleCountryChange} disabled={loadingCountry}>
@@ -181,7 +181,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
 
             {/* Moneda Principal */}
             <div className="space-y-2">
-              <Label htmlFor="currency" className="text-base font-medium">
+              <Label htmlFor="currency" className="typography-body font-medium">
                 {t('fields.currency')} <span className="text-red-500">*</span>
               </Label>
               <Select
@@ -200,12 +200,12 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-base text-muted-foreground">{t('fields.currencyDescription')}</p>
+              <p className="typography-body text-muted-foreground">{t('fields.currencyDescription')}</p>
             </div>
 
             {/* Día de inicio período */}
             <div className="space-y-2">
-              <Label htmlFor="day-of-month" className="text-base font-medium">
+              <Label htmlFor="day-of-month" className="typography-body font-medium">
                 {t('fields.dayOfMonth')} <span className="text-red-500">*</span>
               </Label>
               <Select value={diaInicioPeriodo} onValueChange={setDiaInicioPeriodo}>
@@ -220,7 +220,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-base text-muted-foreground">{t('fields.dayOfMonthDescription')}</p>
+              <p className="typography-body text-muted-foreground">{t('fields.dayOfMonthDescription')}</p>
             </div>
           </form>
         </DrawerBody>
@@ -233,7 +233,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
           >
             {loading ? t('buttons.submitting') : t('buttons.submit')}
           </Button>
-          <p className="text-sm text-center text-muted-foreground mt-2">{t('buttons.disclaimer')}</p>
+          <p className="typography-body-sm text-center text-muted-foreground mt-2">{t('buttons.disclaimer')}</p>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

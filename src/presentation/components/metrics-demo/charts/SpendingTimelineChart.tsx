@@ -13,7 +13,7 @@ import { DUMMY_SPENDING_TIMELINE } from '../data/dummy-data'
 export function SpendingTimelineChart() {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">📈 Evolución Diaria de Gastos</h3>
+      <h3 className="typography-h3 mb-4">📈 Evolución Diaria de Gastos</h3>
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={DUMMY_SPENDING_TIMELINE}>
           <defs>
@@ -47,7 +47,7 @@ export function SpendingTimelineChart() {
           />
         </AreaChart>
       </ResponsiveContainer>
-      <p className="text-xs text-muted-foreground mt-2">
+      <p className="typography-metadata mt-2">
         Últimos 21 días • Promedio diario: ${Math.round(DUMMY_SPENDING_TIMELINE.reduce((a, b) => a + b.gasto, 0) / DUMMY_SPENDING_TIMELINE.length).toLocaleString()}
       </p>
     </Card>

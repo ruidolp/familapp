@@ -418,7 +418,7 @@ export function ConfigureExecutionDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex h-[92vh] flex-col overflow-hidden sm:max-w-[480px]">
         <SheetHeader className="text-left">
-          <SheetTitle className="text-lg font-semibold">{t('title')}</SheetTitle>
+          <SheetTitle className="typography-h3">{t('title')}</SheetTitle>
           <SheetDescription>{t('description')}</SheetDescription>
         </SheetHeader>
 
@@ -426,8 +426,8 @@ export function ConfigureExecutionDrawer({
           <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">{t('register.title')}</p>
-                <p className="text-xs text-muted-foreground">{t('register.description')}</p>
+                <p className="typography-label text-foreground">{t('register.title')}</p>
+                <p className="typography-metadata">{t('register.description')}</p>
               </div>
               <Switch checked={registerInBudget} onCheckedChange={setRegisterInBudget} />
             </div>
@@ -435,7 +435,7 @@ export function ConfigureExecutionDrawer({
             {registerInBudget && (
               <div className="space-y-4 rounded-xl bg-muted/40 p-3">
                 <div className="space-y-2">
-                  <Label htmlFor="sobre" className="text-xs font-medium text-muted-foreground">
+                  <Label htmlFor="sobre" className="typography-caption text-muted-foreground">
                     {t('register.envelopeLabel')}
                   </Label>
                   <Select value={sobreId} onValueChange={setSobreId}>
@@ -455,7 +455,7 @@ export function ConfigureExecutionDrawer({
 
                 {sobreId && (
                   <div className="space-y-2">
-                    <Label htmlFor="categoria" className="text-xs font-medium text-muted-foreground">
+                    <Label htmlFor="categoria" className="typography-caption text-muted-foreground">
                       {t('register.categoryLabel')}
                     </Label>
                     <Select value={categoriaId} onValueChange={setCategoriaId}>
@@ -477,12 +477,12 @@ export function ConfigureExecutionDrawer({
                 {categoriaId && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <Label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                      <Label className="flex items-center gap-2 typography-caption text-muted-foreground">
                         <Store className="h-3.5 w-3.5" /> {t('register.brandLabel')}
                       </Label>
                       <button
                         type="button"
-                        className="text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+                        className="typography-caption text-primary hover:underline disabled:opacity-60"
                         onClick={toggleCreateBrand}
                         disabled={!categoriaId}
                       >
@@ -504,7 +504,7 @@ export function ConfigureExecutionDrawer({
                         </SelectContent>
                       </Select>
                     ) : (
-                      <p className="text-xs text-muted-foreground">{t('register.brandPlaceholder')}</p>
+                      <p className="typography-metadata">{t('register.brandPlaceholder')}</p>
                     )}
                     {showCreateBrand && brandCreationForm}
                   </div>
@@ -516,12 +516,12 @@ export function ConfigureExecutionDrawer({
               <div className="space-y-3 rounded-xl bg-muted/40 p-3">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <Label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                    <Label className="flex items-center gap-2 typography-caption text-muted-foreground">
                       <Store className="h-3.5 w-3.5" /> {t('register.brandLabel')}
                     </Label>
                     <button
                       type="button"
-                      className="text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+                      className="typography-caption text-primary hover:underline disabled:opacity-60"
                       onClick={toggleCreateBrand}
                       disabled={!categoriaId}
                     >
@@ -543,11 +543,11 @@ export function ConfigureExecutionDrawer({
                       </SelectContent>
                     </Select>
                   ) : (
-                    <p className="text-xs text-muted-foreground">{t('register.brandPlaceholder')}</p>
+                    <p className="typography-metadata">{t('register.brandPlaceholder')}</p>
                   )}
                   {showCreateBrand && brandCreationForm}
                 </div>
-                <p className="text-xs text-muted-foreground">{t('register.disabledInfo')}</p>
+                <p className="typography-metadata">{t('register.disabledInfo')}</p>
               </div>
             )}
           </Card>
@@ -555,15 +555,15 @@ export function ConfigureExecutionDrawer({
           <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">{t('budget.title')}</p>
-                <p className="text-xs text-muted-foreground">{t('budget.description')}</p>
+                <p className="typography-label text-foreground">{t('budget.title')}</p>
+                <p className="typography-metadata">{t('budget.description')}</p>
               </div>
               <Switch checked={budgetEnabled} onCheckedChange={setBudgetEnabled} />
             </div>
 
             {budgetEnabled && (
               <div className="space-y-2">
-                <Label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <Label className="flex items-center gap-2 typography-caption text-muted-foreground">
                   <DollarSign className="h-3.5 w-3.5" /> {t('budget.amountLabel')}
                 </Label>
                 <Input
@@ -572,9 +572,9 @@ export function ConfigureExecutionDrawer({
                   placeholder={t('budget.amountPlaceholder')}
                   value={budgetAmount}
                   onChange={e => setBudgetAmount(e.target.value)}
-                  className="text-lg"
+                  className="typography-body-lg"
                 />
-                <p className="text-xs text-muted-foreground">{t('budget.note')}</p>
+                <p className="typography-metadata">{t('budget.note')}</p>
               </div>
             )}
           </Card>
@@ -582,8 +582,8 @@ export function ConfigureExecutionDrawer({
           <Card className="mx-1 space-y-3 rounded-2xl border border-border bg-card p-4">
             <div className="flex items-start justify-between">
               <div className="space-y-1">
-                <p className="text-sm font-medium">{t('prices.title')}</p>
-                <p className="text-xs text-muted-foreground">{t('prices.description')}</p>
+                <p className="typography-label">{t('prices.title')}</p>
+                <p className="typography-metadata">{t('prices.description')}</p>
               </div>
               <Switch checked={enablePrices} onCheckedChange={setEnablePrices} />
             </div>

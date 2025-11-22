@@ -13,7 +13,7 @@ import { DUMMY_CATEGORIES_SPENDING } from '../data/dummy-data'
 export function CategoriesPieChart() {
   return (
     <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4">🎯 Distribución de Gastos</h3>
+      <h3 className="typography-h3 mb-4">🎯 Distribución de Gastos</h3>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie

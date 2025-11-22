@@ -46,11 +46,11 @@ export function SettingsSheet({
           {/* Show Timer */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium flex items-center gap-2">
+              <Label className="typography-body font-medium flex items-center gap-2">
                 <Timer className="h-4 w-4" />
                 Mostrar cronómetro
               </Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="typography-body-sm text-muted-foreground">
                 Ver tiempo transcurrido
               </p>
             </div>
@@ -67,11 +67,11 @@ export function SettingsSheet({
           {/* Enable Prices */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium flex items-center gap-2">
+              <Label className="typography-body font-medium flex items-center gap-2">
                 <Tag className="h-4 w-4" />
                 Agregar precios
               </Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="typography-body-sm text-muted-foreground">
                 Registrar precio de productos
               </p>
             </div>
@@ -88,11 +88,11 @@ export function SettingsSheet({
           {/* Show Categories */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium flex items-center gap-2">
+              <Label className="typography-body font-medium flex items-center gap-2">
                 <Grid className="h-4 w-4" />
                 Ver por categorías
               </Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="typography-body-sm text-muted-foreground">
                 Agrupar productos por categoría
               </p>
             </div>
@@ -109,11 +109,11 @@ export function SettingsSheet({
           {/* Flat List Mode */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <Label className="text-base font-medium flex items-center gap-2">
+              <Label className="typography-body font-medium flex items-center gap-2">
                 <AlignLeft className="h-4 w-4" />
                 Modo texto plano
               </Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="typography-body-sm text-muted-foreground">
                 Vista compacta sin bordes
               </p>
             </div>

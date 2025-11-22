@@ -60,7 +60,7 @@ export function ContextualDrawer({
               </div>
               <div className="flex-1 text-left">
                 <p className="font-medium">{t('actions.addCard')}</p>
-                <p className="text-base text-muted-foreground">
+                <p className="typography-body text-muted-foreground">
                   {t('emptyDescription')}
                 </p>
               </div>
@@ -76,7 +76,7 @@ export function ContextualDrawer({
               </div>
               <div className="flex-1 text-left">
                 <p className="font-medium">{t('actions.transfer')}</p>
-                <p className="text-base text-muted-foreground">
+                <p className="typography-body text-muted-foreground">
                   {t('contextual.transferDescription')}
                 </p>
               </div>
@@ -92,7 +92,7 @@ export function ContextualDrawer({
               </div>
               <div className="flex-1 text-left">
                 <p className="font-medium">{t('contextual.depositoLabel')}</p>
-                <p className="text-base text-muted-foreground">
+                <p className="typography-body text-muted-foreground">
                   {t('contextual.depositoDescription')}
                 </p>
               </div>

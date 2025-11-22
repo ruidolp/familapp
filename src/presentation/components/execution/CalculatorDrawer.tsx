@@ -141,11 +141,11 @@ export function CalculatorDrawer({ open, onOpenChange }: CalculatorDrawerProps) 
           {/* Display */}
           <div className="relative">
             <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-lg p-4 text-right">
-              <div className="text-3xl font-bold overflow-x-auto whitespace-nowrap">
+              <div className="typography-h1 overflow-x-auto whitespace-nowrap">
                 {display}
               </div>
               {operation && (
-                <div className="text-sm text-muted-foreground mt-1">
+                <div className="typography-body-sm text-muted-foreground mt-1">
                   {previousValue} {operation}
                 </div>
               )}
@@ -167,14 +167,14 @@ export function CalculatorDrawer({ open, onOpenChange }: CalculatorDrawerProps) 
             <Button
               variant="outline"
               onClick={handleClear}
-              className="text-lg font-semibold"
+              className="typography-h3"
             >
               C (Borrar)
             </Button>
             <Button
               variant="outline"
               onClick={handleBackspace}
-              className="text-lg font-semibold"
+              className="typography-h3"
             >
               <Delete className="h-5 w-5" />
             </Button>
@@ -221,7 +221,7 @@ export function CalculatorDrawer({ open, onOpenChange }: CalculatorDrawerProps) 
               handleCopy()
               onOpenChange(false)
             }}
-            className="w-full text-lg font-semibold h-14"
+            className="w-full typography-h3 h-14"
           >
             <Copy className="h-5 w-5 mr-2" />
             Copiar y Cerrar
