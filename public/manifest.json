@@ -2,7 +2,7 @@
   "name": "FamilApp",
   "short_name": "FamilApp",
   "description": "Gestión familiar inteligente",
-  "start_url": "/es/dashboard",
+  "start_url": "/es/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
