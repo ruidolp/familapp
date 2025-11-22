@@ -260,11 +260,11 @@ export async function actualizarSobre(
     if (input.color !== undefined) updateData.color = input.color
     if (input.emoji !== undefined) updateData.emoji = input.emoji
 
-    const sobre = await updateSobre(sobreId, updateData)
+    const sobreActualizado = await updateSobre(sobreId, updateData)
 
     return {
       success: true,
-      data: sobre,
+      data: sobreActualizado,
     }
   } catch (error) {
     console.error('Error al actualizar sobre:', error)
