@@ -183,9 +183,10 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     const target = container.querySelector<HTMLElement>(`[data-item-id="${lastAddedItemId}"]`)
 
     if (target) {
-      const bottomPadding = 160 // leave room for input fijo + teclado
-      const targetBottom = target.offsetTop + target.offsetHeight
-      const scrollTop = Math.max(0, targetBottom - container.clientHeight + bottomPadding)
+      // Improved scroll calculation: position element near top with offset for header
+      const headerOffset = 100 // space for list header (title, buttons)
+      const desiredGap = 20 // small gap for better visibility
+      const scrollTop = Math.max(0, target.offsetTop - headerOffset - desiredGap)
 
       container.scrollTo({
         top: scrollTop,
@@ -847,7 +848,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
         ) : flatListMode ? (
           /* FLAT LIST MODE */
-          <Card className="p-2">
+          <Card className="p-2" style={{ minHeight: 'calc(100vh - 250px)' }}>
             <div className="space-y-0">
               {items.map((item) => {
                 const saveState = itemSaveState[item.id]
@@ -885,7 +886,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </Card>
         ) : groupByCategory ? (
           /* GROUPED BY CATEGORY MODE */
-          <div className="space-y-4">
+          <div className="space-y-4" style={{ minHeight: 'calc(100vh - 250px)' }}>
             {(() => {
               // Group items by category (prioritize final_category_id which includes catalog categories)
               const grouped = items.reduce((acc, item) => {
@@ -1013,7 +1014,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
         ) : (
           /* NORMAL CARD MODE */
-          <div className="space-y-1.5">
+          <div className="space-y-1.5" style={{ minHeight: 'calc(100vh - 250px)' }}>
             {items.map((item) => {
               const saveState = itemSaveState[item.id]
               const isSaving = saveState?.isSaving ?? false
