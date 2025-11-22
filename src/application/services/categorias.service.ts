@@ -15,6 +15,7 @@ import {
   findCategoriaByNombre,
   updateCategoria,
   softDeleteCategoria,
+  linkCategoriaToSobre,
 } from '@/infrastructure/database/queries/categorias.queries'
 import {
   createSubcategoria,
@@ -36,6 +37,7 @@ export interface CreateCategoriaInput {
   color?: string
   emoji?: string
   userId: string
+  sobreId?: string
 }
 
 /**
@@ -107,6 +109,11 @@ export async function crearCategoria(
       emoji: input.emoji,
       usuario_id: input.userId,
     })
+
+    // Si se proporciona un sobreId, vincular la categoría al sobre
+    if (input.sobreId) {
+      await linkCategoriaToSobre(input.sobreId, categoria.id)
+    }
 
     return {
       success: true,

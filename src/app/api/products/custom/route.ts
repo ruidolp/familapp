@@ -3,6 +3,7 @@ import { auth } from '@/infrastructure/lib/auth'
 import {
   createCustomProduct,
   searchUserCustomProducts,
+  findUserCustomProductByNombre,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
 
 export async function GET(req: NextRequest) {
@@ -49,9 +50,24 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Verificar si ya existe un producto con ese nombre (case-insensitive)
+    const existing = await findUserCustomProductByNombre(
+      session.user.id,
+      nombre.trim()
+    )
+
+    if (existing) {
+      // Retornar el producto existente en lugar de crear duplicado
+      return NextResponse.json({
+        success: true,
+        product: existing,
+        existed: true, // Flag para indicar que ya existía
+      }, { status: 200 })
+    }
+
     const product = await createCustomProduct(
       session.user.id,
-      nombre,
+      nombre.trim(),
       descripcion
     )
 

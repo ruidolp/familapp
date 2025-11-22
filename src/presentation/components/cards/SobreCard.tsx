@@ -1,19 +1,23 @@
 'use client'
 
 import { useMemo, useEffect, useState, type CSSProperties } from 'react'
-import { Plus, MoreVertical } from 'lucide-react'
+import { Plus, MoreVertical, Wallet, ArrowUpRight, ArrowDownRight, List } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+  DrawerTrigger,
+  DrawerBody,
+  DrawerClose,
+  DrawerFooter,
+} from '@/components/ui/drawer'
 import { CategoriaCard } from '@/components/cards/CategoriaCard'
 import { useSobreCategories } from '@/presentation/hooks/useSobres'
-import { EditarCategoriaDrawer } from '@/components/drawers/EditarCategoriaDrawer'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface Billetera {
@@ -43,6 +47,12 @@ interface SobreCardProps {
   onAgregarCategoria?: () => void
   onVerDetalle?: () => void
   onFlashGasto?: (categoriaId: string) => void
+  onVerTransaccionesCategoria?: (
+    categoriaId: string,
+    categoriaNombre: string,
+    sobreId: string,
+    sobreName: string
+  ) => void
 }
 
 export function SobreCard({
@@ -59,12 +69,12 @@ export function SobreCard({
   onAgregarCategoria,
   onVerDetalle,
   onFlashGasto,
+  onVerTransaccionesCategoria,
 }: SobreCardProps) {
   const { formatNumber } = useCurrency()
   const t = useTranslations('sobres')
   const [categoriasLoading, setCategoriasLoading] = useState(false)
-  const [editarCategoriaOpen, setEditarCategoriaOpen] = useState(false)
-  const [selectedCategoria, setSelectedCategoria] = useState<{ id: string; nombre: string } | null>(null)
+  const [accionesOpen, setAccionesOpen] = useState(false)
 
   // Asegurar que son números (pueden venir como strings/Decimal de la BD)
   const presupuesto = Number(presupuestoAsignado) || 0
@@ -117,7 +127,7 @@ export function SobreCard({
         onClick={onVerDetalle}
       >
         <div
-          className="pointer-events-none absolute -top-4 right-2 h-16 w-20 opacity-70"
+          className="pointer-events-none absolute -top-4 right-0 h-16 w-24 opacity-70"
           style={{
             backgroundColor: accentColor,
             clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
@@ -126,71 +136,130 @@ export function SobreCard({
         <div className="relative z-10 space-y-6">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-wide text-white/70">Sobre activo</p>
+              <p className="text-xs uppercase tracking-wide text-white/70">{t('card.active')}</p>
               <h2 className="text-2xl font-semibold leading-snug">{nombre}</h2>
               <p className="text-sm text-white/80">
                 {formatNumber(presupuesto)} {t('total')}
               </p>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button variant="ghost" size="icon" className="h-9 w-9 text-white/80">
+            <Drawer open={accionesOpen} onOpenChange={setAccionesOpen}>
+              <DrawerTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 text-white/80"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setAccionesOpen(true)
+                  }}
+                >
                   <MoreVertical className="h-5 w-5" />
-                  <span className="sr-only">Acciones del sobre</span>
+                  <span className="sr-only">{t('card.accessibility.actions')}</span>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onAgregarPresupuesto?.()
-                  }}
-                >
-                  {t('menu.increaseBudget')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDevolverPresupuesto?.()
-                  }}
-                  disabled={presupuestoLibre <= 0}
-                >
-                  {t('menu.reduceBudget')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onEditarCategorias?.()
-                  }}
-                >
-                  {t('menu.editCategories')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onVerDetalle?.()
-                  }}
-                >
-                  {t('menu.shoppingList')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle>{t('card.actions.title', { name: nombre })}</DrawerTitle>
+                  <DrawerDescription>{t('card.actions.description')}</DrawerDescription>
+                </DrawerHeader>
+                <DrawerBody className="space-y-4">
+                  <Card className="p-3 space-y-3 bg-muted/40">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t('card.actions.budgetSection')}
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        variant="secondary"
+                        className="h-12 justify-start gap-2"
+                        onClick={() => {
+                          setAccionesOpen(false)
+                          onAgregarPresupuesto?.()
+                        }}
+                      >
+                        <ArrowUpRight className="h-4 w-4 text-primary" />
+                        {t('card.actions.increase')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-12 justify-start gap-2"
+                        disabled={presupuestoLibre <= 0}
+                        onClick={() => {
+                          setAccionesOpen(false)
+                          onDevolverPresupuesto?.()
+                        }}
+                      >
+                        <ArrowDownRight className="h-4 w-4 text-red-500" />
+                        {t('card.actions.reduce')}
+                      </Button>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      className="h-12 justify-start gap-2"
+                      onClick={() => {
+                          setAccionesOpen(false)
+                          onVerDetalle?.()
+                        }}
+                      >
+                        <List className="h-4 w-4" />
+                        {t('card.actions.transactions')}
+                      </Button>
+                  </Card>
+
+                  <Card className="p-3 space-y-3 bg-muted/40">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t('card.actions.organizationSection')}
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Button
+                        variant="secondary"
+                        className="h-12 justify-start gap-2"
+                        onClick={() => {
+                          setAccionesOpen(false)
+                          onEditarCategorias?.()
+                        }}
+                      >
+                        <Wallet className="h-4 w-4 text-primary" />
+                        {t('card.actions.categoriesAndBrands')}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-12 justify-start gap-2"
+                        onClick={() => {
+                          setAccionesOpen(false)
+                          onAgregarCategoria?.()
+                        }}
+                      >
+                        <Plus className="h-4 w-4" />
+                        {t('card.actions.newCategory')}
+                      </Button>
+                    </div>
+                  </Card>
+                </DrawerBody>
+                <DrawerFooter>
+                  <DrawerClose asChild>
+                    <Button variant="ghost" className="w-full">
+                      {t('card.actions.close')}
+                    </Button>
+                  </DrawerClose>
+                </DrawerFooter>
+              </DrawerContent>
+            </Drawer>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-white">
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-wide text-white/70">{t('usado')}</p>
               <p className="text-3xl font-bold">{formatNumber(gastadoNum)}</p>
-              <p className="text-xs text-white/80">{Math.round(porcentajeGastado)}% del presupuesto</p>
+              <p className="text-xs text-white/80">{t('card.status.percentOfBudget', { percent: Math.round(porcentajeGastado) })}</p>
             </div>
             <div className="text-right space-y-1">
               <p className="text-xs uppercase tracking-wide text-white/70">
-                {libreEsPositivo ? t('libre') : 'Te pasaste'}
+                {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
               </p>
               <p className={`text-3xl font-bold ${libreEsPositivo ? '' : 'text-red-100'}`}>
                 {formatNumber(libreEsPositivo ? presupuestoLibre : Math.abs(presupuestoLibre))}
               </p>
-              <p className="text-xs text-white/80">Disponible</p>
+              <p className="text-xs text-white/80">{t('card.status.available')}</p>
             </div>
           </div>
         </div>
@@ -236,14 +305,13 @@ export function SobreCard({
                   id={categoria.id}
                   nombre={categoria.nombre}
                   emoji={categoria.emoji}
+                  color={categoria.color}
                   gastado={categoria.gastado || 0}
                   porcentaje={categoria.porcentaje || 0}
                   compras={categoria.compras || 0}
-                  onClick={(e) => {
-                    e?.stopPropagation()
-                    setSelectedCategoria({ id: categoria.id, nombre: categoria.nombre })
-                    setEditarCategoriaOpen(true)
-                  }}
+                  onViewTransactions={() =>
+                    onVerTransaccionesCategoria?.(categoria.id, categoria.nombre, id, nombre)
+                  }
                   onFlashGasto={(e) => {
                     e?.stopPropagation()
                     onFlashGasto?.(categoria.id)
@@ -282,18 +350,6 @@ export function SobreCard({
           )}
         </div>
       </div>
-
-      {selectedCategoria && (
-        <EditarCategoriaDrawer
-          open={editarCategoriaOpen}
-          onOpenChange={setEditarCategoriaOpen}
-          categoriaId={selectedCategoria.id}
-          categoriaNombre={selectedCategoria.nombre}
-          onSuccess={() => {
-            refetchCategorias()
-          }}
-        />
-      )}
     </div>
   )
 }

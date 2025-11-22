@@ -10,6 +10,9 @@ import {
   findUserConfig,
   createDefaultUserConfig,
   updateUserConfig,
+  getMarcasGlobalesVersion,
+  getProductCatalogVersion,
+  getProductCategoriesGlobalVersion,
 } from '@/infrastructure/database/queries/user-config.queries'
 
 /**
@@ -38,9 +41,25 @@ export async function GET() {
       )
     }
 
+    // Usar campo pais directo, con fallback a extraer de locale
+    const pais = config.pais || config.locale?.split('-')[1]?.toUpperCase() || 'CL'
+
+    // Extraer idioma del locale (ej: 'es-CL' → 'es')
+    const idioma = config.locale?.split('-')[0] || 'es'
+
+    // Obtener versiones para caché (marcas, productos, categorías)
+    const [marcasGlobalesVersion, productCatalogVersion, productCategoriesVersion] = await Promise.all([
+      getMarcasGlobalesVersion(pais),
+      getProductCatalogVersion(idioma),
+      getProductCategoriesGlobalVersion(idioma),
+    ])
+
     return NextResponse.json({
       success: true,
       config,
+      marcasGlobalesVersion,
+      productCatalogVersion,
+      productCategoriesVersion,
     })
   } catch (error: any) {
     console.error('Error al obtener configuración:', error)
@@ -82,7 +101,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { monedaPrincipalId, timezone, locale, primerDiaSemana } = body
+    const { monedaPrincipalId, timezone, locale, pais, primerDiaSemana } = body
 
     // Validar campo requerido
     if (!monedaPrincipalId) {
@@ -99,6 +118,7 @@ export async function POST(req: NextRequest) {
       {
         timezone,
         locale,
+        pais,
         primerDiaSemana,
       }
     )
@@ -140,6 +160,7 @@ export async function PUT(req: NextRequest) {
       monedasHabilitadas,
       timezone,
       locale,
+      pais,
       primerDiaSemana,
       tipoPeriodo,
       diaInicioPeriodo,
@@ -150,6 +171,7 @@ export async function PUT(req: NextRequest) {
     if (monedasHabilitadas) updateData.monedas_habilitadas = monedasHabilitadas
     if (timezone) updateData.timezone = timezone
     if (locale) updateData.locale = locale
+    if (pais) updateData.pais = pais
     if (primerDiaSemana !== undefined) updateData.primer_dia_semana = primerDiaSemana
     if (tipoPeriodo) updateData.tipo_periodo = tipoPeriodo
     if (diaInicioPeriodo !== undefined) updateData.dia_inicio_periodo = diaInicioPeriodo

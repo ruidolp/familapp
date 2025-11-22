@@ -354,6 +354,20 @@
       "countryRequired": "Please select your country",
       "currencyRequired": "Please select your currency",
       "dayRequired": "Please select a day"
+    },
+    "wallet": {
+      "default": "My Wallet"
+    },
+    "sobres": {
+      "HOGAR": "Home",
+      "PERSONAL": "Personal"
+    },
+    "categorias": {
+      "supermercado": "Supermarket",
+      "transporte": "Transportation",
+      "medicina": "Medicine",
+      "cuentas_hogar": "Household bills",
+      "comida_rapida": "Fast food"
     }
   },
   "common": {
@@ -376,7 +390,43 @@
     "usado": "Used",
     "libre": "Available",
     "utilizado": "used",
-    "total": "total"
+    "total": "total",
+    "list": {
+      "loading": "Loading envelopes...",
+      "empty": "You have no envelopes yet",
+      "createFirst": "Create your first envelope",
+      "loadError": "Failed to load envelopes",
+      "returnError": "Error returning budget"
+    },
+    "card": {
+      "active": "Active envelope",
+      "actions": {
+        "title": "Actions for {name}",
+        "description": "Manage budget and categories quickly.",
+        "budgetSection": "Budget",
+        "increase": "Increase",
+        "reduce": "Reduce",
+        "transactions": "Movement details",
+        "organizationSection": "Organization",
+        "categoriesAndBrands": "Categories & Brands",
+        "newCategory": "New category",
+        "close": "Close"
+      },
+      "status": {
+        "percentOfBudget": "{percent}% of the budget",
+        "overBudget": "Over budget",
+        "available": "Available"
+      },
+      "accessibility": {
+        "actions": "Envelope actions"
+      }
+    },
+    "categoryCard": {
+      "purchases": "{count} purchases",
+      "percentUsed": "{percent}% used from your budget",
+      "quickExpense": "Quick expense",
+      "editCategory": "Edit category"
+    }
   },
   "shopping": {
     "history": {
@@ -548,6 +598,11 @@
       "editCategories": "Edit Categories",
       "shoppingList": "Shopping List"
     },
+    "quickActions": {
+      "title": "Quick Actions",
+      "descriptionDefault": "Create and manage your envelopes here.",
+      "descriptionWithName": "Manage \"{name}\" or create another envelope."
+    },
     "emptyBudget": {
       "message": "Assign budget",
       "button": "Add Budget"
@@ -670,7 +725,8 @@
         "assignedBudget": "Assigned Budget",
         "amountToReduce": "Amount to reduce",
         "observation": "Observation",
-        "observationPlaceholder": "Eg: Budget adjustment"
+        "observationPlaceholder": "Eg: Budget adjustment",
+        "optional": "optional"
       },
       "buttons": {
         "save": "Save",
@@ -697,12 +753,21 @@
       "transactionCount": "transactions",
       "transactionsCount": "{count} transactions",
       "noCategory": "No category",
+      "categoryTitle": "Transactions for {categoriaName}",
+      "categoryDescription": "Expenses and adjustments for {categoriaName} in {sobreName}",
+      "confirmTitle": "Delete transaction",
+      "confirmMessage": "Deleting will revert the expense and log the reversal in the envelope.",
+      "confirmDeleteAction": "Delete and revert",
+      "confirmDelete": "Do you want to delete this transaction? The envelope balance will be reverted.",
+      "deleteSuccess": "Transaction deleted and balance updated.",
+      "deleting": "Deleting...",
       "close": "Close",
       "buttons": {
         "close": "Close"
       },
       "errors": {
-        "loadFailed": "Failed to load transactions"
+        "loadFailed": "Failed to load transactions",
+        "deleteFailed": "Failed to delete transaction"
       }
     }
   },
@@ -710,39 +775,66 @@
     "title": "Categories",
     "add": {
       "title": "Add Categories",
-      "description": "Used to categorize expenses in {sobreName}",
+      "description": "Organize {sobreName} with categories.",
       "categories": "Categories",
-      "namePlaceholder": "Write category (Eg: Food)",
+      "namePlaceholder": "E.g. Food, Transport",
       "add": "✓",
       "checkmark": "✓",
-      "brands": "Add companies by each category",
+      "brands": "Brands or places",
       "added": "Brands added",
       "addBrand": "Add brand",
-      "brandSearch": "Search or create brand...",
+      "brandSearch": "Search or create a brand...",
       "adding": "Adding...",
       "addCategory": "Add Category",
       "addBrandLabel": "Adding...",
-      "selectAtLeastOne": "Select at least one category to continue",
+      "selectAtLeastOne": "Select a category to continue",
       "saving": "Saving...",
       "submit": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "notifications": {
+        "categoryCreated": "Category \"{name}\" created",
+        "categoryCreateError": "Error creating category",
+        "brandCreated": "Brand \"{name}\" created",
+        "brandCreateError": "Error creating brand",
+        "linkSuccess": "{count} category(ies) added",
+        "linkError": "Error adding categories"
+      }
     },
     "edit": {
       "title": "Edit Category",
-      "description": "Modify the name and add brands/companies",
+      "description": "Customize your category's name, emoji, and color.",
+      "drawerTitle": "Categories & Brands",
+      "basicInfo": "Basic Information",
+      "colorSection": "Color",
+      "colorLabel": "Choose a color",
+      "nameLabel": "Name",
       "name": "Name",
       "namePlaceholder": "Eg: Food",
       "where": "Where do you shop?",
       "whereDescription": "Add your recurring brands so you can measure your expenses",
+      "whereShop": "Where do you usually shop?",
+      "brandsHelp": "Add your frequent brands to measure your expenses better.",
       "brandsAdded": "Brands added",
+      "addedBrands": "Brands added",
       "addBrand": "Search or create brand",
+      "searchOrCreate": "Search or create brand",
       "brandNamePlaceholder": "Write brand name (Eg: Walmart)",
+      "brandPlaceholder": "Eg: Walmart, local supermarket...",
       "add": "✓",
       "adding": "Adding...",
       "addBrand": "Add Brand",
       "saving": "Saving...",
       "submit": "Save",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "globalLabel": "Global",
+      "nameRequired": "Name is required",
+      "notifications": {
+        "loadError": "Error loading data",
+        "brandCreated": "Brand \"{name}\" created",
+        "brandCreateError": "Error creating brand",
+        "updateSuccess": "Category updated successfully",
+        "updateError": "Error updating category"
+      }
     }
   },
   "shopping": {
@@ -787,6 +879,48 @@
       }
     },
     "execution": {
+      "configure": {
+        "title": "Setup purchase",
+        "description": "Get everything ready before starting.",
+        "register": {
+          "title": "Register expense in envelopes",
+          "description": "Link this purchase to an envelope, category, and brand.",
+          "createBrand": "Create new brand",
+          "envelopeLabel": "Envelope",
+          "envelopePlaceholder": "Select envelope",
+          "categoryLabel": "Category",
+          "categoryPlaceholder": "Select category",
+          "brandLabel": "Brand / Store",
+          "brandPlaceholder": "Select store",
+        "brandInputPlaceholder": "Type the brand name",
+        "brandSubmit": "Add",
+        "brandSubmitting": "Creating...",
+        "brandError": "Error creating brand",
+        "brandCreated": "Brand \"{name}\" created",
+        "disabledInfo": "If you skip the expense, still pick the company for your purchase stats."
+      },
+        "budget": {
+          "title": "Purchase budget",
+          "description": "Visual control of your spending.",
+          "amountLabel": "Target amount",
+          "amountPlaceholder": "E.g. 25,000",
+          "note": "Informative only; it won't stop the purchase."
+      },
+      "prices": {
+        "title": "Register purchase prices",
+        "description": "You can enter product prices like a cash register. You can turn it off anytime."
+      },
+        "validation": {
+          "selectEnvelope": "Select an envelope",
+          "selectCategory": "Select a category",
+          "selectBrand": "Select or create a brand/store",
+          "enterBudget": "Enter the purchase budget"
+        },
+        "actions": {
+          "cancel": "Cancel",
+          "start": "Start purchase"
+        }
+      },
       "finalize": {
         "title": "Purchase Summary",
         "description": "Verify the details before finishing",
@@ -825,6 +959,14 @@
         "flatListMode": "Flat list mode",
         "flatListModeDesc": "Compact view without borders",
         "close": "Close"
+      },
+      "pause": {
+        "title": "Pause purchase",
+        "cardSummary": "We'll pause the purchase so you can return anytime.",
+        "autoSave": "Progress saved automatically.",
+        "resumeHint": "Resume from Active purchases.",
+        "confirm": "Confirm",
+        "continue": "Keep shopping"
       }
     }
   },

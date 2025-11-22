@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,23 +15,40 @@ import {
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { notify } from '@/infrastructure/lib/notifications'
-
-interface Subcategoria {
-  id: string
-  nombre: string
-  emoji?: string
-  color?: string
-  categoria_id: string
-}
+import { EmojiPicker } from '@/components/inputs/EmojiPicker'
+import { Check } from 'lucide-react'
 
 interface EditarCategoriaDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   categoriaId: string
   categoriaNombre: string
+  categoriaEmoji?: string
+  categoriaColor?: string
   onSuccess?: () => void
+}
+
+// Paleta de colores desde el theme
+const THEME_COLORS = [
+  { name: 'primary', class: 'bg-primary', value: 'primary' },
+  { name: 'secondary', class: 'bg-secondary', value: 'secondary' },
+  { name: 'destructive', class: 'bg-destructive', value: 'destructive' },
+  { name: 'success', class: 'bg-success', value: 'success' },
+  { name: 'warning', class: 'bg-warning', value: 'warning' },
+  { name: 'info', class: 'bg-info', value: 'info' },
+  { name: 'accent', class: 'bg-accent', value: 'accent' },
+  { name: 'tertiary', class: 'bg-tertiary', value: 'tertiary' },
+]
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-5 w-1 bg-primary rounded-full" />
+      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+    </div>
+  )
 }
 
 export function EditarCategoriaDrawer({
@@ -39,153 +56,27 @@ export function EditarCategoriaDrawer({
   onOpenChange,
   categoriaId,
   categoriaNombre,
+  categoriaEmoji = '',
+  categoriaColor = 'primary',
   onSuccess,
 }: EditarCategoriaDrawerProps) {
   const t = useTranslations()
   const [loading, setLoading] = useState(false)
   const [nombre, setNombre] = useState('')
-  const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([])
-  const [selectedSubcategorias, setSelectedSubcategorias] = useState<Subcategoria[]>([])
-  const [inputValue, setInputValue] = useState('')
-  const [suggestions, setSuggestions] = useState<Subcategoria[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [emoji, setEmoji] = useState('')
+  const [color, setColor] = useState('primary')
 
-  // Cargar categoría y subcategorías cuando se abre
   useEffect(() => {
     if (open) {
-      fetchData()
       setNombre(categoriaNombre)
-      setInputValue('')
-      setSuggestions([])
-      setShowSuggestions(false)
+      setEmoji(categoriaEmoji)
+      setColor(categoriaColor || 'primary')
     }
-  }, [open, categoriaId, categoriaNombre])
+  }, [open, categoriaId, categoriaNombre, categoriaEmoji, categoriaColor])
 
-  const fetchData = async () => {
-    try {
-      // Cargar todas las subcategorías del usuario (global)
-      const subcategoriasResponse = await fetch('/api/subcategorias')
-      if (subcategoriasResponse.ok) {
-        const data = await subcategoriasResponse.json()
-        setSubcategorias(data.subcategorias || [])
-      }
-
-      // Cargar subcategorías de esta categoría
-      const categoriasResponse = await fetch(`/api/subcategorias?categoriaId=${categoriaId}`)
-      if (categoriasResponse.ok) {
-        const data = await categoriasResponse.json()
-        setSelectedSubcategorias(data.subcategorias || [])
-      }
-    } catch (error) {
-      console.error('Error al cargar datos:', error)
-      notify.error('Error al cargar datos')
-    }
-  }
-
-  // Manejar cambios en el input de subcategorías
-  const handleInputChange = (value: string) => {
-    setInputValue(value)
-
-    if (!value.trim()) {
-      setSuggestions([])
-      setShowSuggestions(false)
-      return
-    }
-
-    // Filtrar subcategorías globales que no estén ya seleccionadas
-    const filtered = subcategorias.filter((sub) => {
-      const yaEstaSeleccionada = selectedSubcategorias.some((s) => s.id === sub.id)
-      const coincideConBusqueda = sub.nombre.toLowerCase().includes(value.toLowerCase())
-      return !yaEstaSeleccionada && coincideConBusqueda
-    })
-
-    setSuggestions(filtered)
-    setShowSuggestions(filtered.length > 0)
-  }
-
-  // Click en sugerencia
-  const handleSelectSuggestion = async (subcategoria: Subcategoria) => {
-    // Si la marca ya pertenece a esta categoría, solo notificar
-    if (subcategoria.categoria_id === categoriaId) {
-      notify.info(`Marca "${subcategoria.nombre}" ya existe en esta categoría`)
-      setInputValue('')
-      setSuggestions([])
-      setShowSuggestions(false)
-      return
-    }
-
-    // Si la marca pertenece a otra categoría, crear una nueva con el mismo nombre
-    await crearYAgregarSubcategoria(subcategoria.nombre)
-    setInputValue('')
-    setSuggestions([])
-    setShowSuggestions(false)
-    inputRef.current?.focus()
-  }
-
-  // Remover subcategoría seleccionada
-  const handleRemoveSubcategoria = (subcategoriaId: string) => {
-    setSelectedSubcategorias(selectedSubcategorias.filter((s) => s.id !== subcategoriaId))
-  }
-
-  // Manejar ENTER en el input
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const trimmedValue = inputValue.trim()
-    if (!trimmedValue) return
-
-    // Buscar si ya existe una subcategoría con ese nombre exacto
-    const existe = subcategorias.find((s) => s.nombre.toLowerCase() === trimmedValue.toLowerCase())
-
-    if (existe) {
-      // Si existe, usar la misma lógica de handleSelectSuggestion
-      await handleSelectSuggestion(existe)
-    } else {
-      // Si no existe, la creamos como NUEVA
-      await crearYAgregarSubcategoria(trimmedValue)
-      setInputValue('')
-      setSuggestions([])
-      setShowSuggestions(false)
-      inputRef.current?.focus()
-    }
-  }
-
-  // Crear nueva subcategoría
-  const crearYAgregarSubcategoria = async (nombre: string) => {
-    setLoading(true)
-    try {
-      const response = await fetch('/api/subcategorias', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, categoriaId }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Error al crear subcategoría')
-      }
-
-      const data = await response.json()
-      const nuevaSubcategoria = data.subcategoria
-
-      // Agregar a la lista global
-      setSubcategorias([...subcategorias, nuevaSubcategoria])
-
-      // Agregar a seleccionadas
-      setSelectedSubcategorias([...selectedSubcategorias, nuevaSubcategoria])
-
-      notify.success(`Marca "${nombre}" creada`)
-    } catch (error: any) {
-      notify.error(error.message || 'Error al crear marca')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Guardar cambios
-  const handleGuardar = async () => {
     if (!nombre.trim()) {
       notify.error(t('categorias.edit.nameRequired'))
       return
@@ -193,25 +84,26 @@ export function EditarCategoriaDrawer({
 
     setLoading(true)
     try {
-      // Actualizar nombre de categoría
-      if (nombre !== categoriaNombre) {
-        const response = await fetch(`/api/categorias/${categoriaId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nombre }),
-        })
+      const response = await fetch(`/api/categorias/${categoriaId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: nombre.trim(),
+          emoji: emoji || undefined,
+          color: color,
+        }),
+      })
 
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.error || 'Error al actualizar categoría')
-        }
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || t('categorias.edit.notifications.updateError'))
       }
 
-      notify.success('Categoría actualizada correctamente')
+      notify.success(t('categorias.edit.notifications.updateSuccess'))
       onOpenChange(false)
       onSuccess?.()
     } catch (error: any) {
-      notify.error(error.message || 'Error al actualizar categoría')
+      notify.error(error.message || t('categorias.edit.notifications.updateError'))
     } finally {
       setLoading(false)
     }
@@ -228,124 +120,83 @@ export function EditarCategoriaDrawer({
         </DrawerHeader>
 
         <DrawerBody>
-          <div className="space-y-4">
-            {/* Nombre de categoría */}
-            <div className="space-y-2">
-              <Label htmlFor="nombre">{t('categorias.edit.nameLabel')}</Label>
-              <Input
-                id="nombre"
-                type="text"
-                placeholder={t('categorias.edit.namePlaceholder')}
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
-            </div>
+          <div className="max-h-[70vh] overflow-y-auto pb-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* INFORMACIÓN BÁSICA */}
+              <div className="space-y-3">
+                <SectionTitle>{t('categorias.edit.basicInfo')}</SectionTitle>
 
-            {/* Separador */}
-            <div className="border-t border-gray-200 my-4" />
-
-            {/* Texto descriptivo */}
-            <div className="space-y-1">
-              <Label>{t('categorias.edit.whereShop')}</Label>
-              <p className="text-sm text-muted-foreground">
-                {t('categorias.edit.brandsHelp')}
-              </p>
-            </div>
-
-            {/* Marcas agregadas - Mostrar arriba */}
-            {selectedSubcategorias.length > 0 && (
-              <div className="space-y-2">
-                <Label>{t('categorias.edit.addedBrands')}</Label>
-                <div className="flex flex-wrap gap-2">
-                  {selectedSubcategorias.map((sub) => (
-                    <Badge
-                      key={sub.id}
-                      variant="default"
-                      className="cursor-pointer gap-1 pl-2"
-                    >
-                      {sub.emoji && <span>{sub.emoji}</span>}
-                      <span>{sub.nombre}</span>
-                      <button
-                        onClick={() => handleRemoveSubcategoria(sub.id)}
-                        className="ml-1 hover:opacity-70"
-                        type="button"
-                      >
-                        ✕
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Campo de búsqueda/creación - Abajo */}
-            <div className="space-y-2">
-              <Label htmlFor="marca">{t('categorias.edit.searchOrCreate')}</Label>
-              <div className="relative">
-                <Input
-                  ref={inputRef}
-                  id="marca"
-                  type="text"
-                  placeholder={t('categorias.edit.brandPlaceholder')}
-                  value={inputValue}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => {
-                    if (inputValue && suggestions.length > 0) {
-                      setShowSuggestions(true)
-                    }
-                  }}
-                  onBlur={() => {
-                    // Delay para permitir click en sugerencia
-                    setTimeout(() => setShowSuggestions(false), 200)
-                  }}
-                />
-
-                {/* Sugerencias */}
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 border rounded-md bg-white shadow-lg z-10">
-                    {suggestions.map((sub) => (
-                      <button
-                        key={sub.id}
-                        onClick={() => handleSelectSuggestion(sub)}
-                        className="w-full text-left px-3 py-2 hover:bg-slate-100 flex items-center gap-2 text-base"
-                        type="button"
-                      >
-                        <span className="text-green-600">{t('categorias.edit.checkmark')}</span>
-                        <span>{sub.emoji && `${sub.emoji} `}</span>
-                        <span>{sub.nombre}</span>
-                      </button>
-                    ))}
+                <Card className="p-4 space-y-4 bg-card-elevated">
+                  {/* Nombre con Emoji */}
+                  <div className="space-y-2">
+                    <Label htmlFor="nombre" className="text-sm font-medium text-muted-foreground">
+                      {t('categorias.edit.nameLabel')}
+                    </Label>
+                    <div className="flex gap-2 items-center">
+                      <EmojiPicker value={emoji} onChange={setEmoji} />
+                      <Input
+                        id="nombre"
+                        type="text"
+                        placeholder={t('categorias.edit.namePlaceholder')}
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        className="flex-1 h-11"
+                        autoFocus
+                      />
+                    </div>
                   </div>
-                )}
+                </Card>
               </div>
-              <Button
-                type="button"
-                onClick={async () => {
-                  if (inputValue.trim()) {
-                    await handleKeyDown({ key: 'Enter', preventDefault: () => {} } as any)
-                  }
-                }}
-                disabled={!inputValue.trim() || loading}
-                className="w-full"
-                size="sm"
-              >
-                {loading ? t('common.loading') : t('categorias.edit.addBrand')}
-              </Button>
-            </div>
+
+              {/* COLOR */}
+              <div className="space-y-3">
+                <SectionTitle>{t('categorias.edit.colorSection')}</SectionTitle>
+
+                <Card className="p-4 bg-card-elevated">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      {t('categorias.edit.colorLabel')}
+                    </Label>
+                    <div className="grid grid-cols-4 gap-3">
+                      {THEME_COLORS.map((themeColor) => (
+                        <button
+                          key={themeColor.value}
+                          type="button"
+                          onClick={() => setColor(themeColor.value)}
+                          className={[
+                            'relative h-14 w-full rounded-lg transition-all',
+                            themeColor.class,
+                            color === themeColor.value
+                              ? 'ring-2 ring-offset-2 ring-foreground scale-105'
+                              : 'hover:scale-105',
+                          ].join(' ')}
+                        >
+                          {color === themeColor.value && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Check className="h-6 w-6 text-white drop-shadow-lg" />
+                            </div>
+                          )}
+                          <span className="sr-only">{themeColor.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </form>
           </div>
         </DrawerBody>
 
-        <DrawerFooter>
+        <DrawerFooter className="border-t bg-muted/30">
           <Button
-            onClick={handleGuardar}
+            onClick={handleSubmit}
             disabled={loading || !nombre.trim()}
-            className="w-full"
+            className="w-full h-12 text-base font-semibold"
           >
             {loading ? t('categorias.edit.saving') : t('categorias.edit.submit')}
           </Button>
           <DrawerClose asChild>
-            <Button variant="outline" disabled={loading} className="w-full mb-4">
+            <Button variant="ghost" disabled={loading} className="w-full">
               {t('common.cancel')}
             </Button>
           </DrawerClose>

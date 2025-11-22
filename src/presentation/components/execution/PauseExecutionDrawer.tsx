@@ -12,11 +12,11 @@ import {
   SheetContent,
   SheetTitle,
   SheetHeader,
-  SheetDescription,
 } from '@/presentation/components/ui/sheet'
 import { Button } from '@/presentation/components/ui/button'
-import { AlertCircle, ArrowLeft } from 'lucide-react'
-import { Alert, AlertDescription } from '@/presentation/components/ui/alert'
+import { AlertCircle, PauseCircle } from 'lucide-react'
+import { Card } from '@/components/ui/card'
+import { useTranslations } from 'next-intl'
 
 interface PauseExecutionDrawerProps {
   open: boolean
@@ -29,6 +29,8 @@ export function PauseExecutionDrawer({
   onOpenChange,
   onConfirm,
 }: PauseExecutionDrawerProps) {
+  const t = useTranslations('shopping.execution.pause')
+
   const handleConfirm = () => {
     onConfirm()
     onOpenChange(false)
@@ -39,22 +41,28 @@ export function PauseExecutionDrawer({
       <SheetContent className="sm:max-w-[450px]">
         <SheetHeader className="space-y-3">
           <SheetTitle className="text-xl font-bold flex items-center gap-2">
-            <ArrowLeft className="h-5 w-5" />
-            Volver a Listas
+            <PauseCircle className="h-5 w-5 text-primary" />
+            {t('title')}
           </SheetTitle>
-          <SheetDescription className="text-base">
-            Su compra actual quedará pausada y podrá reanudarla posteriormente desde el menú principal.
-          </SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-4">
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>
-              El progreso de su compra se guardará automáticamente. Podrá continuar con esta ejecución
-              en cualquier momento desde la sección de compras activas.
-            </AlertDescription>
-          </Alert>
+          <Card className="space-y-3 border-border bg-muted/40 p-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-1 rounded-full bg-primary/10 p-2">
+                <AlertCircle className="h-4 w-4 text-primary" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-foreground">
+                  {t('cardSummary')}
+                </p>
+                <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                  <li>{t('autoSave')}</li>
+                  <li>{t('resumeHint')}</li>
+                </ul>
+              </div>
+            </div>
+          </Card>
 
           <div className="space-y-3 pt-4">
             <Button
@@ -62,7 +70,7 @@ export function PauseExecutionDrawer({
               variant="default"
               className="w-full h-11"
             >
-              Confirmar y Volver a Listas
+              {t('confirm')}
             </Button>
 
             <Button
@@ -70,7 +78,7 @@ export function PauseExecutionDrawer({
               onClick={() => onOpenChange(false)}
               className="w-full h-11"
             >
-              Continuar Comprando
+              {t('continue')}
             </Button>
           </div>
         </div>

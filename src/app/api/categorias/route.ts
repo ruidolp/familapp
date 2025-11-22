@@ -53,6 +53,7 @@ export async function GET() {
  *   nombre: string (requerido)
  *   color?: string
  *   emoji?: string
+ *   sobreId?: string (opcional, vincula automáticamente la categoría al sobre)
  * }
  */
 export async function POST(req: NextRequest) {
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { nombre, color, emoji } = body
+    const { nombre, color, emoji, sobreId } = body
 
     // Validaciones
     if (!nombre) {
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
       color,
       emoji,
       userId: session.user.id,
+      sobreId,
     })
 
     if (!result.success) {

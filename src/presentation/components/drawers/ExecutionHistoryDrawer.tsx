@@ -2,13 +2,20 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ReceiptText, MapPin, CalendarClock, TimerReset } from 'lucide-react'
 import { useCurrency } from '@/presentation/providers/currency-provider'
-import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
 
 interface ExecutionHistoryDrawerProps {
   execution: any // Soporta LocalShoppingExecution, ShoppingExecutions, o ShoppingExecution local
@@ -78,6 +85,12 @@ export function ExecutionHistoryDrawer({
 
   if (!execution) return null
 
+  const safeNumber = (value: unknown): number | null => {
+    if (value === null || value === undefined) return null
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : null
+  }
+
   // Helper para obtener items según el tipo
   const getItems = () => {
     if ('items' in execution && Array.isArray(execution.items)) {
@@ -97,9 +110,22 @@ export function ExecutionHistoryDrawer({
     return `${mins}m ${secs}s`
   }
 
+  const formatDateTime = (date: Date) => {
+    const formatter = new Intl.DateTimeFormat('es-ES', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+    const parts = formatter.formatToParts(date)
+    const get = (type: string) => parts.find(p => p.type === type)?.value || ''
+    return `${get('day')} de ${get('month')} ${get('year')} ${get('hour')}:${get('minute')}`
+  }
+
   const items = getItems()
-  // Check if execution is not synced - verify syncStatus field
-  // Helper para normalizar items (local vs servidor)
+
   const normalizeItem = (item: any) => {
     // Si es un item local, ya tiene el formato correcto
     if (item.localId) return item
@@ -118,6 +144,10 @@ export function ExecutionHistoryDrawer({
   }
 
   const normalizedItems = items.map(normalizeItem)
+  const itemsTotal = normalizedItems.reduce(
+    (sum: number, item: any) => sum + (item.precio_total || 0),
+    0
+  )
 
   // Convertir dates de manera segura considerando que pueden ser Date o string
   const startDate = new Date(
@@ -134,138 +164,192 @@ export function ExecutionHistoryDrawer({
         ? execution.completed_at
         : new Date()
   )
-  const durationSeconds = Math.floor((endDate.getTime() - startDate.getTime()) / 1000)
+  const durationSeconds = Math.max(
+    0,
+    Math.floor((endDate.getTime() - startDate.getTime()) / 1000)
+  )
 
-  // Calcular total desde items o desde campos total_* del servidor
-  let totalPrice = 0
-  if (normalizedItems.length > 0) {
-    totalPrice = normalizedItems.reduce((sum: number, item: any) => sum + (item.precio_total || 0), 0) || 0
-  } else if ('total_manual' in execution && execution.total_manual) {
-    totalPrice = parseFloat(String(execution.total_manual))
-  } else if ('total_calculated' in execution && execution.total_calculated) {
-    totalPrice = parseFloat(String(execution.total_calculated))
-  }
+  const manualTotal =
+    safeNumber((execution as any).total_manual) ??
+    safeNumber((execution as any).budget?.amount)
+  const calculatedTotal =
+    safeNumber((execution as any).total_calculated) ??
+    safeNumber((execution as any).totalSpent) ??
+    (itemsTotal > 0 ? itemsTotal : null)
+  const purchaseTotal =
+    manualTotal ??
+    calculatedTotal ??
+    (normalizedItems.length > 0 ? itemsTotal : null) ??
+    0
+  const budgetReference = safeNumber(
+    (execution as any).budget?.enabled
+      ? (execution as any).budget.amount
+      : (execution as any).total_estimado
+  )
+  const budgetDelta = budgetReference !== null ? purchaseTotal - budgetReference : null
+  const budgetStatus =
+    budgetDelta !== null ? (budgetDelta > 0 ? 'over' : 'under') : null
+
+  const storeName = (execution as any).store_name
+  const estimatedBudget = budgetReference
+  const formattedDateTime = formatDateTime(startDate)
 
   return (
-    <Sheet open={isOpen} onOpenChange={onOpenChange} direction="right">
-      <SheetContent className="w-full sm:w-[500px] overflow-y-auto bg-background">
-        <SheetHeader className="mb-4">
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full max-h-[90vh] sm:max-h-[82vh] sm:max-w-5xl sm:mx-auto sm:rounded-3xl sm:border sm:border-border/80 sm:px-0 sm:shadow-2xl bg-background">
+        <SheetHeader className="px-4 pb-2 pt-3 sm:px-8">
           <SheetTitle className="flex items-center gap-2 text-base font-semibold">
             <ReceiptText className="h-5 w-5 text-muted-foreground" />
             {t('title')}
           </SheetTitle>
+          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium">
+              <CalendarClock className="h-3.5 w-3.5" />
+              {formattedDateTime}
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium">
+              <TimerReset className="h-3.5 w-3.5" />
+              {formatDuration(durationSeconds)}
+            </span>
+            {storeName && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-3 py-1 text-xs font-medium">
+                <MapPin className="h-3.5 w-3.5" />
+                {storeName}
+              </span>
+            )}
+          </div>
         </SheetHeader>
 
-        <div className="space-y-4">
-          <Card className="rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground">{t('purchaseDate')}</p>
-                <p className="text-base font-semibold text-foreground">
-                  {startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {startDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
-                </p>
+        <SheetBody className="space-y-5 px-4 pb-4 sm:px-8">
+          <Card className="rounded-2xl border border-primary/40 bg-primary/5 p-4 shadow-sm">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase text-muted-foreground">Total de la compra</p>
+                  <p className="text-4xl font-bold text-foreground leading-tight">
+                    {formatNumber(purchaseTotal)}
+                  </p>
+                  {manualTotal !== null && calculatedTotal !== null && (
+                    <p className="text-sm text-muted-foreground">
+                      Compra asistida: {formatNumber(calculatedTotal)}
+                    </p>
+                  )}
+                </div>
+                {budgetStatus && (
+                  <span
+                    className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
+                      budgetStatus === 'over'
+                        ? 'bg-destructive/10 text-destructive'
+                        : 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-200'
+                    }`}
+                  >
+                      {budgetStatus === 'over' ? 'Sobre presupuesto' : 'Dentro del presupuesto'}
+                    </span>
+                  )}
               </div>
-              <div className="text-right">
-                <p className="text-xs uppercase text-muted-foreground flex items-center gap-1 justify-end">
-                  <TimerReset className="h-3.5 w-3.5" />
-                  Duración
-                </p>
-                <p className="text-sm font-semibold text-foreground">{formatDuration(durationSeconds)}</p>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                {estimatedBudget !== null && (
+                  <div className="rounded-xl border border-border/60 bg-background px-3 py-3">
+                    <p className="text-[11px] uppercase text-muted-foreground">Presupuesto asignado</p>
+                    <p className="text-base font-semibold text-foreground">
+                      {formatNumber(estimatedBudget)}
+                    </p>
+                    {budgetDelta !== null && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {budgetDelta > 0
+                          ? `Te pasaste por ${formatNumber(budgetDelta)}`
+                          : `Ahorro de ${formatNumber(Math.abs(budgetDelta))}`}
+                      </p>
+                    )}
+                  </div>
+                    )}
+
               </div>
             </div>
-
-            {(execution as any).store_name && (
-              <div className="mt-4 flex items-center gap-2 rounded-xl border border-border/70 bg-muted/40 px-3 py-2 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium text-foreground truncate">
-                  {(execution as any).store_name}
-                </span>
-              </div>
-            )}
           </Card>
 
-          <Card className="rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground">Total</p>
-                <p className="text-3xl font-bold text-foreground">{formatNumber(totalPrice)}</p>
-              </div>
-              <div className="text-right text-sm text-muted-foreground">
-                <p className="flex items-center gap-1 justify-end">
-                  <CalendarClock className="h-4 w-4" />
-                  {t('purchaseDate')}
-                </p>
-                <p>
-                  {startDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
-                </p>
-              </div>
+          <div className="rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-foreground">
+                {t('purchasedProducts')} ({normalizedItems.length})
+              </h3>
+              {loadingItems && <span className="text-xs text-muted-foreground">Cargando...</span>}
             </div>
-          </Card>
-        </div>
 
-        <div className="mt-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-foreground">
-              {t('purchasedProducts')} ({normalizedItems.length})
-            </h3>
-            {loadingItems && <span className="text-xs text-muted-foreground">Cargando...</span>}
-          </div>
-          <div className="space-y-3">
-            {loadingItems ? (
-              <Card className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
-                Cargando productos...
-              </Card>
-            ) : normalizedItems.length > 0 ? (
-              normalizedItems.map((item: any) => (
-                <Card key={item.localId} className="rounded-2xl border border-border bg-card p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <p className="font-medium text-sm text-foreground">{item.product_name}</p>
-                      {item.categoria_producto_nombre && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {item.categoria_producto_nombre}
-                        </p>
+            <div className="space-y-3">
+              {loadingItems ? (
+                <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                  Cargando productos...
+                </Card>
+              ) : normalizedItems.length > 0 ? (
+                normalizedItems.map((item: any) => (
+                  <Card key={item.localId} className="rounded-xl border border-border bg-background p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold text-sm text-foreground">{item.product_name}</p>
+                          {item.marca && (
+                            <Badge variant="secondary" className="border border-primary/40 bg-primary/10 text-primary">
+                              {item.marca}
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          {item.categoria_producto_nombre && (
+                            <Badge variant="outline" className="border-border/70 text-xs">
+                              {item.categoria_producto_nombre}
+                            </Badge>
+                          )}
+                          {item.unidad_medida && (
+                            <span className="rounded-full bg-muted px-2 py-1">
+                              {item.unidad_medida}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {item.precio_total && (
+                        <span className="text-base font-semibold text-foreground">
+                          {simbolo ?? ''}{item.precio_total.toFixed(decimales)}
+                        </span>
                       )}
                     </div>
-                    {item.precio_total && (
-                      <span className="text-base font-semibold text-foreground">
-                        {simbolo ?? ''}{item.precio_total.toFixed(decimales)}
-                      </span>
-                    )}
-                  </div>
-                  <Separator className="my-3" />
-                  <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                    {item.cantidad_comprada && (
-                      <span>
-                        {t('quantity')}: {item.cantidad_comprada}
-                        {item.unidad_medida && ` ${item.unidad_medida}`}
-                      </span>
-                    )}
-                    {item.precio_unitario && (
-                      <span>
-                        {t('unitPrice')}: {simbolo ?? ''}{item.precio_unitario.toFixed(decimales)}
-                      </span>
-                    )}
-                    {item.marca && <span>{item.marca}</span>}
-                  </div>
+                    <Separator className="my-3" />
+                    <div className="grid gap-3 sm:grid-cols-2 text-xs text-muted-foreground">
+                      {item.cantidad_comprada && (
+                        <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+                          <p className="text-[11px] uppercase">Cantidad</p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {item.cantidad_comprada}
+                            {item.unidad_medida ? ` ${item.unidad_medida}` : ''}
+                          </p>
+                        </div>
+                      )}
+                      {item.precio_unitario && (
+                        <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+                          <p className="text-[11px] uppercase">{t('unitPrice')}</p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {simbolo ?? ''}{item.precio_unitario.toFixed(decimales)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))
+              ) : (
+                <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground text-center">
+                  {t('noPurchasedProducts')}
                 </Card>
-              ))
-            ) : (
-              <Card className="rounded-2xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground text-center">
-                {t('noPurchasedProducts')}
-              </Card>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </SheetBody>
 
-        <div className="mt-6 flex justify-end">
+        <SheetFooter className="px-4 pb-4 sm:px-8">
           <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
             Cerrar
           </Button>
-        </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

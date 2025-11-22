@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Card } from '@/components/ui/card'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
 import { useCurrency } from '@/presentation/providers/currency-provider'
@@ -27,6 +28,15 @@ interface ReducirPresupuestoDrawerProps {
   montoLibre: number
   presupuestoAsignado: number
   onSuccess?: () => void
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-5 w-1 bg-primary rounded-full" />
+      <h3 className="font-semibold text-sm text-foreground">{children}</h3>
+    </div>
+  )
 }
 
 export function ReducirPresupuestoDrawer({
@@ -113,59 +123,77 @@ export function ReducirPresupuestoDrawer({
 
         <DrawerBody>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* CARD: Monto Libre y Presupuesto Asignado */}
-            <div className="bg-card rounded-lg border border-border p-4 space-y-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-base text-muted-foreground">{t('form.freeAmount')}</p>
-                  <p className="text-xl font-bold">{simbolo ?? ''}{formatNumber(Number(montoLibre))}</p>
+            {/* RESUMEN */}
+            <div className="space-y-3">
+              <SectionTitle>Resumen</SectionTitle>
+
+              <Card className="p-4 space-y-4 bg-card-elevated">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                      {t('form.freeAmount')}
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {simbolo ?? ''}{formatNumber(Number(montoLibre))}
+                    </p>
+                  </div>
+                  <div className="space-y-1 text-right">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                      {t('form.assignedBudget')}
+                    </p>
+                    <p className="text-lg font-semibold">
+                      {simbolo ?? ''}{formatNumber(Number(presupuestoAsignado))}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-base text-muted-foreground">{t('form.assignedBudget')}</p>
-                  <p className="text-xl font-bold">{simbolo ?? ''}{formatNumber(Number(presupuestoAsignado))}</p>
-                </div>
-              </div>
+              </Card>
             </div>
 
-            {/* Separador */}
-            <div className="border-t border-border" />
-
-            {/* Monto a restar */}
-            <div className="space-y-2">
-              <Label htmlFor="monto" className="font-medium">
-                {t('form.amountToReduce')} <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xl font-bold text-foreground">
-                  -
-                </span>
-                <Input
-                  ref={montoRef}
-                  id="monto"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={monto}
-                  onChange={(e) => setMonto(e.target.value)}
-                  placeholder="0"
-                  required
-                  className="text-base pl-8"
-                />
+            {/* MONTO A RESTAR */}
+            <Card className="p-5 bg-card-accent border-destructive/20">
+              <div className="space-y-3">
+                <Label htmlFor="monto" className="text-base font-semibold">
+                  💸 {t('form.amountToReduce')}
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
+                    -$
+                  </span>
+                  <Input
+                    ref={montoRef}
+                    id="monto"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={monto}
+                    onChange={(e) => setMonto(e.target.value)}
+                    placeholder="0.00"
+                    required
+                    className="pl-14 text-2xl font-semibold h-14 bg-background"
+                  />
+                </div>
               </div>
-            </div>
+            </Card>
 
             {/* Observación */}
-            <div className="space-y-2">
-              <Label htmlFor="observacion" className="font-medium">
-                {t('form.observation')}
-              </Label>
-              <Input
-                id="observacion"
-                value={observacion}
-                onChange={(e) => setObservacion(e.target.value)}
-                placeholder={t('form.observationPlaceholder')}
-                className="text-base"
-              />
+            <div className="space-y-3">
+              <SectionTitle>{t('form.observation')}</SectionTitle>
+
+              <Card className="p-4 space-y-2 bg-card-elevated">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="observacion" className="text-sm font-medium text-muted-foreground">
+                    {t('form.observation')}
+                  </Label>
+                  <span className="text-xs text-muted-foreground">{t('form.optional')}</span>
+                </div>
+                <Input
+                  id="observacion"
+                  value={observacion}
+                  onChange={(e) => setObservacion(e.target.value)}
+                  placeholder={t('form.observationPlaceholder')}
+                  className="h-10"
+                />
+              </Card>
             </div>
           </form>
         </DrawerBody>

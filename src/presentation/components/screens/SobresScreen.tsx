@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { Plus } from 'lucide-react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { Button } from '@/components/ui/button'
@@ -12,9 +11,11 @@ import { ReducirPresupuestoDrawer } from '@/components/drawers/ReducirPresupuest
 import { CrearGastoDrawer } from '@/components/drawers/CrearGastoDrawer'
 import { AgregarCategoriaDrawer } from '@/components/drawers/AgregarCategoriaDrawer'
 import { VerDetalleTransaccionesDrawer } from '@/components/drawers/VerDetalleTransaccionesDrawer'
+import { VerDetalleCategoriaTransaccionesDrawer } from '@/components/drawers/VerDetalleCategoriaTransaccionesDrawer'
 import { OverspendWarningModal } from '@/components/modals/OverspendWarningModal'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useSobre, useDevolverPresupuesto } from '@/presentation/hooks/useSobres'
+import { useTranslations } from 'next-intl'
 
 interface Sobre {
   id: string
@@ -43,7 +44,7 @@ interface SobresScreenProps {
 }
 
 export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarouselChange, onSobreChange }: SobresScreenProps) {
-  const router = useRouter()
+  const t = useTranslations('sobres')
   const [sobres, setSobres] = useState<Sobre[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -54,6 +55,13 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const [crearGastoOpen, setCrearGastoOpen] = useState(false)
   const [agregarCategoriaOpen, setAgregarCategoriaOpen] = useState(false)
   const [verDetalleOpen, setVerDetalleOpen] = useState(false)
+  const [detalleCategoriaOpen, setDetalleCategoriaOpen] = useState(false)
+  const [categoriaDetalle, setCategoriaDetalle] = useState<{
+    id: string
+    nombre: string
+    sobreId: string
+    sobreName: string
+  } | null>(null)
   const [sobreSeleccionado, setSobreSeleccionado] = useState<Sobre | null>(null)
   const [sobreSeleccionadoParaGasto, setSobreSeleccionadoParaGasto] = useState<string>('')
   const [categoriaPreseleccionada, setCategoriaPreseleccionada] = useState<string>('')
@@ -136,7 +144,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     onMenuActionHandled?.()
   }, [menuAction])
 
-  const fetchSobres = async () => {
+  const fetchSobres = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch('/api/sobres')
@@ -144,15 +152,26 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         const data = await response.json()
         setSobres(data.sobres || [])
       } else {
-        notify.error('Error al cargar sobres')
+        notify.error(t('list.loadError'))
       }
     } catch (error) {
       console.error('Error:', error)
-      notify.error('Error al cargar sobres')
+      notify.error(t('list.loadError'))
     } finally {
       setLoading(false)
     }
-  }
+  }, [t])
+
+  // Refresh sobres preservando el índice del carrusel
+  const refreshSobres = useCallback(async () => {
+    const previousIndex = selectedIndex
+    await fetchSobres()
+    setTimeout(() => {
+      if (emblaApi && previousIndex >= 0) {
+        emblaApi.scrollTo(previousIndex)
+      }
+    }, 100)
+  }, [selectedIndex, emblaApi, fetchSobres])
 
   const handleAgregarPresupuesto = (sobre: Sobre) => {
     setSobreSeleccionado(sobre)
@@ -164,9 +183,9 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     try {
       const result = await devolverPresupuesto()
       notify.success(result.message)
-      fetchSobres()
+      refreshSobres()
     } catch (error) {
-      notify.error('Error al devolver presupuesto')
+      notify.error(t('list.returnError'))
     }
   }
 
@@ -192,6 +211,16 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const handleDetalleSobre = (sobre: Sobre) => {
     setSobreSeleccionado(sobre)
     setVerDetalleOpen(true)
+  }
+
+  const handleDetalleCategoria = (categoriaId: string, categoriaNombre: string, sobreId: string, sobreName: string) => {
+    setCategoriaDetalle({
+      id: categoriaId,
+      nombre: categoriaNombre,
+      sobreId,
+      sobreName,
+    })
+    setDetalleCategoriaOpen(true)
   }
 
   const handleSobreCreated = (sobre: Sobre) => {
@@ -271,23 +300,23 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   }
 
   const sobreActual = sobres[selectedIndex]
-  const tituloDinamico = sobreActual ? `${sobreActual.emoji} ${sobreActual.nombre}` : 'Sobres'
+  const tituloDinamico = sobreActual ? `${sobreActual.emoji} ${sobreActual.nombre}` : t('title')
 
   return (
     <div className="h-full flex flex-col">
       {/* Contenido */}
       {loading ? (
-        <div className="flex-1 flex items-center justify-center rounded-lg border bg-card">
-          <p className="text-muted-foreground">Cargando sobres...</p>
-        </div>
+          <div className="flex-1 flex items-center justify-center rounded-lg border bg-card">
+          <p className="text-muted-foreground">{t('list.loading')}</p>
+          </div>
       ) : sobres.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center rounded-lg border bg-card space-y-4">
-          <p className="text-muted-foreground">No tienes sobres aún</p>
+          <p className="text-muted-foreground">{t('list.empty')}</p>
           <Button
             onClick={() => setCrearSobreOpen(true)}
             variant="outline"
           >
-            Crear tu primer sobre
+            {t('list.createFirst')}
           </Button>
         </div>
       ) : (
@@ -306,17 +335,20 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                     emoji={sobre.emoji}
                     color={sobre.color}
                     presupuestoAsignado={sobre.presupuesto_asignado}
-                    gastado={sobre.gastado || 0}
-                    asignaciones={sobre.asignaciones || []}
-                    onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
-                    onVerDetalle={() => handleDetalleSobre(sobre)}
-                    onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
+                  gastado={sobre.gastado || 0}
+                  asignaciones={sobre.asignaciones || []}
+                  onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
+                  onVerDetalle={() => handleDetalleSobre(sobre)}
+                  onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
                     onEditarCategorias={() => {
                       // TODO: Implementar editar categorías
                       console.log('Editar categorías del sobre:', sobre.id)
                     }}
                     onAgregarCategoria={() => handleAgregarCategoria(sobre)}
                     onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}
+                    onVerTransaccionesCategoria={(categoriaId, categoriaNombre) =>
+                      handleDetalleCategoria(categoriaId, categoriaNombre, sobre.id, sobre.nombre)
+                    }
                   />
                 </div>
               ))}
@@ -376,6 +408,21 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         onOpenChange={setVerDetalleOpen}
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
+        onTransactionsUpdated={refreshSobres}
+      />
+      <VerDetalleCategoriaTransaccionesDrawer
+        open={detalleCategoriaOpen}
+        onOpenChange={(open) => {
+          setDetalleCategoriaOpen(open)
+          if (!open) {
+            setCategoriaDetalle(null)
+          }
+        }}
+        sobreId={categoriaDetalle?.sobreId || ''}
+        sobreName={categoriaDetalle?.sobreName || ''}
+        categoriaId={categoriaDetalle?.id || ''}
+        categoriaName={categoriaDetalle?.nombre || ''}
+        onTransactionsUpdated={refreshSobres}
       />
 
       {/* Warning Modal */}

@@ -112,6 +112,7 @@ export interface LocalShoppingExecution {
   // Referential budget (local only, informative)
   budget: BudgetConfig
   totalSpent: number
+  manualTotal?: number
 
   // UI Settings
   settings: ExecutionSettings
@@ -164,6 +165,7 @@ export interface UpdateExecutionInput {
   budget?: Partial<BudgetConfig>
   settings?: Partial<ExecutionSettings>
   completed_at?: Date
+  manualTotal?: number
 }
 
 export interface UpdateItemInput {
@@ -198,6 +200,7 @@ export interface SyncExecutionPayload {
   sobre_id?: string
   categoria_sobre_id?: string
   subcategoria_id?: string
+  total_estimado?: number
   total_calculated: number
   total_manual?: number
   tiempo_transcurrido: number

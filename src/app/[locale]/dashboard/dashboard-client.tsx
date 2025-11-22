@@ -23,7 +23,7 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ locale, user }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('listas')
+  const [activeTab, setActiveTab] = useState<TabType>('sobres')
   const [contextualOpen, setContextualOpen] = useState(false)
   const [menuAction, setMenuAction] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
@@ -125,6 +125,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
             activeTab={activeTab}
             onTabChange={setActiveTab}
             onContextualAction={handleContextualAction}
+            currentSobreName={sobreActual?.nombre}
           />
         }
         dotIndicator={

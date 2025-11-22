@@ -53,6 +53,7 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
     addItemOnTheFly,
     updateSettings,
     updateBudget,
+    updateManualTotal,
     finalizeExecution,
     pendingItems,
     purchasedItems,
@@ -139,13 +140,8 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
     if (!execution) return
 
     try {
-      // Update manual total if provided
-      if (manualTotal !== undefined) {
-        await updateBudget({ amount: manualTotal })
-      }
-
-      // Finalize and sync
-      await finalizeExecution()
+      // Finalize and sync (pass manualTotal directly to avoid state timing issues)
+      await finalizeExecution(manualTotal)
 
       notify.success('¡Compra finalizada!')
       router.push(`/${locale}/dashboard`)

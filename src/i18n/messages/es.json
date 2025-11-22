@@ -354,6 +354,20 @@
       "countryRequired": "Selecciona tu país",
       "currencyRequired": "Selecciona tu moneda",
       "dayRequired": "Selecciona un día del mes"
+    },
+    "wallet": {
+      "default": "Mi Billetera"
+    },
+    "sobres": {
+      "HOGAR": "Hogar",
+      "PERSONAL": "Personal"
+    },
+    "categorias": {
+      "supermercado": "Supermercado",
+      "transporte": "Transporte",
+      "medicina": "Medicina",
+      "cuentas_hogar": "Cuentas del hogar",
+      "comida_rapida": "Comida rápida"
     }
   },
   "common": {
@@ -377,11 +391,52 @@
     "libre": "Libre",
     "utilizado": "utilizado",
     "total": "total",
+    "list": {
+      "loading": "Cargando sobres...",
+      "empty": "No tienes sobres aún",
+      "createFirst": "Crear tu primer sobre",
+      "loadError": "Error al cargar sobres",
+      "returnError": "Error al devolver presupuesto"
+    },
+    "card": {
+      "active": "Sobre activo",
+      "actions": {
+        "title": "Acciones de {name}",
+        "description": "Gestiona presupuesto y categorías rápidamente.",
+        "budgetSection": "Presupuesto",
+        "increase": "Aumentar",
+        "reduce": "Reducir",
+        "transactions": "Detalle de movimientos",
+        "organizationSection": "Organización",
+        "categoriesAndBrands": "Categorías y Marcas",
+        "newCategory": "Nueva categoría",
+        "close": "Cerrar"
+      },
+      "status": {
+        "percentOfBudget": "{percent}% del presupuesto",
+        "overBudget": "Te pasaste",
+        "available": "Disponible"
+      },
+      "accessibility": {
+        "actions": "Acciones del sobre"
+      }
+    },
+    "categoryCard": {
+      "purchases": "{count} compras",
+      "percentUsed": "{percent}% usado de tu presupuesto",
+      "quickExpense": "Agregar gasto rápido",
+      "editCategory": "Editar categoría"
+    },
     "menu": {
       "increaseBudget": "Aumentar presupuesto",
       "reduceBudget": "Reducir presupuesto",
       "editCategories": "Editar categorías",
       "shoppingList": "Lista de compras"
+    },
+    "quickActions": {
+      "title": "Acciones rápidas",
+      "descriptionDefault": "Crea y gestiona tus sobres desde aquí.",
+      "descriptionWithName": "Gestiona \"{name}\" o crea otro sobre."
     },
     "emptyBudget": {
       "message": "Asigna un presupuesto a este sobre",
@@ -505,7 +560,8 @@
         "assignedBudget": "Presupuesto asignado",
         "amountToReduce": "Monto a restar",
         "observation": "Nota",
-        "observationPlaceholder": "Ej: Ajuste de presupuesto"
+        "observationPlaceholder": "Ej: Ajuste de presupuesto",
+        "optional": "opcional"
       },
       "buttons": {
         "save": "Guardar cambios",
@@ -532,12 +588,21 @@
       "transactionCount": "movimientos",
       "transactionsCount": "{count} movimientos",
       "noCategory": "Sin categoría",
+      "categoryTitle": "Movimientos de {categoriaName}",
+      "categoryDescription": "Gastos y ajustes de {categoriaName} en {sobreName}",
+      "confirmTitle": "Eliminar movimiento",
+      "confirmMessage": "Al eliminar, se revertirá el gasto y registraremos la reversa en el sobre.",
+      "confirmDeleteAction": "Eliminar y revertir",
+      "confirmDelete": "¿Deseas eliminar este movimiento? Se revertirá el saldo del sobre.",
+      "deleteSuccess": "Movimiento eliminado y saldo actualizado.",
+      "deleting": "Eliminando...",
       "close": "Cerrar",
       "buttons": {
         "close": "Cerrar"
       },
       "errors": {
-        "loadFailed": "Error al cargar movimientos"
+        "loadFailed": "Error al cargar movimientos",
+        "deleteFailed": "Error al eliminar el movimiento"
       }
     }
   },
@@ -581,13 +646,55 @@
         "calculatorButton": "Calculadora",
         "executeButton": "Ejecutar compra"
       }
+  },
+  "execution": {
+    "configure": {
+      "title": "Configurar compra",
+      "description": "Prepara la compra antes de iniciar el conteo.",
+      "register": {
+        "title": "Registrar el gasto en sobres",
+        "description": "Asocia la compra a un sobre, categoría y marca.",
+        "createBrand": "Crear nueva marca",
+        "envelopeLabel": "Sobre",
+        "envelopePlaceholder": "Selecciona sobre",
+        "categoryLabel": "Categoría",
+        "categoryPlaceholder": "Selecciona categoría",
+        "brandLabel": "Marca / Tienda",
+        "brandPlaceholder": "Selecciona tienda",
+        "brandInputPlaceholder": "Escribe el nombre de la marca",
+        "brandSubmit": "Agregar",
+        "brandSubmitting": "Creando...",
+        "brandError": "Error al crear marca",
+        "brandCreated": "Marca \"{name}\" creada",
+        "disabledInfo": "Si no registras el gasto, selecciona la empresa para estadísticas de tus compras."
+      },
+      "budget": {
+        "title": "Presupuesto de compra",
+        "description": "Control visual del gasto.",
+        "amountLabel": "Monto objetivo",
+        "amountPlaceholder": "Ej: 25.000",
+        "note": "Es solo informativo; no detendrá la compra."
+      },
+      "prices": {
+        "title": "Registrar precios de compra",
+        "description": "Podrás registrar los precios de los productos como una caja registradora. Puedes desactivarlo cuando quieras."
+      },
+      "validation": {
+        "selectEnvelope": "Selecciona un sobre",
+        "selectCategory": "Selecciona una categoría",
+        "selectBrand": "Selecciona o crea una marca/tienda",
+        "enterBudget": "Ingresa el presupuesto de compra"
+      },
+      "actions": {
+        "cancel": "Cancelar",
+        "start": "Iniciar compra"
+      }
     },
-    "execution": {
-      "finalize": {
-        "title": "Resumen de compra",
-        "description": "Revisa todo antes de finalizar ✅",
-        "purchased": "Comprados",
-        "discarded": "Descartados",
+    "finalize": {
+      "title": "Resumen de compra",
+      "description": "Revisa todo antes de finalizar ✅",
+      "purchased": "Comprados",
+      "discarded": "Descartados",
         "pending": "Pendientes",
         "pendingMessage": "Tienes {count} producto(s) sin marcar. Decide si los compraste o no.",
         "pendingWarning": "Tienes {count} producto(s) sin definir.",
@@ -621,6 +728,14 @@
         "flatListMode": "Modo lista simple",
         "flatListModeDesc": "Vista compacta sin bordes",
         "close": "Cerrar"
+      },
+      "pause": {
+        "title": "Pausar compra",
+        "cardSummary": "Pausaremos la compra y la podrás retomar cuando quieras.",
+        "autoSave": "Progreso guardado automáticamente.",
+        "resumeHint": "Reanuda desde Compras activas.",
+        "confirm": "Confirmar",
+        "continue": "Continuar comprando"
       }
     }
   },
@@ -759,6 +874,7 @@
       "cancel": "Cancelar",
       "details": "Detalle",
       "brand": "Marca o lugar",
+      "addNewBrand": "+ Nueva Marca",
       "brandPlaceholder": "Buscar o crear marca...",
       "brandOptional": "opcional",
       "pressEnter": "Presiona Enter para crear una nueva marca",
@@ -777,38 +893,65 @@
     "title": "Categorías",
     "add": {
       "title": "Agregar categorías",
-      "description": "Usa categorías para entender mejor tus gastos en {sobreName}.",
+      "description": "Organiza los gastos de {sobreName}.",
       "categories": "Categorías",
-      "namePlaceholder": "Ej: Alimentación, Transporte...",
+      "namePlaceholder": "Ej: Comida, Transporte",
       "add": "✓",
       "checkmark": "✓",
-      "brands": "Agrega marcas o lugares por categoría",
+      "brands": "Marcas o lugares",
       "added": "Marcas agregadas",
       "addBrand": "Agregar empresa",
-      "brandSearch": "Busca o crea empresa...",
+      "brandSearch": "Busca o crea una marca...",
       "adding": "Agregando...",
       "addCategory": "Agregar categoría",
       "addBrandLabel": "Agregando...",
-      "selectAtLeastOne": "Selecciona al menos una categoría",
+      "selectAtLeastOne": "Selecciona una categoría",
       "saving": "Guardando...",
       "submit": "Guardar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "notifications": {
+        "categoryCreated": "Categoría \"{name}\" creada",
+        "categoryCreateError": "Error al crear categoría",
+        "brandCreated": "Marca \"{name}\" creada",
+        "brandCreateError": "Error al crear marca",
+        "linkSuccess": "{count} categoría(s) agregada(s)",
+        "linkError": "Error al agregar categorías"
+      }
     },
     "edit": {
       "title": "Editar categoría",
-      "description": "Cambia el nombre y las marcas asociadas.",
+      "description": "Personaliza el nombre, emoji y color de tu categoría.",
+      "drawerTitle": "Categorías y Marcas",
+      "basicInfo": "Información básica",
+      "colorSection": "Color",
+      "colorLabel": "Elige un color",
+      "nameLabel": "Nombre",
       "name": "Nombre",
       "namePlaceholder": "Ej: Alimentación",
       "where": "¿Dónde sueles comprar?",
       "whereDescription": "Agrega tus marcas frecuentes para medir mejor tus gastos.",
+      "whereShop": "¿Dónde sueles comprar?",
+      "brandsHelp": "Agrega tus marcas frecuentes para medir mejor tus gastos.",
       "brandsAdded": "Marcas agregadas",
+      "addedBrands": "Marcas agregadas",
       "addBrand": "Buscar o crear marca",
+      "searchOrCreate": "Buscar o crear marca",
       "brandNamePlaceholder": "Ej: Walmart, supermercado local...",
+      "brandPlaceholder": "Ej: Walmart, supermercado local...",
       "add": "✓",
       "adding": "Agregando...",
       "saving": "Guardando...",
       "submit": "Guardar cambios",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "globalLabel": "Global",
+      "nameRequired": "El nombre es obligatorio",
+      "notifications": {
+        "loadError": "Error al cargar datos",
+        "brandCreated": "Marca \"{name}\" creada",
+        "brandCreateError": "Error al crear marca",
+        "updateSuccess": "Categoría actualizada correctamente",
+        "updateError": "Error al actualizar categoría"
+      }
     }
   },
   "user": {

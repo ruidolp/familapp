@@ -110,7 +110,8 @@ export async function findTransaccionesByBilletera(
 export async function findTransaccionesBySobre(
   sobreId: string,
   fechaInicio?: Date,
-  fechaFin?: Date
+  fechaFin?: Date,
+  categoriaId?: string
 ) {
   let query = db
     .selectFrom('transacciones')
@@ -135,6 +136,9 @@ export async function findTransaccionesBySobre(
     .where('transacciones.deleted_at', 'is', null)
     .orderBy('transacciones.fecha', 'desc')
 
+  if (categoriaId) {
+    query = query.where('transacciones.categoria_id', '=', categoriaId)
+  }
   if (fechaInicio) {
     query = query.where('transacciones.fecha', '>=', fechaInicio)
   }

@@ -3,6 +3,7 @@ import { auth } from '@/infrastructure/lib/auth'
 import {
   createProductCategory,
   getUserProductCategories,
+  findUserProductCategoryByNombre,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
 
 export async function GET(req: NextRequest) {
@@ -45,9 +46,24 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Verificar si ya existe una categoría con ese nombre (case-insensitive)
+    const existing = await findUserProductCategoryByNombre(
+      session.user.id,
+      nombre.trim()
+    )
+
+    if (existing) {
+      // Retornar la categoría existente en lugar de crear duplicado
+      return NextResponse.json({
+        success: true,
+        category: existing,
+        existed: true, // Flag para indicar que ya existía
+      }, { status: 200 })
+    }
+
     const category = await createProductCategory(
       session.user.id,
-      nombre,
+      nombre.trim(),
       color,
       emoji
     )

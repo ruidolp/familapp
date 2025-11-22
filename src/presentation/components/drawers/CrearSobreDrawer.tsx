@@ -160,7 +160,7 @@ export function CrearSobreDrawer({
                   className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-bold transition-colors"
                   style={{ backgroundColor: sobreColor }}
                 >
-                  {sobreName.trim() ? sobreName.trim().charAt(0).toUpperCase() : '?'}
+                  {sobreName.trim() ? sobreName.trim().charAt(0).toUpperCase() : '📁'}
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">

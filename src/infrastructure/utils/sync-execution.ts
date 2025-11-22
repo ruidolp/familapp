@@ -85,8 +85,9 @@ export async function syncExecutionToServer(
       sobre_id: execution.registration.sobre_id,
       categoria_sobre_id: execution.registration.categoria_sobre_id,
       subcategoria_id: execution.registration.subcategoria_id,
+      total_estimado: execution.budget.amount,
       total_calculated: execution.totalSpent,
-      total_manual: execution.budget.amount,
+      total_manual: execution.manualTotal,
       tiempo_transcurrido: Math.floor(execution.timer.accumulatedSeconds / 60), // Convert to minutes
       started_at: execution.started_at,
       completed_at: execution.completed_at,

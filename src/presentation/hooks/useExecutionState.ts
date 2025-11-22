@@ -42,9 +42,10 @@ export interface UseExecutionStateReturn {
   updateSettings: (settings: Partial<ExecutionSettings>) => Promise<void>
   updateBudget: (budget: Partial<BudgetConfig>) => Promise<void>
   updateRegistration: (registration: Partial<RegistrationConfig>) => Promise<void>
+  updateManualTotal: (manualTotal: number) => Promise<void>
 
   // Finalize
-  finalizeExecution: () => Promise<string>
+  finalizeExecution: (manualTotal?: number) => Promise<string>
 
   // Computed values
   pendingItems: LocalExecutionItem[]
@@ -296,14 +297,33 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
     [execution]
   )
 
+  // Update manual total
+  const updateManualTotal = useCallback(
+    async (manualTotal: number) => {
+      if (!execution) return
+
+      setExecution(prev =>
+        prev
+          ? {
+              ...prev,
+              manualTotal,
+              updated_at: new Date(),
+            }
+          : null
+      )
+    },
+    [execution]
+  )
+
   // Finalize execution and sync to server
-  const finalizeExecution = useCallback(async (): Promise<string> => {
+  const finalizeExecution = useCallback(async (manualTotal?: number): Promise<string> => {
     if (!execution) throw new Error('No execution found')
 
     try {
-      // 1. Mark as completed locally
+      // 1. Mark as completed locally (apply manualTotal here to avoid state timing issues)
       const finalized: LocalShoppingExecution = {
         ...execution,
+        manualTotal: manualTotal ?? execution.manualTotal,
         status: 'COMPLETED',
         completed_at: new Date(),
         syncStatus: 'local',
@@ -351,6 +371,7 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
     updateSettings,
     updateBudget,
     updateRegistration,
+    updateManualTotal,
     finalizeExecution,
     pendingItems,
     purchasedItems,

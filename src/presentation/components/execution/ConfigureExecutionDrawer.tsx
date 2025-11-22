@@ -13,6 +13,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/presentation/components/ui/button'
 import {
   Sheet,
@@ -32,7 +33,7 @@ import {
   SelectValue,
 } from '@/presentation/components/ui/select'
 import { Card } from '@/presentation/components/ui/card'
-import { DollarSign, Tag, Store } from 'lucide-react'
+import { DollarSign, Store } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import {
   getPreferences,
@@ -87,7 +88,8 @@ export function ConfigureExecutionDrawer({
   userId,
   onConfirm,
 }: ConfigureExecutionDrawerProps) {
-  const [loading, setLoading] = useState(false)
+  const t = useTranslations('shopping.execution.configure')
+  const commonT = useTranslations('common')
 
   // Data
   const [sobres, setSobres] = useState<Sobre[]>([])
@@ -95,13 +97,13 @@ export function ConfigureExecutionDrawer({
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([])
 
   // Configuration state
-  const [registerInBudget, setRegisterInBudget] = useState(false)
+  const [registerInBudget, setRegisterInBudget] = useState(true)
   const [sobreId, setSobreId] = useState<string>('')
   const [categoriaId, setCategoriaId] = useState<string>('')
   const [subcategoriaId, setSubcategoriaId] = useState<string>('')
   const [storeName, setStoreName] = useState('')
 
-  const [budgetEnabled, setBudgetEnabled] = useState(false)
+  const [budgetEnabled, setBudgetEnabled] = useState(true)
   const [budgetAmount, setBudgetAmount] = useState('')
 
   // UI preferences - Initialize with defaults (will be loaded from IndexedDB)
@@ -113,8 +115,20 @@ export function ConfigureExecutionDrawer({
   // Create subcategoria inline
   const [newSubcategoriaName, setNewSubcategoriaName] = useState('')
   const [creatingSubcategoria, setCreatingSubcategoria] = useState(false)
+  const [showCreateBrand, setShowCreateBrand] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const getDefaultSobreId = () => {
+    const hogarSobre = sobres.find(s => s.nombre?.toLowerCase().includes('hogar'))
+    return hogarSobre?.id || sobres[0]?.id || ''
+  }
+
+  const getDefaultCategoriaId = () => {
+    const defaultCategoria =
+      categorias.find(c => c.nombre?.toLowerCase().includes('supermercado')) || categorias[0]
+    return defaultCategoria?.id || ''
+  }
 
   // Load preferences from IndexedDB on mount
   useEffect(() => {
@@ -143,40 +157,67 @@ export function ConfigureExecutionDrawer({
   // Load categories when sobre changes
   useEffect(() => {
     if (sobreId) {
+      setCategoriaId('')
+      setSubcategoriaId('')
+      setStoreName('')
       loadCategoriasBySobre(sobreId)
     } else {
       setCategorias([])
+      setCategoriaId('')
+      setSubcategorias([])
+      setStoreName('')
     }
   }, [sobreId])
 
   // Load subcategorias when categoria changes
   useEffect(() => {
     if (categoriaId) {
+      setSubcategoriaId('')
+      setStoreName('')
+      setShowCreateBrand(false)
       loadSubcategoriasByCategoria(categoriaId)
     } else {
       setSubcategorias([])
+      setSubcategoriaId('')
+      setStoreName('')
+      setShowCreateBrand(false)
     }
   }, [categoriaId])
 
-  // Auto-find "Supermercado" category and select first sobre
+  // Auto-find "Hogar" sobre + "Supermercado" categoría
   useEffect(() => {
-    if (registerInBudget && sobres.length > 0 && !sobreId) {
-      // Select first sobre
-      setSobreId(sobres[0].id)
+    if (sobres.length > 0 && !sobreId) {
+      const defaultSobreId = getDefaultSobreId()
+      if (defaultSobreId) {
+        setSobreId(defaultSobreId)
+      }
+    }
+  }, [sobres, sobreId])
+
+  useEffect(() => {
+    if (!registerInBudget && sobres.length > 0) {
+      const defaultSobreId = getDefaultSobreId()
+      if (defaultSobreId && defaultSobreId !== sobreId) {
+        setSobreId(defaultSobreId)
+      }
     }
   }, [registerInBudget, sobres, sobreId])
 
   useEffect(() => {
     if (categorias.length > 0 && !categoriaId) {
-      // Try to find "Supermercado" category
-      const supermercado = categorias.find(
-        c => c.nombre.toLowerCase().includes('supermercado')
-      )
-      if (supermercado) {
-        setCategoriaId(supermercado.id)
+      const defaultCategoriaId = getDefaultCategoriaId()
+      if (defaultCategoriaId) {
+        setCategoriaId(defaultCategoriaId)
       }
     }
   }, [categorias, categoriaId])
+
+  useEffect(() => {
+    if (!registerInBudget) {
+      setShowCreateBrand(false)
+      setNewSubcategoriaName('')
+    }
+  }, [registerInBudget])
 
   // Save UI preferences to IndexedDB when they change (only after initial load)
   useEffect(() => {
@@ -213,12 +254,23 @@ export function ConfigureExecutionDrawer({
     }
   }
 
-  const loadSubcategoriasByCategoria = async (categoriaId: string) => {
+  const loadSubcategoriasByCategoria = async (
+    categoriaId: string,
+    options?: { selectId?: string }
+  ) => {
     try {
       const response = await fetch(`/api/categorias/${categoriaId}/subcategorias`)
       if (response.ok) {
         const data = await response.json()
-        setSubcategorias(data.subcategorias || [])
+        const list = data.subcategorias || []
+        setSubcategorias(list)
+        if (options?.selectId) {
+          setSubcategoriaId(options.selectId)
+          const selected = list.find(s => s.id === options.selectId)
+          if (selected) {
+            setStoreName(selected.nombre)
+          }
+        }
       }
     } catch (error) {
       console.error('Error loading subcategorias:', error)
@@ -226,7 +278,11 @@ export function ConfigureExecutionDrawer({
   }
 
   const handleCreateSubcategoria = async () => {
-    if (!newSubcategoriaName.trim() || !categoriaId) return
+    if (!newSubcategoriaName.trim()) return
+    if (!categoriaId) {
+      notify.error(t('validation.selectCategory'))
+      return
+    }
 
     setCreatingSubcategoria(true)
     try {
@@ -241,20 +297,19 @@ export function ConfigureExecutionDrawer({
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Error al crear marca')
+        throw new Error(error.error || t('register.brandError'))
       }
 
       const data = await response.json()
       const nuevaSubcategoria = data.subcategoria
 
-      setSubcategorias([...subcategorias, nuevaSubcategoria])
-      setSubcategoriaId(nuevaSubcategoria.id)
-      setStoreName(nuevaSubcategoria.nombre)
+      await loadSubcategoriasByCategoria(categoriaId, { selectId: nuevaSubcategoria.id })
+      setShowCreateBrand(false)
       setNewSubcategoriaName('')
 
-      notify.success(`Marca "${nuevaSubcategoria.nombre}" creada`)
+      notify.success(t('register.brandCreated', { name: nuevaSubcategoria.nombre }))
     } catch (error: any) {
-      notify.error(error.message || 'Error al crear marca')
+      notify.error(error.message || t('register.brandError'))
     } finally {
       setCreatingSubcategoria(false)
     }
@@ -263,22 +318,22 @@ export function ConfigureExecutionDrawer({
   const handleConfirm = () => {
     // Validate
     if (registerInBudget && !sobreId) {
-      notify.error('Selecciona un sobre')
+      notify.error(t('validation.selectEnvelope'))
       return
     }
 
     if (registerInBudget && !categoriaId) {
-      notify.error('Selecciona una categoría')
+      notify.error(t('validation.selectCategory'))
       return
     }
 
-    if (registerInBudget && !subcategoriaId && !storeName) {
-      notify.error('Selecciona o crea una marca/tienda')
+    if (!subcategoriaId && !storeName) {
+      notify.error(t('validation.selectBrand'))
       return
     }
 
     if (budgetEnabled && !budgetAmount) {
-      notify.error('Ingresa el presupuesto referencial')
+      notify.error(t('validation.enterBudget'))
       return
     }
 
@@ -286,8 +341,8 @@ export function ConfigureExecutionDrawer({
       registerInBudget,
       sobre_id: registerInBudget ? sobreId : undefined,
       categoria_id: registerInBudget ? categoriaId : undefined,
-      subcategoria_id: registerInBudget ? subcategoriaId : undefined,
-      store_name: registerInBudget ? storeName : undefined,
+      subcategoria_id: subcategoriaId || undefined,
+      store_name: storeName || undefined,
       budgetEnabled,
       budgetAmount: budgetEnabled ? parseFloat(budgetAmount) : undefined,
       enablePrices,
@@ -306,24 +361,73 @@ export function ConfigureExecutionDrawer({
       if (sub) {
         setStoreName(sub.nombre)
       }
+    } else {
+      setStoreName('')
     }
   }, [subcategoriaId, subcategorias])
+
+  const brandCreationForm = (
+    <div className="space-y-2 rounded-lg border-2 border-dashed border-primary/40 bg-muted/60 p-3">
+      <Input
+        ref={inputRef}
+        placeholder={t('register.brandInputPlaceholder')}
+        value={newSubcategoriaName}
+        onChange={e => setNewSubcategoriaName(e.target.value)}
+        onKeyDown={e => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            handleCreateSubcategoria()
+          }
+        }}
+      />
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setShowCreateBrand(false)
+            setNewSubcategoriaName('')
+          }}
+        >
+          {commonT('cancel')}
+        </Button>
+        <Button
+          size="sm"
+          disabled={!newSubcategoriaName.trim() || creatingSubcategoria}
+          onClick={handleCreateSubcategoria}
+        >
+          {creatingSubcategoria ? t('register.brandSubmitting') : t('register.brandSubmit')}
+        </Button>
+      </div>
+    </div>
+  )
+
+  const toggleCreateBrand = () => {
+    setShowCreateBrand(prev => {
+      const next = !prev
+      if (next) {
+        setTimeout(() => inputRef.current?.focus(), 10)
+      } else {
+        setNewSubcategoriaName('')
+      }
+      return next
+    })
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex h-[92vh] flex-col overflow-hidden sm:max-w-[480px]">
         <SheetHeader className="text-left">
-          <SheetTitle className="text-lg font-semibold">Configurar compra</SheetTitle>
-          <SheetDescription>Prepara la compra antes de iniciar el conteo.</SheetDescription>
+          <SheetTitle className="text-lg font-semibold">{t('title')}</SheetTitle>
+          <SheetDescription>{t('description')}</SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-5 overflow-y-auto py-5">
           <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground">Presupuesto</p>
-                <p className="text-sm text-foreground">¿Registrar en sobres?</p>
-                <p className="text-xs text-muted-foreground">Asocia la compra a un sobre y categoría.</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">{t('register.title')}</p>
+                <p className="text-xs text-muted-foreground">{t('register.description')}</p>
               </div>
               <Switch checked={registerInBudget} onCheckedChange={setRegisterInBudget} />
             </div>
@@ -331,17 +435,18 @@ export function ConfigureExecutionDrawer({
             {registerInBudget && (
               <div className="space-y-4 rounded-xl bg-muted/40 p-3">
                 <div className="space-y-2">
-                  <Label htmlFor="sobre" className="text-xs uppercase text-muted-foreground">
-                    Sobre
+                  <Label htmlFor="sobre" className="text-xs font-medium text-muted-foreground">
+                    {t('register.envelopeLabel')}
                   </Label>
                   <Select value={sobreId} onValueChange={setSobreId}>
                     <SelectTrigger id="sobre">
-                      <SelectValue placeholder="Selecciona sobre" />
+                      <SelectValue placeholder={t('register.envelopePlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {sobres.map(s => (
                         <SelectItem key={s.id} value={s.id}>
-                          {s.emoji} {s.nombre}
+                          {s.emoji && <span className="mr-1">{s.emoji}</span>}
+                          <span className="truncate">{s.nombre}</span>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -350,17 +455,18 @@ export function ConfigureExecutionDrawer({
 
                 {sobreId && (
                   <div className="space-y-2">
-                    <Label htmlFor="categoria" className="text-xs uppercase text-muted-foreground">
-                      Categoría
+                    <Label htmlFor="categoria" className="text-xs font-medium text-muted-foreground">
+                      {t('register.categoryLabel')}
                     </Label>
                     <Select value={categoriaId} onValueChange={setCategoriaId}>
                       <SelectTrigger id="categoria">
-                        <SelectValue placeholder="Selecciona categoría" />
+                        <SelectValue placeholder={t('register.categoryPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent>
                         {categorias.map(c => (
                           <SelectItem key={c.id} value={c.id}>
-                            {c.emoji} {c.nombre}
+                            {c.emoji && <span className="mr-1">{c.emoji}</span>}
+                            <span className="truncate">{c.nombre}</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -370,100 +476,127 @@ export function ConfigureExecutionDrawer({
 
                 {categoriaId && (
                   <div className="space-y-3">
-                    <Label className="flex items-center gap-2 text-xs uppercase text-muted-foreground">
-                      <Store className="h-3.5 w-3.5" /> Marca / Tienda
-                    </Label>
-                    {subcategorias.length > 0 && (
+                    <div className="flex items-center justify-between gap-2">
+                      <Label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                        <Store className="h-3.5 w-3.5" /> {t('register.brandLabel')}
+                      </Label>
+                      <button
+                        type="button"
+                        className="text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+                        onClick={toggleCreateBrand}
+                        disabled={!categoriaId}
+                      >
+                        {showCreateBrand ? commonT('cancel') : t('register.createBrand')}
+                      </button>
+                    </div>
+                    {subcategorias.length > 0 ? (
                       <Select value={subcategoriaId} onValueChange={setSubcategoriaId}>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona tienda" />
+                          <SelectValue placeholder={t('register.brandPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
                           {subcategorias.map(s => (
                             <SelectItem key={s.id} value={s.id}>
-                              {s.emoji} {s.nombre}
+                              {s.emoji && <span className="mr-1">{s.emoji}</span>}
+                              <span className="truncate">{s.nombre}</span>
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">{t('register.brandPlaceholder')}</p>
                     )}
-                    <div className="flex gap-2">
-                      <Input
-                        ref={inputRef}
-                        placeholder="Crear nueva marca"
-                        value={newSubcategoriaName}
-                        onChange={e => setNewSubcategoriaName(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault()
-                            handleCreateSubcategoria()
-                          }
-                        }}
-                      />
-                      <Button
-                        variant="outline"
-                        disabled={!newSubcategoriaName.trim() || creatingSubcategoria}
-                        onClick={handleCreateSubcategoria}
-                      >
-                        {creatingSubcategoria ? 'Creando...' : 'Agregar'}
-                      </Button>
-                    </div>
+                    {showCreateBrand && brandCreationForm}
                   </div>
                 )}
+              </div>
+            )}
+
+            {!registerInBudget && (
+              <div className="space-y-3 rounded-xl bg-muted/40 p-3">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                      <Store className="h-3.5 w-3.5" /> {t('register.brandLabel')}
+                    </Label>
+                    <button
+                      type="button"
+                      className="text-xs font-semibold text-primary hover:underline disabled:opacity-60"
+                      onClick={toggleCreateBrand}
+                      disabled={!categoriaId}
+                    >
+                      {showCreateBrand ? commonT('cancel') : t('register.createBrand')}
+                    </button>
+                  </div>
+                  {subcategorias.length > 0 ? (
+                    <Select value={subcategoriaId} onValueChange={setSubcategoriaId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('register.brandPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subcategorias.map(s => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.emoji && <span className="mr-1">{s.emoji}</span>}
+                            <span className="truncate">{s.nombre}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">{t('register.brandPlaceholder')}</p>
+                  )}
+                  {showCreateBrand && brandCreationForm}
+                </div>
+                <p className="text-xs text-muted-foreground">{t('register.disabledInfo')}</p>
               </div>
             )}
           </Card>
 
           <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase text-muted-foreground">Presupuesto referencial</p>
-                <p className="text-sm text-foreground">Control visual del gasto</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-foreground">{t('budget.title')}</p>
+                <p className="text-xs text-muted-foreground">{t('budget.description')}</p>
               </div>
               <Switch checked={budgetEnabled} onCheckedChange={setBudgetEnabled} />
             </div>
 
             {budgetEnabled && (
               <div className="space-y-2">
-                <Label className="text-xs uppercase text-muted-foreground flex items-center gap-2">
-                  <DollarSign className="h-3.5 w-3.5" /> Monto objetivo
+                <Label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                  <DollarSign className="h-3.5 w-3.5" /> {t('budget.amountLabel')}
                 </Label>
                 <Input
                   type="number"
                   inputMode="decimal"
-                  placeholder="Ej: 25000"
+                  placeholder={t('budget.amountPlaceholder')}
                   value={budgetAmount}
                   onChange={e => setBudgetAmount(e.target.value)}
                   className="text-lg"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Es solo informativo; no detendrá la compra.
-                </p>
+                <p className="text-xs text-muted-foreground">{t('budget.note')}</p>
               </div>
             )}
           </Card>
 
           <Card className="mx-1 space-y-3 rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Agregar precios</p>
-                <p className="text-xs text-muted-foreground">Registra el precio de cada producto.</p>
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">{t('prices.title')}</p>
+                <p className="text-xs text-muted-foreground">{t('prices.description')}</p>
               </div>
               <Switch checked={enablePrices} onCheckedChange={setEnablePrices} />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Las vistas y el cronómetro se pueden ajustar directamente durante la compra.
-            </p>
           </Card>
         </div>
 
         <div className="border-t bg-background p-4">
           <div className="flex gap-3">
             <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {t('actions.cancel')}
             </Button>
             <Button className="flex-1" onClick={handleConfirm}>
-              Iniciar compra
+              {t('actions.start')}
             </Button>
           </div>
         </div>

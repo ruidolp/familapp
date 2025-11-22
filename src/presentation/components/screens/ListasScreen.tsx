@@ -16,6 +16,7 @@ import { ExecutionHistoryDrawer } from '@/components/drawers/ExecutionHistoryDra
 import { notify } from '@/infrastructure/lib/notifications'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface ShoppingList {
   id: string
@@ -45,6 +46,7 @@ interface ListasScreenProps {
 
 export function ListasScreen({ userId }: ListasScreenProps) {
   const router = useRouter()
+  const { formatNumber } = useCurrency()
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [activeExecutions, setActiveExecutions] = useState<ExecutionDisplay[]>([])
   const [completedExecutions, setCompletedExecutions] = useState<ExecutionDisplay[]>([])
@@ -158,7 +160,11 @@ export function ListasScreen({ userId }: ListasScreenProps) {
       }))
 
       // Combinar: primero del servidor, luego locales no sincronizadas
-      const combined = [...serverExecutions, ...localExecutionsDisplay]
+      const combined = [...serverExecutions, ...localExecutionsDisplay].sort((a, b) => {
+        const aDate = (a as any).completed_at ? new Date((a as any).completed_at).getTime() : 0
+        const bDate = (b as any).completed_at ? new Date((b as any).completed_at).getTime() : 0
+        return bDate - aDate
+      })
       setCompletedExecutions(combined)
     } catch (error) {
       console.error('Error fetching completed executions:', error)
@@ -183,7 +189,12 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     const executionId = (execution as any).localId || (execution as any).id
     const isLocal = (execution as any).isLocal
 
-    if (!confirm('¿Eliminar esta compra en progreso?')) return
+    const statusLabel =
+      (execution as any).status === 'COMPLETED' || (execution as any).completed_at
+        ? 'compra finalizada'
+        : 'compra en progreso'
+
+    if (!confirm(`¿Eliminar esta ${statusLabel}?`)) return
 
     try {
       if (isLocal) {
@@ -340,6 +351,32 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     </Card>
   )
 
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return ''
+    const d = typeof date === 'string' ? new Date(date) : date
+    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
+  }
+
+  const formatTime = (date: Date | string | null | undefined) => {
+    if (!date) return ''
+    const d = typeof date === 'string' ? new Date(date) : date
+    return d.toLocaleTimeString('es-ES', { hour12: false, hour: '2-digit', minute: '2-digit' })
+  }
+
+  const getExecutionTotal = (execution: ExecutionDisplay) => {
+    const asAny = execution as any
+    const manual = asAny.total_manual
+    const calculated = asAny.total_calculated
+    const estimado = asAny.total_estimado
+    const localTotal = asAny.totalSpent
+    const total =
+      (manual !== null && manual !== undefined ? Number(manual) : undefined) ??
+      (calculated !== null && calculated !== undefined ? Number(calculated) : undefined) ??
+      (estimado !== null && estimado !== undefined ? Number(estimado) : undefined) ??
+      (localTotal !== null && localTotal !== undefined ? Number(localTotal) : undefined)
+    return Number.isFinite(total) ? total : null
+  }
+
   // Helper to render an execution card
   const renderExecutionCard = (execution: ExecutionDisplay) => {
     // Encontrar el nombre de la lista asociada
@@ -378,11 +415,6 @@ export function ListasScreen({ userId }: ListasScreenProps) {
               <h3 className="flex-1 truncate text-base font-semibold text-primary">
                 {listName}
               </h3>
-              {isLocal && (
-                <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
-                  Local
-                </span>
-              )}
             </div>
             <p className="mb-2 text-xs text-muted-foreground">En progreso • {timeText}</p>
             {(execution as any).store_name && (
@@ -397,7 +429,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             <Button
               variant="outline"
               size="sm"
-              className="gap-1 border-primary/40 text-primary hover:bg-primary/10"
+              className="gap-1 min-w-[132px] border-primary/40 text-primary hover:bg-primary/10"
               onClick={(e) => {
                 e.stopPropagation()
                 handleOpenExecution(execution)
@@ -442,43 +474,76 @@ export function ListasScreen({ userId }: ListasScreenProps) {
     // Encontrar el nombre de la lista asociada
     const listName = lists.find(l => l.id === execution.shopping_list_id)?.nombre || 'Compra'
     const endDate = (execution as any).completed_at ? new Date((execution as any).completed_at) : new Date()
-    const completedText = endDate.toLocaleDateString('es-ES')
+    const completedText = formatDate(endDate)
+    const endTime = formatTime(endDate)
+    const total = getExecutionTotal(execution)
 
     return (
       <Card
         key={(execution as any).localId || (execution as any).id}
-        className="p-4 cursor-pointer rounded-2xl border-secondary/50 bg-secondary/10 hover:shadow-lg transition-shadow"
+        className="p-4 cursor-pointer rounded-2xl border-tertiary/40 bg-tertiary/10 hover:shadow-lg transition-shadow"
         onClick={() => handleOpenHistory(execution)}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="mb-1 flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-secondary" />
-              <h3 className="font-semibold text-base truncate text-secondary">
+              <CheckCircle2 size={16} className="text-tertiary" />
+              <h3 className="font-semibold text-base truncate text-tertiary">
                 {listName}
               </h3>
             </div>
             <p className="mb-2 text-xs text-muted-foreground">
-              Finalizada • {completedText}
+              {completedText} {endTime && `· ${endTime}`}
             </p>
             {(execution as any).store_name && (
               <p className="text-sm text-muted-foreground line-clamp-1">
                 📍 {(execution as any).store_name}
               </p>
             )}
+            {total !== null && (
+              <p className="text-sm font-semibold text-tertiary">
+                {formatNumber(total)}
+              </p>
+            )}
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-1 border-secondary/40 text-secondary hover:bg-secondary/10"
-            onClick={(e) => {
-              e.stopPropagation()
-              handleOpenHistory(execution)
-            }}
-          >
-            Ver detalles
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1 min-w-[132px] border-tertiary/40 text-tertiary hover:bg-tertiary/10"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpenHistory(execution)
+              }}
+            >
+              Ver detalles
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                >
+                  <MoreVertical size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDeleteExecution(execution)
+                  }}
+                  className="text-destructive"
+                >
+                  <Trash2 size={14} className="mr-2" />
+                  Eliminar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </Card>
     )
@@ -550,7 +615,7 @@ export function ListasScreen({ userId }: ListasScreenProps) {
             {/* Completed Executions Section */}
             {completedExecutions.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-secondary mb-3 pl-1">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-tertiary mb-3 pl-1">
                   ✓ Compras Finalizadas ({completedExecutions.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

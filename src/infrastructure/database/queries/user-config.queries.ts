@@ -17,6 +17,7 @@ export type UpdateUserConfigData = {
   monedas_habilitadas?: string[]
   timezone?: string
   locale?: string
+  pais?: string
   primer_dia_semana?: number
   tipo_periodo?: TipoPeriodo
   dia_inicio_periodo?: number
@@ -41,6 +42,7 @@ export type CreateUserConfigData = {
   moneda_principal_id: string
   timezone?: string
   locale?: string
+  pais?: string
   primer_dia_semana?: number
   tipo_periodo?: TipoPeriodo
   dia_inicio_periodo?: number
@@ -56,6 +58,7 @@ export async function createDefaultUserConfig(
   options: {
     timezone?: string
     locale?: string
+    pais?: string
     primerDiaSemana?: number
     tipoPeriodo?: TipoPeriodo
     diaInicioPeriodo?: number
@@ -70,6 +73,7 @@ export async function createDefaultUserConfig(
       // Usar valores proporcionados o dejar que la DB use sus defaults
       timezone: options.timezone,
       locale: options.locale,
+      pais: options.pais,
       primer_dia_semana: options.primerDiaSemana,
       tipo_periodo: options.tipoPeriodo || 'MENSUAL',
       dia_inicio_periodo: options.diaInicioPeriodo,
@@ -128,4 +132,107 @@ export async function removeMonedaHabilitada(userId: string, monedaId: string) {
   return await updateUserConfig(userId, {
     monedas_habilitadas: monedasActuales.filter((id: string) => id !== monedaId),
   })
+}
+
+/**
+ * Obtener versión de marcas globales (MAX updated_at) por país
+ * Si no hay marcas para el país, intenta con 'CL' como fallback
+ */
+export async function getMarcasGlobalesVersion(pais: string): Promise<string | null> {
+  // Intentar con el país del usuario
+  let result = await db
+    .selectFrom('subcategorias_globales')
+    .select(({ fn }) => [
+      fn.max('updated_at').as('max_updated_at')
+    ])
+    .where('pais', '=', pais)
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst()
+
+  // Si no hay marcas para ese país, intentar con Chile como fallback
+  if (!result?.max_updated_at && pais !== 'CL') {
+    result = await db
+      .selectFrom('subcategorias_globales')
+      .select(({ fn }) => [
+        fn.max('updated_at').as('max_updated_at')
+      ])
+      .where('pais', '=', 'CL')
+      .where('deleted_at', 'is', null)
+      .executeTakeFirst()
+  }
+
+  // Si aún no hay resultado, usar versión por defecto
+  if (!result?.max_updated_at) {
+    return 'v1.0.0'
+  }
+
+  return result.max_updated_at.toISOString()
+}
+
+/**
+ * Obtener versión de productos del catálogo (MAX updated_at) por idioma
+ * Si no hay productos para el idioma, intenta con 'es' como fallback
+ */
+export async function getProductCatalogVersion(idioma: string): Promise<string | null> {
+  // Intentar con el idioma del usuario
+  let result = await db
+    .selectFrom('product_catalog')
+    .select(({ fn }) => [
+      fn.max('updated_at').as('max_updated_at')
+    ])
+    .where('idioma', '=', idioma)
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst()
+
+  // Si no hay productos para ese idioma, intentar con español como fallback
+  if (!result?.max_updated_at && idioma !== 'es') {
+    result = await db
+      .selectFrom('product_catalog')
+      .select(({ fn }) => [
+        fn.max('updated_at').as('max_updated_at')
+      ])
+      .where('idioma', '=', 'es')
+      .where('deleted_at', 'is', null)
+      .executeTakeFirst()
+  }
+
+  // Si aún no hay resultado, usar versión por defecto
+  if (!result?.max_updated_at) {
+    return 'v1.0.0'
+  }
+
+  return result.max_updated_at.toISOString()
+}
+
+/**
+ * Obtener versión de categorías globales de productos (MAX updated_at) por idioma
+ */
+export async function getProductCategoriesGlobalVersion(idioma: string): Promise<string | null> {
+  // Intentar con el idioma del usuario
+  let result = await db
+    .selectFrom('product_categories_global')
+    .select(({ fn }) => [
+      fn.max('updated_at').as('max_updated_at')
+    ])
+    .where('idioma', '=', idioma)
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst()
+
+  // Fallback a español
+  if (!result?.max_updated_at && idioma !== 'es') {
+    result = await db
+      .selectFrom('product_categories_global')
+      .select(({ fn }) => [
+        fn.max('updated_at').as('max_updated_at')
+      ])
+      .where('idioma', '=', 'es')
+      .where('deleted_at', 'is', null)
+      .executeTakeFirst()
+  }
+
+  if (!result?.max_updated_at) {
+    return 'v1.0.0'
+  }
+
+  return result.max_updated_at.toISOString()
 }

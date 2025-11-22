@@ -128,33 +128,6 @@ export function AgregarPresupuestoDrawer({
 
         <DrawerBody>
           <form onSubmit={handleSubmit} className="space-y-6">
-            
-            {/* MONTO - Card Accent */}
-            <Card className="p-5 bg-card-accent border-primary/20">
-              <div className="space-y-3">
-                <Label htmlFor="monto" className="text-base font-semibold">
-                  💰 {t('form.amount')}
-                </Label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
-                    +$
-                  </span>
-                  <Input
-                    ref={montoRef}
-                    id="monto"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={monto}
-                    onChange={(e) => setMonto(e.target.value)}
-                    placeholder="0.00"
-                    required
-                    className="pl-14 text-2xl font-semibold h-14 bg-background"
-                  />
-                </div>
-              </div>
-            </Card>
-
             {/* RESUMEN */}
             <div className="space-y-3">
               <SectionTitle>{t('sections.summary')}</SectionTitle>
@@ -193,6 +166,32 @@ export function AgregarPresupuestoDrawer({
                 )}
               </Card>
             </div>
+
+            {/* MONTO - Card Accent */}
+            <Card className="p-5 bg-card-accent border-primary/20">
+              <div className="space-y-3">
+                <Label htmlFor="monto" className="text-base font-semibold">
+                  💰 {t('form.amount')}
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-semibold text-muted-foreground">
+                    +$
+                  </span>
+                  <Input
+                    ref={montoRef}
+                    id="monto"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={monto}
+                    onChange={(e) => setMonto(e.target.value)}
+                    placeholder="0.00"
+                    required
+                    className="pl-14 text-2xl font-semibold h-14 bg-background"
+                  />
+                </div>
+              </div>
+            </Card>
 
             {/* DETALLE */}
             <div className="space-y-3">

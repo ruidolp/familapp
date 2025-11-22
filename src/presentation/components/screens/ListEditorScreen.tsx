@@ -431,63 +431,85 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     let catalogProduct: Product | undefined
 
     if (!finalProductId) {
-      const catalogMatch = data?.catalog.find(
+      // Primero buscar en productos custom del usuario
+      const customMatch = data?.customProducts.find(
         (p) => p.nombre.toLowerCase() === productName.toLowerCase()
       )
 
-      if (catalogMatch) {
-        finalProductId = catalogMatch.id
-        finalIsCatalog = true
-        catalogProduct = catalogMatch
+      if (customMatch) {
+        // Ya existe como producto custom
+        finalProductId = customMatch.id
+        finalIsCatalog = false
       } else {
-        const customMatch = data?.customProducts.find(
+        // Buscar en catálogo global
+        const catalogMatch = data?.catalog.find(
           (p) => p.nombre.toLowerCase() === productName.toLowerCase()
         )
 
-        if (customMatch) {
-          finalProductId = customMatch.id
-          finalIsCatalog = false
-        } else {
-          try {
-            const response = await fetch('/api/products/custom', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ nombre: productName }),
-            })
+        if (catalogMatch) {
+          catalogProduct = catalogMatch
+        }
 
-            if (response.ok) {
-              const result = await response.json()
-              finalProductId = result.product.id
-              finalIsCatalog = false
+        // Siempre crear copia en product_user_custom (ya sea del catálogo o nuevo)
+        try {
+          const response = await fetch('/api/products/custom', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: productName }),
+          })
 
-              if (data) {
+          if (response.ok) {
+            const result = await response.json()
+            finalProductId = result.product.id
+            finalIsCatalog = false // SIEMPRE false, solo usamos product_custom_id
+
+            if (data) {
+              // Solo agregar si no existía (existed: false)
+              if (!result.existed) {
                 setData({
                   ...data,
                   customProducts: [...data.customProducts, result.product],
                 })
               }
             }
-          } catch (error) {
-            console.error('Error creating custom product:', error)
-            notify.error('Error al crear producto')
-            return
           }
+        } catch (error) {
+          console.error('Error creating custom product:', error)
+          notify.error('Error al crear producto')
+          return
         }
       }
-    } else if (finalIsCatalog) {
-      // If productId was provided and it's from catalog, find the catalog product
-      catalogProduct = data?.catalog.find((p) => p.id === finalProductId)
+    } else if (finalIsCatalog && finalProductId) {
+      // Si viene con productId del catálogo, crear copia en product_user_custom
+      try {
+        const response = await fetch('/api/products/custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ nombre: productName }),
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          finalProductId = result.product.id
+          finalIsCatalog = false // SIEMPRE usar product_custom_id
+
+          if (data && !result.existed) {
+            setData({
+              ...data,
+              customProducts: [...data.customProducts, result.product],
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Error creating custom product:', error)
+        notify.error('Error al crear producto')
+        return
+      }
     }
 
-    // Check for duplicates in the list
+    // Check for duplicates in the list (ahora solo compara product_custom_id)
     const isDuplicate = items.some((item) => {
-      if (finalIsCatalog) {
-        // For catalog products, compare product_id
-        return item.product_id === finalProductId
-      } else {
-        // For custom products, compare product_custom_id
-        return item.product_custom_id === finalProductId
-      }
+      return item.product_custom_id === finalProductId
     })
 
     if (isDuplicate) {
@@ -504,9 +526,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
     const newItem = {
       shopping_list_id: listId,
-      product_id: finalIsCatalog ? (finalProductId ?? null) : null,
-      product_custom_id: !finalIsCatalog ? (finalProductId ?? null) : null,
-      is_catalog: finalIsCatalog,
+      product_id: null, // NUNCA usar product_id con FK
+      product_custom_id: finalProductId ?? null, // SIEMPRE usar product_custom_id
+      is_catalog: false, // SIEMPRE false
       cantidad: cantidadDecimal,
       unidad_medida: unidad ?? null,
       categoria_producto_id: null,
@@ -767,9 +789,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4">
-        <Card className="space-y-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+      <div ref={itemsContainerRef} className="flex-1 overflow-y-auto p-4 pb-32 space-y-4">
+        {/* Header */}
+        <Card className="space-y-3 rounded-2xl border border-border bg-card p-3 shadow-sm">
           <div className="flex items-start gap-3">
             <Button
               variant="ghost"
@@ -790,30 +812,24 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                 </p>
               )}
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-            <div className="rounded-xl border border-border/70 bg-muted/40 p-3">
-              <p className="text-xs uppercase text-muted-foreground">{tSummary('productsTitle')}</p>
-              <p className="text-2xl font-semibold text-foreground">{items.length}</p>
-              <p className="text-xs text-muted-foreground">{tSummary('productsSubtitle')}</p>
-            </div>
-            <div className="rounded-xl border border-border/70 bg-muted/40 p-3">
-              <p className="text-xs uppercase text-muted-foreground">{tSummary('quantityTitle')}</p>
-              <p className="text-2xl font-semibold text-foreground">{formattedTotalQuantity}</p>
-              <p className="text-xs text-muted-foreground">{tSummary('quantitySubtitle')}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               variant="outline"
-              className="flex-1 gap-2"
+              className="gap-2"
               onClick={() => setCalculatorOpen(true)}
             >
               <Calculator size={18} />
               {tSummary('calculatorButton')}
             </Button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 text-sm">
+            <div className="rounded-xl border border-border/70 bg-muted/40 p-3">
+              <p className="text-xs uppercase text-muted-foreground">{tSummary('productsTitle')}</p>
+              <p className="text-2xl font-semibold text-foreground">{items.length}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Button
               variant="default"
               className="flex-1 gap-2"
@@ -825,10 +841,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             </Button>
           </div>
         </Card>
-      </div>
 
-      {/* Items List */}
-      <div ref={itemsContainerRef} className="flex-1 overflow-y-auto p-4 pb-24">
+        {/* Items List */}
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
             <p>Lista vacía</p>

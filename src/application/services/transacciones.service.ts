@@ -386,7 +386,8 @@ export async function obtenerTransacciones(
       transacciones = await findTransaccionesBySobre(
         filters.sobreId,
         filters.fechaInicio,
-        filters.fechaFin
+        filters.fechaFin,
+        filters.categoriaId // Pasar categoriaId si está presente
       )
     } else if (filters?.categoriaId) {
       transacciones = await findTransaccionesByCategoria(

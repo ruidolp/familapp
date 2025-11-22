@@ -15,7 +15,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { getCountryOptions, getMonedaByCountry } from '@/infrastructure/utils/moneda'
+import { getCountryOptions } from '@/infrastructure/utils/countries'
+import { getMonedaByCountry } from '@/infrastructure/utils/moneda'
 import { getUserCountry } from '@/infrastructure/utils/country'
 
 interface OnboardingDrawerProps {
@@ -38,7 +39,6 @@ const DAYS_OF_MONTH = Array.from({ length: 31 }, (_, i) => ({
 export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) {
   const router = useRouter()
   const t = useTranslations('onboarding')
-  const tSobres = useTranslations('sobres')
 
   const [monedas, setMonedas] = useState<Moneda[]>([])
   const [loading, setLoading] = useState(false)
@@ -107,6 +107,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
         body: JSON.stringify({
           monedaPrincipalId: monedaSeleccionada,
           locale: navigator.language || 'es-CL',
+          pais: paisSeleccionado,
           diaInicioPeriodo: parseInt(diaInicioPeriodo),
         }),
       })
@@ -117,53 +118,23 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
         throw new Error(configData.error || 'Error al guardar configuración')
       }
 
-      // 2. Crear billetera dummy
-      const billeteraResponse = await fetch('/api/billeteras', {
+      // 2. Initialize profile (create wallet, envelopes, categories, and brands)
+      const initResponse = await fetch('/api/sobres/initialize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: 'dummy',
-          tipo: 'EFECTIVO',
-          monedaPrincipalId: monedaSeleccionada,
-          saldoInicial: 0,
-          emoji: '💰',
-        }),
       })
 
-      if (!billeteraResponse.ok) {
-        throw new Error('Error al crear billetera')
+      const initData = await initResponse.json()
+
+      if (!initData.success) {
+        throw new Error(initData.error || 'Error al inicializar perfil')
       }
 
-      // 3. Crear dos sobres por defecto (HOGAR y PERSONAL)
-      const defaultEnvelopes = [
-        {
-          nombre: tSobres('defaultEnvelopes.hogar'),
-          tipo: 'GASTO',
-          presupuestoAsignado: 0,
-          monedaPrincipalId: monedaSeleccionada,
-        },
-        {
-          nombre: tSobres('defaultEnvelopes.personal'),
-          tipo: 'GASTO',
-          presupuestoAsignado: 0,
-          monedaPrincipalId: monedaSeleccionada,
-        },
-      ]
-
-      for (const envelope of defaultEnvelopes) {
-        const sobreResponse = await fetch('/api/sobres', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(envelope),
-        })
-
-        if (!sobreResponse.ok) {
-          console.warn(`Error creating envelope ${envelope.nombre}`)
-        }
-      }
-
-      // 4. Cerrar drawer y refrescar
+      // 3. Cerrar drawer y refrescar
       onOpenChange?.(false)
+
+      // Asegurar que después del onboarding vaya a la pantalla de sobres
+      localStorage.setItem('dashboard-active-tab', 'sobres')
 
       // Hacer un reload completo después de pequeño delay para asegurar que el servidor procesó las creaciones
       setTimeout(() => {
@@ -224,7 +195,7 @@ export function OnboardingDrawer({ open, onOpenChange }: OnboardingDrawerProps) 
                 <SelectContent>
                   {monedas.map((moneda) => (
                     <SelectItem key={moneda.id} value={moneda.id}>
-                      {moneda.simbolo} {moneda.codigo} - {moneda.nombre}
+                      {moneda.nombre} ({moneda.simbolo})
                     </SelectItem>
                   ))}
                 </SelectContent>

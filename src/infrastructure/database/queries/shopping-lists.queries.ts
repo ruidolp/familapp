@@ -547,6 +547,19 @@ export async function getProductCatalogById(id: string) {
     .executeTakeFirst()
 }
 
+/**
+ * Obtener todos los productos del catálogo por idioma (para caché)
+ */
+export async function getAllProductCatalogByIdioma(idioma: string = 'es') {
+  return db
+    .selectFrom('product_catalog')
+    .selectAll()
+    .where('idioma', '=', idioma)
+    .where('deleted_at', 'is', null)
+    .orderBy('nombre', 'asc')
+    .execute()
+}
+
 // ============================================
 // PRODUCT USER CUSTOM
 // ============================================
@@ -582,6 +595,35 @@ export async function searchUserCustomProducts(
     .where('nombre', 'ilike', `%${nombre}%`)
     .orderBy('nombre', 'asc')
     .limit(limit)
+    .execute()
+}
+
+/**
+ * Buscar producto custom por nombre exacto (para evitar duplicados)
+ */
+export async function findUserCustomProductByNombre(
+  userId: string,
+  nombre: string
+) {
+  return db
+    .selectFrom('product_user_custom')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .where((eb: any) => eb(eb.fn('LOWER', ['nombre']), '=', nombre.toLowerCase()))
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst()
+}
+
+/**
+ * Obtener todos los productos custom del usuario (para caché)
+ */
+export async function getAllUserCustomProducts(userId: string) {
+  return db
+    .selectFrom('product_user_custom')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .where('deleted_at', 'is', null)
+    .orderBy('nombre', 'asc')
     .execute()
 }
 
@@ -761,6 +803,22 @@ export async function getUserProductCategories(userId: string) {
     .execute()
 }
 
+/**
+ * Buscar categoría por nombre exacto (para evitar duplicados)
+ */
+export async function findUserProductCategoryByNombre(
+  userId: string,
+  nombre: string
+) {
+  return db
+    .selectFrom('product_categories_user')
+    .selectAll()
+    .where('user_id', '=', userId)
+    .where((eb: any) => eb(eb.fn('LOWER', ['nombre']), '=', nombre.toLowerCase()))
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst()
+}
+
 // ============================================
 // GLOBAL PRODUCT CATEGORIES
 // ============================================
@@ -769,6 +827,19 @@ export async function getGlobalProductCategories() {
   return db
     .selectFrom('product_categories_global')
     .selectAll()
+    .where('deleted_at', 'is', null)
+    .orderBy('nombre', 'asc')
+    .execute()
+}
+
+/**
+ * Obtener todas las categorías globales por idioma (para caché)
+ */
+export async function getAllGlobalProductCategoriesByIdioma(idioma: string = 'es') {
+  return db
+    .selectFrom('product_categories_global')
+    .selectAll()
+    .where('idioma', '=', idioma)
     .where('deleted_at', 'is', null)
     .orderBy('nombre', 'asc')
     .execute()

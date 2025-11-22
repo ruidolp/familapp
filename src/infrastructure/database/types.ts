@@ -252,11 +252,17 @@ export interface PlanLimits {
 }
 
 export interface ProductCatalog {
+  /**
+   * Referencia a product_categories_global (SIN FK para independencia)
+   */
   category_id: string | null;
   created_at: Generated<Timestamp | null>;
   deleted_at: Timestamp | null;
   descripcion: string | null;
   id: Generated<string>;
+  /**
+   * Idioma del producto (es, en, pt). Un producto en español sirve para todos los países hispanohablantes.
+   */
   idioma: Generated<string>;
   nombre: string;
   updated_at: Generated<Timestamp | null>;
@@ -269,6 +275,7 @@ export interface ProductCategoriesGlobal {
   descripcion: string | null;
   emoji: string | null;
   id: Generated<string>;
+  idioma: Generated<string>;
   nombre: string;
   updated_at: Generated<Timestamp | null>;
 }
@@ -288,8 +295,14 @@ export interface ProductFavorites {
   created_at: Generated<Timestamp | null>;
   deleted_at: Timestamp | null;
   id: Generated<string>;
+  /**
+   * DEPRECATED: Siempre false. Mantener solo para migración.
+   */
   is_catalog: Generated<boolean>;
   product_custom_id: string | null;
+  /**
+   * DEPRECATED: No usar. Mantener solo para migración de datos legacy.
+   */
   product_id: string | null;
   user_id: string;
 }
@@ -356,7 +369,13 @@ export interface ShoppingExecutionItems {
   marca: string | null;
   precio_total: Numeric | null;
   precio_unitario: Numeric | null;
+  /**
+   * FK a product_user_custom. Puede ser NULL si el producto fue eliminado.
+   */
   product_custom_id: string | null;
+  /**
+   * DEPRECATED: No usar. Mantener solo para historial legacy.
+   */
   product_id: string | null;
   razon_no_comprado: string | null;
   shopping_execution_id: string;
@@ -376,7 +395,11 @@ export interface ShoppingExecutions {
   sobre_id: string | null;
   started_at: Generated<Timestamp | null>;
   status: Generated<string>;
-  store_name: string;
+  store_name: string | null;
+  /**
+   * Reference to the brand/store where the purchase was made (e.g., Jumbo, Costco)
+   */
+  subcategoria_id: string | null;
   tiempo_transcurrido: number | null;
   total_calculated: Numeric | null;
   total_estimado: Numeric | null;
@@ -404,11 +427,20 @@ export interface ShoppingListItems {
   created_by: string;
   deleted_at: Timestamp | null;
   id: Generated<string>;
+  /**
+   * DEPRECATED: Siempre false. Usar product_custom_id.
+   */
   is_catalog: Generated<boolean>;
   item_order: number;
   item_type: Generated<string>;
   marca: string | null;
+  /**
+   * SIEMPRE usar este campo. FK a product_user_custom.
+   */
   product_custom_id: string | null;
+  /**
+   * DEPRECATED: No usar. Mantener solo para migración de datos legacy. Usar product_custom_id.
+   */
   product_id: string | null;
   shopping_list_id: string;
   unidad_medida: string | null;
@@ -477,6 +509,18 @@ export interface Subcategorias {
   nombre: string;
   updated_at: Generated<Timestamp>;
   usuario_id: string;
+}
+
+export interface SubcategoriasGlobales {
+  categoria_tipo: string | null;
+  created_at: Generated<Timestamp | null>;
+  deleted_at: Timestamp | null;
+  emoji: string | null;
+  id: Generated<string>;
+  imagen_url: string | null;
+  nombre: string;
+  pais: string;
+  updated_at: Generated<Timestamp | null>;
 }
 
 export interface SubscriptionHistory {
@@ -563,6 +607,10 @@ export interface UserConfig {
   locale: Generated<string>;
   moneda_principal_id: Generated<string>;
   monedas_habilitadas: Generated<string[]>;
+  /**
+   * Código de país ISO (CL, AR, PE, MX, ES, etc.)
+   */
+  pais: string | null;
   primer_dia_semana: Generated<number>;
   timezone: Generated<string>;
   tipo_periodo: Generated<string>;
@@ -712,6 +760,7 @@ export interface DB {
   sobres_categorias: SobresCategorias;
   sobres_usuarios: SobresUsuarios;
   subcategorias: Subcategorias;
+  subcategorias_globales: SubcategoriasGlobales;
   subscription_history: SubscriptionHistory;
   subscription_plans: SubscriptionPlans;
   themes: Themes;
