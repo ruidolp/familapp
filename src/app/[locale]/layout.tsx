@@ -26,17 +26,18 @@ import { auth } from '@/infrastructure/lib/auth'
 import '@/app/globals.css'
 
 export const metadata: Metadata = {
-  title: 'WApp - Aplicación Full Stack',
-  description: 'Next.js + Kysely + NextAuth + Capacitor',
+  title: 'FamilApp - Gestión Familiar',
+  description: 'Gestión familiar inteligente',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'WApp',
+    title: 'FamilApp',
   },
   formatDetection: {
     telephone: false,
   },
+  themeColor: '#000000',
 }
 
 export const viewport = {
@@ -111,6 +112,24 @@ export default async function LocaleLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('ServiceWorker registration successful');
+                    },
+                    function(err) {
+                      console.log('ServiceWorker registration failed: ', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
         />
       </head>
       <body className="bg-background text-foreground font-sans antialiased">

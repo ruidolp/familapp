@@ -1,12 +1,12 @@
 {
-  "name": "WApp - Web Application",
-  "short_name": "WApp",
-  "description": "WApp - Modern Web Application",
+  "name": "FamilApp",
+  "short_name": "FamilApp",
+  "description": "Gestión familiar inteligente",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icon-192x192.png",
