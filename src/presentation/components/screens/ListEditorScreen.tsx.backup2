@@ -197,33 +197,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     setLastAddedItemId(null)
   }, [items, lastAddedItemId])
 
-  // Auto-scroll when input is focused (for first 1-4 products only)
-  // This positions the products in a more natural viewing position
-  useEffect(() => {
-    if (!itemsContainerRef.current) return
-
-    const container = itemsContainerRef.current
-
-    if (inputFocused && items.length > 0 && items.length < 5) {
-      // Scroll to center the first product in the visible area
-      // The spacer creates space above, so we scroll to show products nicely
-      const targetScrollPosition = 200 // Scroll down 200px to show products in comfortable position
-
-      setTimeout(() => {
-        container.scrollTo({
-          top: targetScrollPosition,
-          behavior: 'smooth',
-        })
-      }, 100) // Small delay to ensure spacer is rendered
-    } else if (!inputFocused) {
-      // When input loses focus, scroll back to top smoothly
-      container.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      })
-    }
-  }, [inputFocused, items.length])
-
   // Save to localStorage as backup (not for restoration)
   useEffect(() => {
     if (typeof window !== 'undefined') {
