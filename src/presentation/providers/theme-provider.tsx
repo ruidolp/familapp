@@ -7,7 +7,7 @@
 
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react'
 import { apiClient } from '@/infrastructure/lib/api-client'
 
 export interface ThemeColors {
@@ -64,11 +64,26 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<string>(defaultTheme)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Apply theme to document
-  useEffect(() => {
+  const applyThemeToDocument = useCallback((themeSlug: string) => {
     const root = document.documentElement
-    root.setAttribute('data-theme', theme)
-  }, [theme])
+
+    const selectedTheme = themes.find(t => t.slug === themeSlug)
+
+    // Keep data attribute for CSS fallbacks/gradients
+    root.setAttribute('data-theme', themeSlug)
+
+    // Push dynamic colors from DB into CSS custom properties
+    if (selectedTheme?.colors && Object.keys(selectedTheme.colors).length > 0) {
+      Object.entries(selectedTheme.colors).forEach(([key, value]) => {
+        root.style.setProperty(`--${key}`, value)
+      })
+    }
+  }, [themes])
+
+  // Apply theme to document when it changes or when themes load
+  useEffect(() => {
+    applyThemeToDocument(theme)
+  }, [applyThemeToDocument, theme])
 
   // Load saved theme from localStorage on mount
   useEffect(() => {
@@ -85,6 +100,9 @@ export function ThemeProvider({
       if (!themes.find(t => t.slug === themeSlug)) {
         throw new Error(`Theme "${themeSlug}" not found`)
       }
+
+      // Apply immediately so DB updates are reflected without reload
+      applyThemeToDocument(themeSlug)
 
       // Save to localStorage
       localStorage.setItem('theme', themeSlug)

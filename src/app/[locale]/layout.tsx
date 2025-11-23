@@ -125,7 +125,22 @@ export default async function LocaleLayout({
                     <PWAInstaller />
                     {children}
                     <Toaster />
-                    <SonnerToaster position="top-center" richColors />
+                    <SonnerToaster
+                      position="top-center"
+                      toastOptions={{
+                        classNames: {
+                          toast: 'bg-background text-foreground border-border',
+                          title: 'text-foreground',
+                          description: 'text-muted-foreground',
+                          actionButton: 'bg-primary text-primary-foreground',
+                          cancelButton: 'bg-muted text-muted-foreground',
+                          error: 'bg-destructive text-destructive-foreground border-destructive',
+                          success: 'bg-success text-success-foreground border-success',
+                          warning: 'bg-warning text-warning-foreground border-warning',
+                          info: 'bg-info text-info-foreground border-info',
+                        },
+                      }}
+                    />
                   </NextIntlClientProvider>
                 </CategoryProvider>
               </CurrencyProvider>

@@ -27,6 +27,7 @@ export type CreateTransaccionData = {
   pago_tc?: any // JSONB
   conversion_info?: any // JSONB
   auto_aumento_sobre?: any // JSONB
+  origen?: string // MANUAL, SHOPPING_LIST, INGRESO_RECURRENTE, TRANSFERENCIA
 }
 
 /**
@@ -255,6 +256,7 @@ export async function createTransaccion(transaccionData: CreateTransaccionData) 
     .insertInto('transacciones')
     .values({
       ...transaccionData,
+      origen: transaccionData.origen || 'MANUAL', // Default to MANUAL if not provided
       created_at: new Date(),
       updated_at: new Date(),
       version: 1,

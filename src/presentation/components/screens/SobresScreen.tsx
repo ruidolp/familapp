@@ -48,6 +48,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const t = useTranslations('sobres')
   const [sobres, setSobres] = useState<Sobre[]>([])
   const [loading, setLoading] = useState(false)
+  const [diaInicioPeriodo, setDiaInicioPeriodo] = useState<number>(1)
 
   // Drawers y modales
   const [crearSobreOpen, setCrearSobreOpen] = useState(false)
@@ -82,6 +83,24 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const { devolverPresupuesto, loading: devolverLoading } = useDevolverPresupuesto(
     sobreSeleccionado?.id || ''
   )
+
+  // Cargar configuración del usuario
+  useEffect(() => {
+    const fetchUserConfig = async () => {
+      try {
+        const response = await fetch('/api/user/config')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.config) {
+            setDiaInicioPeriodo(data.config.dia_inicio_periodo || 1)
+          }
+        }
+      } catch (error) {
+        console.error('Error al cargar configuración:', error)
+      }
+    }
+    fetchUserConfig()
+  }, [])
 
   // Cargar sobres
   useEffect(() => {
@@ -344,6 +363,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                     presupuestoAsignado={sobre.presupuesto_asignado}
                   gastado={sobre.gastado || 0}
                   asignaciones={sobre.asignaciones || []}
+                    diaInicioPeriodo={diaInicioPeriodo}
                   onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
                   onVerDetalle={() => handleDetalleSobre(sobre)}
                   onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}

@@ -342,7 +342,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const renderListCard = (list: ShoppingList) => (
     <Card
       key={list.id}
-      className="p-4 cursor-pointer hover:shadow-lg transition-shadow"
+      className="p-4 cursor-pointer shadow-lg hover:shadow-none transition-shadow text-primary"
       onClick={() => handleOpenList(list.id)}
     >
       <div className="flex items-start justify-between gap-2">
@@ -351,11 +351,11 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
             {list.nombre}
           </h3>
           {list.descripcion && (
-            <p className="typography-body-sm text-muted-foreground line-clamp-2 mt-1">
+            <p className="typography-caption font-semibold text-primary/80 line-clamp-2 mt-1">
               {list.descripcion}
             </p>
           )}
-          <div className="flex items-center gap-3 mt-2 typography-metadata">
+          <div className="flex items-center gap-3 mt-2 typography-caption font-semibold text-primary/70">
             <span>
               {list._itemCount !== undefined
                 ? `${list._itemCount} items`
@@ -477,7 +477,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     return (
       <Card
         key={executionId}
-        className={`p-4 cursor-pointer rounded-2xl hover:shadow-lg transition-shadow ${executionToneClass}`}
+        className={`p-4 cursor-pointer rounded-2xl shadow-lg hover:shadow-none transition-shadow ${executionToneClass}`}
         onClick={() => handleOpenExecution(execution)}
       >
         <div className="flex items-start justify-between gap-2">
@@ -488,9 +488,9 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                 {listName}
               </h3>
             </div>
-            <p className="mb-2 typography-metadata">En progreso • {timeText}</p>
+            <p className="mb-2 typography-caption font-semibold text-primary/80">En progreso • {timeText}</p>
             {(execution as any).store_name && (
-              <p className="typography-body-sm text-muted-foreground line-clamp-1">
+              <p className="typography-caption font-semibold text-muted-foreground line-clamp-1">
                 📍 {(execution as any).store_name}
               </p>
             )}
@@ -499,9 +499,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
           {/* Action buttons */}
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
-              size="sm"
-              className="gap-1 min-w-[132px] border-primary/40 text-primary hover:bg-primary/10"
+              className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
               onClick={(e) => {
                 e.stopPropagation()
                 handleOpenExecution(execution)
@@ -554,22 +552,22 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     return (
       <Card
         key={(execution as any).localId || (execution as any).id}
-        className="p-4 cursor-pointer rounded-2xl border-tertiary/40 bg-tertiary/10 hover:shadow-lg transition-shadow"
+        className="p-4 cursor-pointer rounded-2xl border-tertiary/40 bg-tertiary/10 shadow-lg hover:shadow-none transition-shadow"
         onClick={() => handleOpenHistory(execution)}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="mb-1 flex items-center gap-2">
-              <CheckCircle2 size={16} className="text-tertiary" />
-              <h3 className="font-semibold typography-body truncate text-tertiary">
+            <div className="mb-1 flex items-center gap-2 text-primary">
+              <CheckCircle2 size={16} />
+              <h3 className="font-semibold typography-body truncate">
                 {listName}
               </h3>
             </div>
-            <p className="mb-2 typography-metadata">
+            <p className="mb-2 typography-caption font-semibold text-primary/80">
               {completedText} {endTime && `· ${endTime}`}
             </p>
             {(storeName || total !== null) && (
-              <div className="mt-1 flex items-center gap-2 typography-body-sm">
+              <div className="mt-1 flex items-center gap-2 typography-caption font-semibold">
                 {storeName ? (
                   <span className="flex-1 text-muted-foreground line-clamp-1">
                     📍 {storeName}
@@ -578,7 +576,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                   <span className="flex-1 text-muted-foreground">Total</span>
                 )}
                 {total !== null && (
-                  <span className="font-semibold text-tertiary whitespace-nowrap">
+                  <span className="font-semibold text-primary whitespace-nowrap">
                     {formatNumber(total)}
                   </span>
                 )}
@@ -628,14 +626,16 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b">
-        <h2 className="typography-h3">Mis Listas de Compras</h2>
-        <Button
-          onClick={handleOpenCreateDrawer}
-          size="sm"
-          className="w-auto px-3"
-        >
-          Nueva Lista
-        </Button>
+        <h2 className="typography-h3 text-primary">Mis Listas de Compras</h2>
+        {lists.length > 0 && (
+          <Button
+            onClick={handleOpenCreateDrawer}
+            className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
+          >
+            <Plus size={18} />
+            Nueva Lista
+          </Button>
+        )}
       </div>
 
       {/* Lists Grid */}
@@ -648,7 +648,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               <br />
               <span className="typography-body-sm">Crea tu primera lista para empezar</span>
             </p>
-            <Button onClick={handleOpenCreateDrawer} className="gap-2 w-auto px-4">
+            <Button onClick={handleOpenCreateDrawer} className="gap-2 rounded-full px-4 py-2 text-base font-semibold">
               <Plus size={18} />
               Crear Lista
             </Button>
@@ -658,7 +658,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
             {/* All Lists */}
             {lists.length > 0 && (
               <div>
-                <h3 className="typography-caption uppercase tracking-wide text-muted-foreground mb-3 pl-1">
+                <h3 className="font-semibold typography-body text-primary mb-3 pl-1">
                   Mis Listas ({lists.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
@@ -670,8 +670,8 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
             {/* Active Executions Section */}
             {activeExecutions.length > 0 && (
               <div>
-                <h3 className="typography-caption uppercase tracking-wide text-primary mb-3 pl-1">
-                  ⏱️ Listas en curso ({activeExecutions.length})
+                <h3 className="font-semibold typography-body text-primary mb-3 pl-1">
+                  ⏱️ Compras en curso ({activeExecutions.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {activeExecutions.map(renderExecutionCard)}
@@ -682,7 +682,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
             {/* Completed Executions Section */}
             {completedExecutions.length > 0 && (
               <div>
-                <h3 className="typography-caption uppercase tracking-wide text-tertiary mb-3 pl-1">
+                <h3 className="font-semibold typography-body text-primary mb-3 pl-1">
                   ✓ Compras Finalizadas ({completedExecutions.length})
                 </h3>
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

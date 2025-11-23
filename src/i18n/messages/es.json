@@ -435,8 +435,8 @@
     },
     "quickActions": {
       "title": "Acciones rápidas",
-      "descriptionDefault": "Crea y gestiona tus sobres desde aquí.",
-      "descriptionWithName": "Gestiona \"{name}\" o crea otro sobre."
+      "descriptionDefault": "Atajos para tus sobres.",
+      "descriptionWithName": "Atajos para tu sobre <strong>{name}</strong>."
     },
     "emptyBudget": {
       "message": "Asigna un presupuesto a este sobre",

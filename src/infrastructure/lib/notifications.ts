@@ -1,4 +1,4 @@
-import { toast } from 'sonner'
+import { toast, type ExternalToast } from 'sonner'
 
 /**
  * Módulo de notificaciones reutilizable usando Sonner
@@ -55,40 +55,44 @@ export const notify = {
   /**
    * Notificación de error genérico
    */
-  error: (message?: string) => {
+  error: (message?: string, options?: ExternalToast) => {
     toast.error('Error', {
       description: message || 'Ocurrió un error. Por favor, intenta nuevamente',
       duration: 4000,
+      ...options,
     })
   },
 
   /**
    * Notificación de éxito personalizada
    */
-  success: (title: string, description?: string) => {
+  success: (title: string, description?: string, options?: ExternalToast) => {
     toast.success(title, {
       description,
       duration: 3000,
+      ...options,
     })
   },
 
   /**
    * Notificación de advertencia
    */
-  warning: (title: string, description?: string) => {
+  warning: (title: string, description?: string, options?: ExternalToast) => {
     toast.warning(title, {
       description,
       duration: 3500,
+      ...options,
     })
   },
 
   /**
    * Notificación informativa
    */
-  info: (title: string, description?: string) => {
+  info: (title: string, description?: string, options?: ExternalToast) => {
     toast.info(title, {
       description,
       duration: 3000,
+      ...options,
     })
   },
 

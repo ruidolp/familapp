@@ -57,6 +57,7 @@ export interface CreateTransaccionInput {
   categoriaId?: string
   subcategoriaId?: string
   userId: string
+  origen?: string // MANUAL, SHOPPING_LIST, INGRESO_RECURRENTE, TRANSFERENCIA
 }
 
 /**
@@ -283,6 +284,7 @@ export async function crearTransaccion(
       categoria_id: categoriaId,
       subcategoria_id: subcategoriaId,
       usuario_id: userId,
+      origen: input.origen || 'MANUAL', // Pass origen, default to MANUAL
     })
 
     // NOTA: No actualizamos saldo de billetera aquí

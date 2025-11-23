@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useEffect, useState, type CSSProperties } from 'react'
+import { useMemo, useEffect, useState, useRef, useCallback, type CSSProperties } from 'react'
 import { Plus, MoreVertical, Wallet, ArrowUpRight, ArrowDownRight, List } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
@@ -19,6 +19,7 @@ import {
 import { CategoriaCard } from '@/components/cards/CategoriaCard'
 import { useSobreCategories } from '@/presentation/hooks/useSobres'
 import { useCurrency } from '@/presentation/providers/currency-provider'
+import { getCurrentBudgetCycle, formatBudgetCycle } from '@/infrastructure/utils/budget-cycle'
 
 interface Billetera {
   id: string
@@ -41,6 +42,7 @@ interface SobreCardProps {
   presupuestoAsignado: number
   gastado?: number
   asignaciones: Asignacion[]
+  diaInicioPeriodo?: number
   onAgregarPresupuesto?: () => void
   onDevolverPresupuesto?: () => void
   onEditarCategorias?: () => void
@@ -55,6 +57,45 @@ interface SobreCardProps {
   ) => void
 }
 
+// Hook: auto-resize large numbers so they don't overlap
+const useAutoScaleNumber = (text: string) => {
+  const ref = useRef<HTMLParagraphElement>(null)
+  const computeScale = useCallback(() => {
+    const el = ref.current
+    if (!el) return 1
+    const containerWidth = el.parentElement?.clientWidth || el.clientWidth
+    const contentWidth = el.scrollWidth
+    if (!containerWidth || !contentWidth) return 1
+    const rawScale = containerWidth / contentWidth
+    return Math.min(1, rawScale)
+  }, [])
+
+  const [scale, setScale] = useState(1)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const updateScale = () => setScale(prev => {
+      const next = computeScale()
+      return Math.abs(prev - next) > 0.02 ? next : prev
+    })
+
+    // Run once on mount/text change
+    updateScale()
+
+    const observer = new ResizeObserver(() => updateScale())
+    observer.observe(el)
+    if (el.parentElement) {
+      observer.observe(el.parentElement)
+    }
+
+    return () => observer.disconnect()
+  }, [computeScale, text])
+
+  return { ref, scale }
+}
+
 export function SobreCard({
   id,
   nombre,
@@ -63,6 +104,7 @@ export function SobreCard({
   presupuestoAsignado,
   gastado = 0,
   asignaciones,
+  diaInicioPeriodo = 1,
   onAgregarPresupuesto,
   onDevolverPresupuesto,
   onEditarCategorias,
@@ -75,6 +117,17 @@ export function SobreCard({
   const t = useTranslations('sobres')
   const [categoriasLoading, setCategoriasLoading] = useState(false)
   const [accionesOpen, setAccionesOpen] = useState(false)
+
+  // Calcular ciclo de presupuesto actual
+  const budgetCycle = useMemo(
+    () => getCurrentBudgetCycle(diaInicioPeriodo),
+    [diaInicioPeriodo]
+  )
+
+  const cycleLabel = useMemo(
+    () => formatBudgetCycle(budgetCycle),
+    [budgetCycle]
+  )
 
   // Asegurar que son números (pueden venir como strings/Decimal de la BD)
   const presupuesto = Number(presupuestoAsignado) || 0
@@ -102,6 +155,14 @@ export function SobreCard({
 
   const accentColor = color || '#3b82f6'
   const libreEsPositivo = presupuestoLibre >= 0
+  const usadoFormatted = useMemo(() => formatNumber(gastadoNum), [formatNumber, gastadoNum])
+  const libreFormatted = useMemo(
+    () => formatNumber(libreEsPositivo ? presupuestoLibre : Math.abs(presupuestoLibre)),
+    [formatNumber, libreEsPositivo, presupuestoLibre]
+  )
+
+  const usadoScale = useAutoScaleNumber(usadoFormatted)
+  const libreScale = useAutoScaleNumber(libreFormatted)
 
   const withAlpha = (hex: string, alphaHex: string) => {
     if (!hex || !hex.startsWith('#') || (hex.length !== 7 && hex.length !== 4)) return hex
@@ -122,7 +183,7 @@ export function SobreCard({
   return (
     <div className="flex min-h-[calc(100vh-12rem)] flex-col gap-4" style={accentStyles}>
       <Card
-        className="relative overflow-hidden rounded-3xl border border-transparent p-5 text-white shadow-sm"
+        className="relative overflow-hidden rounded-3xl border border-transparent p-5 text-white shadow-lg hover:shadow-none transition-shadow"
         style={{ background: `linear-gradient(135deg, ${accentBg} 0%, ${withAlpha(accentColor, '90')} 60%)` }}
         onClick={onVerDetalle}
       >
@@ -136,8 +197,8 @@ export function SobreCard({
         <div className="relative z-10 space-y-6">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
-              <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
-                {t('card.active')}
+              <p className="typography-caption uppercase tracking-wide text-white/60">
+                Ciclo <span className="font-bold">{cycleLabel}</span>
               </p>
               <h2 className="typography-h1 leading-tight">{nombre}</h2>
               <p className="typography-caption font-semibold text-white/80">
@@ -258,8 +319,12 @@ export function SobreCard({
               <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
                 {t('usado')}
               </p>
-              <p className="typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)]">
-                {formatNumber(gastadoNum)}
+              <p
+                ref={usadoScale.ref}
+                className="typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)] inline-block max-w-full"
+                style={{ transform: `scale(${usadoScale.scale})`, transformOrigin: 'left center' }}
+              >
+                {usadoFormatted}
               </p>
               <p className="typography-caption font-semibold text-white/80">
                 {t('card.status.percentOfBudget', { percent: Math.round(porcentajeGastado) })}
@@ -270,11 +335,13 @@ export function SobreCard({
                 {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
               </p>
               <p
-                className={`typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)] ${
+                ref={libreScale.ref}
+                className={`typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)] inline-block max-w-full ${
                   libreEsPositivo ? '' : 'text-red-100'
                 }`}
+                style={{ transform: `scale(${libreScale.scale})`, transformOrigin: 'right center' }}
               >
-                {formatNumber(libreEsPositivo ? presupuestoLibre : Math.abs(presupuestoLibre))}
+                {libreFormatted}
               </p>
               <p className="typography-caption font-semibold text-white/80">{t('card.status.available')}</p>
             </div>

@@ -626,6 +626,10 @@ export interface Transacciones {
   id: Generated<string>;
   moneda_id: string;
   monto: Numeric;
+  /**
+   * Source of the transaction: MANUAL (regular envelope transactions), SHOPPING_LIST (from shopping executions), INGRESO_RECURRENTE (recurring income), TRANSFERENCIA (transfers)
+   */
+  origen: Generated<string | null>;
   pago_tc: Json | null;
   sobre_id: string | null;
   subcategoria_id: string | null;

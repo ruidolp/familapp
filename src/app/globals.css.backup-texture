@@ -202,36 +202,8 @@
   }
 
   body {
-    @apply text-foreground;
-    background-color: hsl(var(--background));
-    background-image:
-      radial-gradient(circle at 10% 20%, hsla(var(--card-accent) / 0.5), transparent 55%),
-      radial-gradient(circle at 90% 0%, hsla(var(--card) / 0.4), transparent 50%),
-      linear-gradient(180deg, hsla(var(--card) / 0.6) 0%, hsla(var(--card-elevated) / 0.9) 60%, hsl(var(--background)) 100%);
-    background-attachment: fixed;
-    min-height: 100vh;
-    position: relative;
+    @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-      radial-gradient(rgba(24, 24, 27, 0.07) 0.5px, transparent 0.5px),
-      radial-gradient(rgba(24, 24, 27, 0.04) 0.5px, transparent 0.5px);
-    background-size: 3px 3px, 5px 5px;
-    background-position: 0 0, 1px 1px;
-    opacity: 0.25;
-    mix-blend-mode: multiply;
-    z-index: 0;
-  }
-
-  body > * {
-    position: relative;
-    z-index: 1;
   }
 }
 

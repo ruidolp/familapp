@@ -600,8 +600,8 @@
     },
     "quickActions": {
       "title": "Quick Actions",
-      "descriptionDefault": "Create and manage your envelopes here.",
-      "descriptionWithName": "Manage \"{name}\" or create another envelope."
+      "descriptionDefault": "Shortcuts for your envelopes.",
+      "descriptionWithName": "Shortcuts for your envelope <strong>{name}</strong>."
     },
     "emptyBudget": {
       "message": "Assign budget",

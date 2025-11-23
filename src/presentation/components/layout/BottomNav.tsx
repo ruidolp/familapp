@@ -16,7 +16,6 @@ import {
   CircleChevronUp,
   Settings,
   ReceiptText,
-  FolderPlus,
   Tags,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -28,7 +27,6 @@ import {
   DrawerTrigger,
   DrawerDescription,
 } from '@/components/ui/drawer'
-import { Separator } from '@/presentation/components/ui/separator'
 
 export type TabType = 'listas' | 'sobres' | 'metricas' | 'config'
 
@@ -47,6 +45,13 @@ export function BottomNav({
 }: BottomNavProps) {
   const t = useTranslations('sobres.quickActions')
   const [sobresDrawerOpen, setSobresDrawerOpen] = useState(false)
+
+  const description = currentSobreName
+    ? t.rich('descriptionWithName', {
+        name: currentSobreName,
+        strong: (chunks) => <span className="font-semibold">{chunks}</span>,
+      })
+    : t('descriptionDefault')
 
   const handleSobresAction = (action: string) => {
     setSobresDrawerOpen(false)
@@ -89,49 +94,10 @@ export function BottomNav({
                 <DrawerTitle className="typography-label-lg">
                   {t('title')}
                 </DrawerTitle>
-                <DrawerDescription>
-                  {currentSobreName
-                    ? t('descriptionWithName', { name: currentSobreName })
-                    : t('descriptionDefault')}
-                </DrawerDescription>
+                <DrawerDescription>{description}</DrawerDescription>
               </DrawerHeader>
 
-              <div className="flex flex-col gap-6 px-4 py-6">
-                {/* ACCIÓN GLOBAL: NUEVO SOBRE */}
-                <div className="space-y-2">
-                  <p className="typography-caption uppercase text-muted-foreground text-left">
-                    Crear otro sobre
-                  </p>
-                  <Button
-                    variant="secondary"
-                    className="h-14 rounded-2xl border border-border bg-card px-4 text-left typography-body-sm font-semibold text-foreground"
-                    onClick={() => handleSobresAction('nuevo-sobre')}
-                  >
-                    <div className="flex items-center gap-3">
-                      <FolderPlus className="h-4 w-4 text-primary" />
-                      <div className="flex flex-col items-start">
-                        <span className="typography-body-sm font-semibold">
-                          Crear nuevo sobre
-                        </span>
-                        {currentSobreName && (
-                          <span className="typography-metadata">
-                            ¿Nuevo objetivo? Sepáralo de “{currentSobreName}”
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </Button>
-                </div>
-
-                <Separator />
-
-                <p className="typography-caption uppercase text-muted-foreground text-left">
-                  {currentSobreName
-                    ? `Operaciones en ${currentSobreName}`
-                    : 'Operaciones del sobre'}
-                </p>
-
-                {/* CARD QUE YA TE GUSTA: OPERACIONES SOBRE EL SOBRE ACTUAL */}
+              <div className="flex flex-col gap-4 px-4 py-6">
                 <div className="rounded-3xl border border-border bg-card/60 p-4">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Button

@@ -287,12 +287,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         // Clear any draft conflict indicators
         setItemSaveState({})
       } else {
-        notify.error('Error al cargar datos')
+        notify.error('Error al cargar datos', { position: 'bottom-center' })
         router.back()
       }
     } catch (error) {
       console.error('Error loading editor data:', error)
-      notify.error('Error al cargar datos')
+      notify.error('Error al cargar datos', { position: 'bottom-center' })
       router.back()
     } finally {
       setLoading(false)
@@ -513,7 +513,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           }
         } catch (error) {
           console.error('Error creating custom product:', error)
-          notify.error('Error al crear producto')
+          notify.error('Error al crear producto', { position: 'bottom-center' })
           return
         }
       }
@@ -549,7 +549,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         }
       } catch (error) {
         console.error('Error creating custom product:', error)
-        notify.error('Error al crear producto')
+        notify.error('Error al crear producto', { position: 'bottom-center' })
         return
       }
     }
@@ -560,7 +560,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     })
 
     if (isDuplicate) {
-      notify.warning(`${productName} ya está en la lista`)
+      notify.warning(`${productName} ya está en la lista`, undefined, { position: 'bottom-center' })
       return
     }
 
@@ -746,12 +746,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   const handleExecutePurchase = async (config: ExecutionConfig) => {
     if (!data || items.length === 0) {
-      notify.error('No hay productos en la lista')
+      notify.error('No hay productos en la lista', { position: 'bottom-center' })
       return
     }
 
     if (!userId) {
-      notify.error('Usuario no identificado')
+      notify.error('Usuario no identificado', { position: 'bottom-center' })
       return
     }
 
@@ -798,13 +798,13 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
       const execution = await ExecutionStorage.createLocal(input)
 
-      notify.success('¡Compra iniciada!')
+      notify.success('¡Compra iniciada!', undefined, { position: 'bottom-center' })
 
       // Redirect to execution screen
       router.push(`/shopping-executions/${execution.localId}`)
     } catch (error) {
       console.error('Error starting execution:', error)
-      notify.error('Error al iniciar compra')
+      notify.error('Error al iniciar compra', { position: 'bottom-center' })
     }
   }
 

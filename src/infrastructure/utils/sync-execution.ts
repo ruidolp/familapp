@@ -203,6 +203,7 @@ async function createTransactionForExecution(
       subcategoriaId: execution.registration.subcategoria_id,
       descripcion: `Compra en ${execution.registration.store_name || 'supermercado'}`,
       fecha: execution.completed_at || new Date(),
+      origen: 'SHOPPING_LIST', // Mark transaction as coming from shopping list
       metadata: {
         shopping_execution_id: serverExecutionId,
         source: 'shopping_execution',

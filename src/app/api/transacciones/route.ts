@@ -121,6 +121,7 @@ export async function POST(req: NextRequest) {
       sobreId,
       categoriaId,
       subcategoriaId,
+      origen,
     } = body
 
     console.log('📥 POST /api/transacciones - Body recibido:', {
@@ -192,6 +193,7 @@ export async function POST(req: NextRequest) {
       categoriaId,
       subcategoriaId,
       userId: session.user.id,
+      origen: origen || 'MANUAL', // Default to MANUAL if not provided
     })
 
     if (!result.success) {
