@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {
@@ -44,9 +44,18 @@ export function CreateShoppingListDrawer({
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Extract locale from pathname (e.g., "/es/..." -> "es")
   const locale = pathname.split('/')[1] || 'es'
+
+  useEffect(() => {
+    if (!open || isLoading) return
+    const timer = setTimeout(() => {
+      inputRef.current?.focus()
+    }, 250)
+    return () => clearTimeout(timer)
+  }, [open, isLoading])
 
   const handleCreate = async () => {
     try {
@@ -123,7 +132,7 @@ export function CreateShoppingListDrawer({
             onChange={(e) => setName(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            autoFocus
+            ref={inputRef}
             className="typography-body"
           />
           <p className="typography-metadata mt-3">
