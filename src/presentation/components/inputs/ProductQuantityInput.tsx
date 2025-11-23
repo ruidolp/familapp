@@ -20,6 +20,8 @@ interface ProductQuantityInputProps {
   availableProducts?: Product[]
   // Callback when settings button is clicked
   onSettingsClick?: () => void
+  // Callback when focus state changes
+  onFocusChange?: (isFocused: boolean) => void
 }
 
 export function ProductQuantityInput({
@@ -28,6 +30,7 @@ export function ProductQuantityInput({
   disabled = false,
   availableProducts = [],
   onSettingsClick,
+  onFocusChange,
 }: ProductQuantityInputProps) {
   const [productName, setProductName] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -141,11 +144,13 @@ export function ProductQuantityInput({
               blurTimeoutRef.current = null
             }
             setIsFocused(true)
+            onFocusChange?.(true)
           }}
           onBlur={() => {
             // Delay blur to allow button clicks to register
             blurTimeoutRef.current = setTimeout(() => {
               setIsFocused(false)
+              onFocusChange?.(false)
               blurTimeoutRef.current = null
             }, 150)
           }}

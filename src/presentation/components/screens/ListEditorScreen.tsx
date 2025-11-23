@@ -110,6 +110,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const [flatListMode, setFlatListMode] = useState(false)
   const [preferencesLoaded, setPreferencesLoaded] = useState(false)
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null)
+  const [inputFocused, setInputFocused] = useState(false)
 
   // Drawers state
   const [optionsDrawerOpen, setOptionsDrawerOpen] = useState(false)
@@ -839,8 +840,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
         </div>
 
-        {/* Invisible spacer - creates scroll space for first 4 items */}
-        {items.length > 0 && items.length < 5 && (
+        {/* Invisible spacer - creates scroll space for first 4 items (only when input is focused) */}
+        {inputFocused && items.length > 0 && items.length < 5 && (
           <div style={{ height: '350px' }} aria-hidden="true" />
         )}
 
@@ -1130,6 +1131,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             ...(data?.customProducts || []).map((p) => ({ ...p, is_catalog: false })),
           ]}
           onSettingsClick={() => setOptionsDrawerOpen(true)}
+          onFocusChange={setInputFocused}
         />
       </div>
 

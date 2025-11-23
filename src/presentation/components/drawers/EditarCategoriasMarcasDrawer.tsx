@@ -242,18 +242,6 @@ export function EditarCategoriasMarcasDrawer({
           <DrawerDescription>
             Organiza las categorías asignadas al sobre {sobreName || 'seleccionado'} y las marcas que contiene cada una.
           </DrawerDescription>
-          <div className="mt-2 flex justify-end">
-            <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Actualizando
-                </>
-              ) : (
-                'Actualizar'
-              )}
-            </Button>
-          </div>
         </DrawerHeader>
 
         <DrawerBody>
