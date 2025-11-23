@@ -446,19 +446,20 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         (p) => p.nombre.toLowerCase() === productName.toLowerCase()
       )
 
+      // SIEMPRE buscar en catálogo global para obtener categoría
+      const catalogMatch = data?.catalog.find(
+        (p) => p.nombre.toLowerCase() === productName.toLowerCase()
+      )
+
+      if (catalogMatch) {
+        catalogProduct = catalogMatch
+      }
+
       if (customMatch) {
         // Ya existe como producto custom
         finalProductId = customMatch.id
         finalIsCatalog = false
       } else {
-        // Buscar en catálogo global
-        const catalogMatch = data?.catalog.find(
-          (p) => p.nombre.toLowerCase() === productName.toLowerCase()
-        )
-
-        if (catalogMatch) {
-          catalogProduct = catalogMatch
-        }
 
         // Siempre crear copia en product_user_custom (ya sea del catálogo o nuevo)
         try {
@@ -490,7 +491,16 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         }
       }
     } else if (finalIsCatalog && finalProductId) {
-      // Si viene con productId del catálogo, crear copia en product_user_custom
+      // Si viene con productId del catálogo, buscar producto en catálogo para obtener categoría
+      const catalogMatch = data?.catalog.find(
+        (p) => p.nombre.toLowerCase() === productName.toLowerCase()
+      )
+
+      if (catalogMatch) {
+        catalogProduct = catalogMatch
+      }
+
+      // Crear copia en product_user_custom
       try {
         const response = await fetch('/api/products/custom', {
           method: 'POST',
