@@ -14,6 +14,21 @@ export function ConfigScreen() {
   const { theme: currentTheme, themes, setTheme, isLoading } = useTheme()
   const [showThemes, setShowThemes] = useState(false)
 
+  const getThemePreviewColor = (slug: string, fallback: string) => {
+    switch (slug) {
+      case 'blanco':
+        return 'hsl(0 0% 100%)'
+      case 'negro':
+        return 'hsl(0 0% 9%)'
+      case 'neon':
+        return 'hsl(174 100% 51%)'
+      case 'rosado':
+        return 'hsl(350 85% 60%)'
+      default:
+        return fallback
+    }
+  }
+
   const applyThemeVariables = (themeSlug: string) => {
     const selectedTheme = themes.find(t => t.slug === themeSlug)
     if (!selectedTheme) return
@@ -74,7 +89,7 @@ export function ConfigScreen() {
                     <div
                       className="h-6 w-6 rounded-full border-2 border-foreground/20"
                       style={{
-                        backgroundColor: `hsl(${theme.colors.primary})`,
+                        backgroundColor: getThemePreviewColor(theme.slug, `hsl(${theme.colors.primary})`),
                       }}
                     />
                     <span className="typography-label">{theme.name}</span>

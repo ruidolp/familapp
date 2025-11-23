@@ -368,7 +368,7 @@ export function SobreCard({
                   e.stopPropagation()
                   onAgregarPresupuesto?.()
                 }}
-                className="w-full gap-2"
+                className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <Plus size={16} />
                 {t('emptyBudget.button')}
@@ -405,7 +405,7 @@ export function SobreCard({
               ))}
               <Button
                 size="sm"
-                className="w-full gap-2"
+                className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={(e) => {
                   e.stopPropagation()
                   onAgregarCategoria?.()
@@ -422,7 +422,7 @@ export function SobreCard({
               </p>
               <Button
                 size="sm"
-                className="w-full gap-2"
+                className="w-full gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={(e) => {
                   e.stopPropagation()
                   onAgregarCategoria?.()

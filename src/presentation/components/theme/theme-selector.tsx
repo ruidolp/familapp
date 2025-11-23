@@ -22,6 +22,21 @@ export function ThemeSelector() {
 
   const selectedTheme = themes.find(t => t.slug === currentTheme)
 
+  const getThemePreviewColor = (slug: string, fallback: string) => {
+    switch (slug) {
+      case 'blanco':
+        return 'hsl(0 0% 100%)'
+      case 'negro':
+        return 'hsl(0 0% 9%)'
+      case 'neon':
+        return 'hsl(174 100% 51%)'
+      case 'rosado':
+        return 'hsl(350 85% 60%)'
+      default:
+        return fallback
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -43,7 +58,7 @@ export function ThemeSelector() {
                 <div
                   className="h-4 w-4 rounded-full border"
                   style={{
-                    backgroundColor: `hsl(${theme.colors.primary})`,
+                    backgroundColor: getThemePreviewColor(theme.slug, `hsl(${theme.colors.primary})`),
                   }}
                 />
                 <span>{theme.name}</span>

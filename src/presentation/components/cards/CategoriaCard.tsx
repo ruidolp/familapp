@@ -38,7 +38,7 @@ export function CategoriaCard({
   return (
     <>
       <div
-        className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-lg transition-all hover:shadow-none hover:bg-accent/5"
+        className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-theme transition-all hover:shadow-none hover:bg-accent/5"
         onClick={e => {
           onClick?.(e)
           onViewTransactions?.(id, nombre)
