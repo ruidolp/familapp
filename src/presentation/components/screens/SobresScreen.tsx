@@ -10,6 +10,7 @@ import { AgregarPresupuestoDrawer } from '@/components/drawers/AgregarPresupuest
 import { ReducirPresupuestoDrawer } from '@/components/drawers/ReducirPresupuestoDrawer'
 import { CrearGastoDrawer } from '@/components/drawers/CrearGastoDrawer'
 import { AgregarCategoriaDrawer } from '@/components/drawers/AgregarCategoriaDrawer'
+import { EditarCategoriasMarcasDrawer } from '@/components/drawers/EditarCategoriasMarcasDrawer'
 import { VerDetalleTransaccionesDrawer } from '@/components/drawers/VerDetalleTransaccionesDrawer'
 import { VerDetalleCategoriaTransaccionesDrawer } from '@/components/drawers/VerDetalleCategoriaTransaccionesDrawer'
 import { OverspendWarningModal } from '@/components/modals/OverspendWarningModal'
@@ -54,6 +55,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const [reducirPresupuestoOpen, setReducirPresupuestoOpen] = useState(false)
   const [crearGastoOpen, setCrearGastoOpen] = useState(false)
   const [agregarCategoriaOpen, setAgregarCategoriaOpen] = useState(false)
+  const [editarCategoriasOpen, setEditarCategoriasOpen] = useState(false)
   const [verDetalleOpen, setVerDetalleOpen] = useState(false)
   const [detalleCategoriaOpen, setDetalleCategoriaOpen] = useState(false)
   const [categoriaDetalle, setCategoriaDetalle] = useState<{
@@ -261,6 +263,11 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     setAgregarCategoriaOpen(true)
   }
 
+  const handleEditarCategorias = (sobre: Sobre) => {
+    setSobreSeleccionado(sobre)
+    setEditarCategoriasOpen(true)
+  }
+
   const handleCrearGastoSuccess = async () => {
     // Guardar índice actual antes de actualizar
     const previousIndex = selectedIndex
@@ -340,10 +347,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                   onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
                   onVerDetalle={() => handleDetalleSobre(sobre)}
                   onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
-                    onEditarCategorias={() => {
-                      // TODO: Implementar editar categorías
-                      console.log('Editar categorías del sobre:', sobre.id)
-                    }}
+                    onEditarCategorias={() => handleEditarCategorias(sobre)}
                     onAgregarCategoria={() => handleAgregarCategoria(sobre)}
                     onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}
                     onVerTransaccionesCategoria={(categoriaId, categoriaNombre) =>
@@ -401,6 +405,13 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         sobreName={sobreSeleccionado?.nombre || ''}
         userId={userId}
         onSuccess={handleAgregarCategoriaSuccess}
+      />
+      <EditarCategoriasMarcasDrawer
+        open={editarCategoriasOpen}
+        onOpenChange={setEditarCategoriasOpen}
+        sobreId={sobreSeleccionado?.id || ''}
+        sobreName={sobreSeleccionado?.nombre || ''}
+        onSuccess={refreshSobres}
       />
 
       <VerDetalleTransaccionesDrawer

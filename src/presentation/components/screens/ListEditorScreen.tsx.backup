@@ -839,11 +839,6 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
           </div>
         </div>
 
-        {/* Invisible spacer - creates scroll space for first 4 items */}
-        {items.length > 0 && items.length < 5 && (
-          <div style={{ height: '350px' }} aria-hidden="true" />
-        )}
-
         {/* Items List */}
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
