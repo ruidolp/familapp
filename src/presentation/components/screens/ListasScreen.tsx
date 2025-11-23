@@ -342,7 +342,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const renderListCard = (list: ShoppingList) => (
     <Card
       key={list.id}
-      className="p-4 cursor-pointer shadow-lg hover:shadow-none transition-shadow text-primary"
+      className="p-4 cursor-pointer shadow-theme hover:shadow-none transition-shadow text-primary"
       onClick={() => handleOpenList(list.id)}
     >
       <div className="flex items-start justify-between gap-2">
@@ -477,7 +477,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     return (
       <Card
         key={executionId}
-        className={`p-4 cursor-pointer rounded-2xl shadow-lg hover:shadow-none transition-shadow ${executionToneClass}`}
+        className={`p-4 cursor-pointer rounded-2xl shadow-theme hover:shadow-none transition-shadow ${executionToneClass}`}
         onClick={() => handleOpenExecution(execution)}
       >
         <div className="flex items-start justify-between gap-2">
@@ -552,7 +552,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     return (
       <Card
         key={(execution as any).localId || (execution as any).id}
-        className="p-4 cursor-pointer rounded-2xl border-tertiary/40 bg-tertiary/10 shadow-lg hover:shadow-none transition-shadow"
+        className="p-4 cursor-pointer rounded-2xl border-tertiary/40 bg-tertiary/10 shadow-theme hover:shadow-none transition-shadow"
         onClick={() => handleOpenHistory(execution)}
       >
         <div className="flex items-start justify-between gap-2">

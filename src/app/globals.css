@@ -258,6 +258,15 @@
   [data-theme="rosado"] {
     --popover: 0 0% 100%;
   }
+
+  /* Shadows por tema */
+  :root {
+    --card-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  [data-theme="negro"] {
+    --card-shadow: 0 12px 24px rgba(255, 255, 255, 0.08);
+  }
 }
 
 /**
@@ -284,6 +293,10 @@
 
   .border-card-accent {
     border-color: hsl(var(--card-accent));
+  }
+
+  .shadow-theme {
+    box-shadow: var(--card-shadow);
   }
 
   /* ========================================================================

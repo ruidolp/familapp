@@ -183,7 +183,7 @@ export function SobreCard({
   return (
     <div className="flex min-h-[calc(100vh-12rem)] flex-col gap-4" style={accentStyles}>
       <Card
-        className="relative overflow-hidden rounded-3xl border border-transparent p-5 text-white shadow-lg hover:shadow-none transition-shadow"
+        className="relative overflow-hidden rounded-3xl border border-transparent p-5 text-white shadow-theme hover:shadow-none transition-shadow"
         style={{ background: `linear-gradient(135deg, ${accentBg} 0%, ${withAlpha(accentColor, '90')} 60%)` }}
         onClick={onVerDetalle}
       >
