@@ -436,7 +436,8 @@
     "quickActions": {
       "title": "Acciones rápidas",
       "descriptionDefault": "Atajos para tus sobres.",
-      "descriptionWithName": "Atajos para tu sobre <strong>{name}</strong>."
+      "descriptionWithName": "Atajos para tu sobre <strong>{name}</strong>.",
+      "createEnvelope": "Crear sobre"
     },
     "emptyBudget": {
       "message": "Asigna un presupuesto a este sobre",

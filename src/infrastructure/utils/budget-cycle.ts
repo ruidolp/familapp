@@ -92,27 +92,23 @@ export function formatBudgetCycle(
 }
 
 /**
- * Formatea el ciclo de presupuesto con mayor detalle para UI destacadas
- * Formato: "Lunes 05 Enero 25 al Martes 04 Febrero 25"
+ * Formatea el ciclo para etiquetas destacadas
+ * Formato requerido: "05 ENE - 04 FEB 2025"
  */
 export function formatDetailedBudgetRange(
   cycle: BudgetCycle,
   locale: string = 'es-ES'
 ): string {
   const monthFormatter = new Intl.DateTimeFormat(locale, { month: 'short' })
-  const formatMonth = (text: string) => {
-    if (!text) return text
-    const clean = text.replace('.', '')
-    return clean.charAt(0).toUpperCase() + clean.slice(1)
-  }
+  const formatMonth = (date: Date) => monthFormatter.format(date).replace('.', '').toUpperCase()
 
   const startDay = cycle.startDate.getDate().toString().padStart(2, '0')
   const endDay = cycle.endDate.getDate().toString().padStart(2, '0')
-  const startMonth = formatMonth(monthFormatter.format(cycle.startDate))
-  const endMonth = formatMonth(monthFormatter.format(cycle.endDate))
+  const startMonth = formatMonth(cycle.startDate)
+  const endMonth = formatMonth(cycle.endDate)
   const year = cycle.endDate.getFullYear()
 
-  return `${startDay} ${startMonth} al ${endDay} ${endMonth} ${year}`
+  return `${startDay} ${startMonth} - ${endDay} ${endMonth} ${year}`
 }
 
 /**

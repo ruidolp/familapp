@@ -73,6 +73,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const [selectedExecution, setSelectedExecution] = useState<ExecutionDisplay | null>(null)
   const [selectedExecutionForOwner, setSelectedExecutionForOwner] = useState<any>(null)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
+  const [showMyLists, setShowMyLists] = useState(true)
   const [showActiveExecutions, setShowActiveExecutions] = useState(false)
   const [showCompletedExecutions, setShowCompletedExecutions] = useState(false)
   const [showSharedLists, setShowSharedLists] = useState(false)
@@ -81,6 +82,13 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const [invitingList, setInvitingList] = useState<ShoppingList | null>(null)
   const [manageListInvitesOpen, setManageListInvitesOpen] = useState(false)
   const [listInvitesTarget, setListInvitesTarget] = useState<ShoppingList | null>(null)
+
+  // "Mis listas" debe mostrarse expandido al cargar datos
+  useEffect(() => {
+    if (lists.length > 0) {
+      setShowMyLists(true)
+    }
+  }, [lists.length])
 
   // Cargar listas y ejecuciones al montar
   useEffect(() => {
@@ -750,14 +758,29 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               </Button>
             </div>
           ) : (
-            <div>
-              <h3 className="font-semibold typography-body text-foreground mb-3 pl-1 flex items-center gap-2">
-                <ListCheck className="h-4 w-4 text-muted-foreground" />
-                <span>Mis Listas ({lists.length})</span>
-              </h3>
-              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {lists.map(renderListCard)}
-              </div>
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setShowMyLists(prev => !prev)}
+                aria-expanded={showMyLists}
+                className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
+              >
+                <span className="font-semibold typography-body text-foreground flex items-center gap-2">
+                  <ListCheck className="h-4 w-4 text-muted-foreground" />
+                  Mis Listas ({lists.length})
+                </span>
+                <ChevronDown
+                  className={cn(
+                    'h-5 w-5 text-muted-foreground transition-transform',
+                    showMyLists ? 'rotate-180' : ''
+                  )}
+                />
+              </button>
+              {showMyLists && (
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {lists.map(renderListCard)}
+                </div>
+              )}
             </div>
           )}
 

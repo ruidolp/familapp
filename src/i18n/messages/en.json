@@ -603,7 +603,8 @@
     "quickActions": {
       "title": "Quick Actions",
       "descriptionDefault": "Shortcuts for your envelopes.",
-      "descriptionWithName": "Shortcuts for your envelope <strong>{name}</strong>."
+      "descriptionWithName": "Shortcuts for your envelope <strong>{name}</strong>.",
+      "createEnvelope": "Create envelope"
     },
     "emptyBudget": {
       "message": "Assign budget",

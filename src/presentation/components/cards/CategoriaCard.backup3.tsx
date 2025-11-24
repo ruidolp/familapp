@@ -50,10 +50,10 @@ export function CategoriaCard({
             {emoji && <span className="typography-body">{emoji}</span>}
             <span className="truncate">{nombre}</span>
           </div>
-          <div className="flex items-center gap-2 typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="flex items-center gap-2 typography-body-sm text-muted-foreground">
             <span>{t('purchases', { count: compras })}</span>
           </div>
-          <div className="flex items-center gap-2 typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="flex items-center gap-2 typography-body-sm text-muted-foreground">
             <span>{t('percentUsed', { percent: porcentajeNum.toFixed(0) })}</span>
           </div>
         </div>

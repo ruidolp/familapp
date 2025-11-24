@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl'
 import {
   ListCheck,
   MailOpen,
+  MailPlus,
   Plus,
   CircleChevronUp,
   Settings,
@@ -98,7 +99,17 @@ export function BottomNav({
               </DrawerHeader>
 
               <div className="flex flex-col gap-4 px-4 py-6">
-                <div className="rounded-3xl border border-border bg-card/60 p-4">
+                <div className="rounded-3xl border border-border bg-card/60 p-4 space-y-3">
+                  <Button
+                    className="h-14 w-full rounded-2xl px-4 text-left typography-body-sm font-semibold"
+                    onClick={() => handleSobresAction('nuevo-sobre')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <MailPlus className="h-5 w-5" />
+                      {t('createEnvelope')}
+                    </div>
+                  </Button>
+
                   <div className="grid gap-3 sm:grid-cols-2">
                     <Button
                       variant="secondary"
