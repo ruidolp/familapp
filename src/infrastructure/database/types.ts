@@ -157,6 +157,29 @@ export interface InvalidatedSessions {
   user_id: string;
 }
 
+export interface InvitacionesListas {
+  /**
+   * Código único para aceptar la invitación vía link
+   */
+  codigo_invitacion: string | null;
+  created_at: Generated<Timestamp | null>;
+  /**
+   * Estado de la invitación: PENDIENTE, ACEPTADA, RECHAZADA, CANCELADA
+   */
+  estado: Generated<string>;
+  expires_at: Timestamp | null;
+  id: Generated<string>;
+  invitado_email_o_telefono: string;
+  invitado_por_id: string;
+  invitado_user_id: string | null;
+  lista_id: string;
+  /**
+   * Rol que tendrá el usuario: EDITOR (editar items) o EXECUTION_ONLY (solo comprar)
+   */
+  rol: Generated<string>;
+  updated_at: Generated<Timestamp | null>;
+}
+
 export interface InvitacionesSobres {
   codigo_invitacion: string | null;
   created_at: Generated<Timestamp>;
@@ -428,6 +451,22 @@ export interface ShoppingExecutions {
   deleted_at: Timestamp | null;
   gasto_id: string | null;
   id: Generated<string>;
+  /**
+   * Category selected by list owner when registering a purchase made by invited user
+   */
+  owner_categoria_id: string | null;
+  /**
+   * Status of owner registration for purchases made by invited users. Values: null (not applicable), pending, registered, dismissed
+   */
+  owner_registration_status: Generated<string | null>;
+  /**
+   * Sobre selected by list owner when registering a purchase made by invited user
+   */
+  owner_sobre_id: string | null;
+  /**
+   * Subcategory/brand selected by list owner when registering a purchase made by invited user
+   */
+  owner_subcategoria_id: string | null;
   shopping_list_id: string;
   sobre_id: string | null;
   started_at: Generated<Timestamp | null>;
@@ -777,6 +816,7 @@ export interface DB {
   categorias: Categorias;
   ingresos_recurrentes: IngresosRecurrentes;
   invalidated_sessions: InvalidatedSessions;
+  invitaciones_listas: InvitacionesListas;
   invitaciones_sobres: InvitacionesSobres;
   invitation_codes: InvitationCodes;
   linked_users: LinkedUsers;

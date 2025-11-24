@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Card } from '@/components/ui/card'
 import { useToast } from '@/presentation/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 
@@ -126,9 +127,12 @@ export function AccountConfigDrawer({ open, onOpenChange }: AccountConfigDrawerP
           </DrawerDescription>
         </DrawerHeader>
 
-        <DrawerBody className="space-y-6">
-          <div className="space-y-2">
-            <Label>Moneda principal</Label>
+        <DrawerBody className="space-y-4">
+          <Card className="space-y-3 border border-border/80 bg-card/80 p-4">
+            <div>
+              <Label className="text-sm font-semibold">Moneda principal</Label>
+              <p className="text-xs text-muted-foreground">Define en qué divisa crearás nuevos sobres.</p>
+            </div>
             <Select
               value={selectedCurrency}
               onValueChange={setSelectedCurrency}
@@ -145,16 +149,19 @@ export function AccountConfigDrawer({ open, onOpenChange }: AccountConfigDrawerP
                 ))}
               </SelectContent>
             </Select>
-            <Alert className="bg-amber-50 dark:bg-amber-950/40 border-amber-200">
+            <Alert className="border-amber-200/60 bg-amber-50 text-amber-900 dark:bg-amber-900/30 dark:text-amber-50">
               <AlertTitle>Cambio de moneda</AlertTitle>
               <AlertDescription>
                 Solo afectará a sobres nuevos. No convertiremos movimientos ni presupuestos existentes.
               </AlertDescription>
             </Alert>
-          </div>
+          </Card>
 
-          <div className="space-y-2">
-            <Label>Día de reinicio del periodo</Label>
+          <Card className="space-y-3 border border-border/80 bg-card/80 p-4">
+            <div>
+              <Label className="text-sm font-semibold">Día de reinicio del periodo</Label>
+              <p className="text-xs text-muted-foreground">Usaremos este día para calcular cada PERIODO.</p>
+            </div>
             <Select value={selectedDay} onValueChange={setSelectedDay} disabled={loading}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona un día" />
@@ -170,7 +177,7 @@ export function AccountConfigDrawer({ open, onOpenChange }: AccountConfigDrawerP
             <p className="text-sm text-muted-foreground">
               Ese día se reinicia tu PERIODO financiero y se calculan los nuevos saldos.
             </p>
-          </div>
+          </Card>
         </DrawerBody>
 
         <DrawerFooter className="border-t border-border">

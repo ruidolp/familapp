@@ -365,24 +365,41 @@ export function InvitationsManager() {
         onValueChange={(value) => setTipo(value as 'sobre' | 'lista')}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="sobre">
-            Sobres
-            {(invitacionesRecibidas.length + invitacionesEnviadas.length) > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {invitacionesRecibidas.length + invitacionesEnviadas.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="lista">
-            Listas
-            {(invitacionesListasRecibidas.length + invitacionesListasEnviadas.length) > 0 && (
-              <Badge variant="secondary" className="ml-2">
-                {invitacionesListasRecibidas.length + invitacionesListasEnviadas.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
+        <Card className="bg-card/80 border border-border/80 shadow-sm">
+          <CardContent className="space-y-2 p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Tipo de invitación
+            </p>
+            <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0">
+              <TabsTrigger
+                value="sobre"
+                className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-tertiary/40 data-[state=active]:bg-tertiary/20 data-[state=active]:text-foreground"
+              >
+                <span className="flex items-center gap-2">
+                  Sobres
+                  {(invitacionesRecibidas.length + invitacionesEnviadas.length) > 0 && (
+                    <Badge variant="secondary" className="ml-1 text-[10px]">
+                      {invitacionesRecibidas.length + invitacionesEnviadas.length}
+                    </Badge>
+                  )}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="lista"
+                className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+              >
+                <span className="flex items-center gap-2">
+                  Listas
+                  {(invitacionesListasRecibidas.length + invitacionesListasEnviadas.length) > 0 && (
+                    <Badge className="ml-1 text-[10px]">
+                      {invitacionesListasRecibidas.length + invitacionesListasEnviadas.length}
+                    </Badge>
+                  )}
+                </span>
+              </TabsTrigger>
+            </TabsList>
+          </CardContent>
+        </Card>
 
         <TabsContent value="sobre" className="mt-4">
           <InvitacionesTabs />
@@ -401,358 +418,274 @@ export function InvitationsManager() {
   // Componente interno para las tabs de Recibidas/Enviadas
   function InvitacionesTabs() {
     return (
-      <Tabs
-        value={activeTab}
-        onValueChange={(value) => handleTabChange(value as 'recibidas' | 'enviadas')}
-        className="w-full"
-      >
-        <Card className="bg-card/80 border border-border/80 shadow-sm">
-          <CardContent className="space-y-2 p-4">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              Filtrar invitaciones
-            </p>
-            <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0">
-              <TabsTrigger
-                value="recibidas"
-                className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-tertiary/40 data-[state=active]:bg-tertiary/20 data-[state=active]:text-foreground"
-              >
-                <span className="flex items-center gap-2">
-                  Recibidas
-                  {currentRecibidas.length > 0 && (
-                    <Badge variant="destructive" className="ml-1 text-[10px]">
-                      {currentRecibidas.length}
-                    </Badge>
-                  )}
-                </span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="enviadas"
-                className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-              >
-                <span className="flex items-center gap-2">
-                  Enviadas
-                  {currentEnviadas.length > 0 && (
-                    <Badge className="ml-1 text-[10px]">
-                      {currentEnviadas.length}
-                    </Badge>
-                  )}
-                </span>
-              </TabsTrigger>
-            </TabsList>
-          </CardContent>
-        </Card>
-
-        <TabsContent value="recibidas" className="space-y-4">
-          {currentRecibidas.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground text-center">
-                  No tienes invitaciones pendientes
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            currentRecibidas.map((inv: any) => (
-              <Card key={inv.id} className="overflow-hidden">
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={inv.inviter_image} />
-                        <AvatarFallback>
-                          {inv.inviter_name?.[0]?.toUpperCase() || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {inv.inviter_name || 'Usuario'}
-                        </CardTitle>
-                        <CardDescription>
-                          {inv.inviter_email}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <Badge variant="outline">
-                      {tipo === 'sobre'
-                        ? (inv.rol === 'ADMIN' ? 'Administrador' : inv.rol === 'CONTRIBUTOR' ? 'Colaborador' : 'Visualizador')
-                        : (inv.rol === 'EDITOR' ? 'Editor' : 'Solo Ejecución')}
-                    </Badge>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
-                    <span className="text-3xl">{tipo === 'sobre' ? (inv.sobre_emoji || '📦') : '🛒'}</span>
-                    <div>
-                      <p className="font-medium">{itemTypeLabel}: {inv.sobre_nombre || inv.lista_nombre}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Te invitó a colaborar en {tipo === 'sobre' ? 'este sobre' : 'esta lista'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      Invitado{' '}
-                      {formatDistanceToNow(new Date(inv.created_at), {
-                        addSuffix: true,
-                        locale: es,
-                      })}
-                    </span>
-                  </div>
-
-                  <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
-                    <p className="font-medium text-sm">Ventajas de aceptar:</p>
-                    <ul className="text-sm space-y-1 text-muted-foreground">
-                      {tipo === 'sobre' ? (
-                        <>
-                          <li>✓ Presupuesto compartido en tiempo real</li>
-                          <li>✓ Todos ven los gastos del sobre</li>
-                          <li>✓ Sincronización automática</li>
-                        </>
-                      ) : (
-                        <>
-                          <li>✓ Lista compartida en tiempo real</li>
-                          <li>✓ Todos ven las compras</li>
-                          <li>✓ Sincronización automática</li>
-                        </>
-                      )}
-                    </ul>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="flex gap-2">
-                  <Button
-                    onClick={() => handleAccept(inv.id)}
-                    disabled={processingId === inv.id}
-                    className="flex-1"
-                  >
-                    {processingId === inv.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Aceptando...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Aceptar
-                      </>
+      <Card className="border border-border/80 bg-card/80 shadow-sm">
+        <CardContent className="space-y-4 p-4">
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) => handleTabChange(value as 'recibidas' | 'enviadas')}
+            className="w-full"
+          >
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Filtrar invitaciones
+              </p>
+              <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0">
+                <TabsTrigger
+                  value="recibidas"
+                  className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-tertiary/40 data-[state=active]:bg-tertiary/20 data-[state=active]:text-foreground"
+                >
+                  <span className="flex items-center gap-2">
+                    Recibidas
+                    {currentRecibidas.length > 0 && (
+                      <Badge variant="destructive" className="ml-1 text-[10px]">
+                        {currentRecibidas.length}
+                      </Badge>
                     )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleReject(inv.id, inv.sobre_nombre || inv.lista_nombre)}
-                    disabled={processingId === inv.id}
-                    className="flex-1"
-                  >
-                    {processingId === inv.id ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Rechazando...
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="h-4 w-4 mr-2" />
-                        Crear mi {tipo === 'sobre' ? 'propio' : 'propia'} {inv.sobre_nombre || inv.lista_nombre}
-                      </>
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="enviadas"
+                  className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+                >
+                  <span className="flex items-center gap-2">
+                    Enviadas
+                    {currentEnviadas.length > 0 && (
+                      <Badge className="ml-1 text-[10px]">
+                        {currentEnviadas.length}
+                      </Badge>
                     )}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))
-          )}
-        </TabsContent>
+                  </span>
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-        <TabsContent value="enviadas" className="space-y-4">
-          {currentEnviadas.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Users className="h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground text-center">
-                  No has enviado invitaciones aún
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            currentEnviadas.map((inv: any) => {
-              const estadoBadge = {
-                PENDIENTE: { label: 'Pendiente', variant: 'default' as const },
-                ACEPTADA: { label: 'Aceptada', variant: 'default' as const, className: 'bg-green-500' },
-                RECHAZADA: { label: 'Rechazada', variant: 'destructive' as const },
-                CANCELADA: { label: 'Cancelada', variant: 'secondary' as const },
-              }[inv.estado] || { label: inv.estado, variant: 'outline' as const }
-
-              const isExpired = new Date(inv.expires_at) < new Date()
-
-              return (
-                <Card key={inv.id} className="overflow-hidden">
-                  <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{tipo === 'sobre' ? (inv.sobre_emoji || '📦') : '🛒'}</span>
-                        <div>
-                          <CardTitle className="text-lg">{inv.sobre_nombre || inv.lista_nombre}</CardTitle>
-                          <CardDescription>
-                            Invitado: {inv.invitado_name || inv.invitado_email_o_telefono}
-                          </CardDescription>
+            <TabsContent value="recibidas" className="space-y-4 pt-2">
+              {currentRecibidas.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground text-center">
+                      No tienes invitaciones pendientes
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                currentRecibidas.map((inv: any) => (
+                  <Card key={inv.id} className="overflow-hidden">
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={inv.inviter_image} />
+                            <AvatarFallback>
+                              {inv.inviter_name?.[0]?.toUpperCase() || '?'}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <CardTitle className="text-lg">
+                              {inv.inviter_name || 'Usuario'}
+                            </CardTitle>
+                            <CardDescription>
+                              {inv.inviter_email}
+                            </CardDescription>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={estadoBadge.variant} className={estadoBadge.className}>
-                          {estadoBadge.label}
-                        </Badge>
-                        {(inv.estado === 'PENDIENTE' || inv.estado === 'ACEPTADA') && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => openDeleteDrawer(inv)}
-                            title="Eliminar invitación"
-                          >
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-4 w-4" />
-                      <span>
-                        Enviado{' '}
-                        {formatDistanceToNow(new Date(inv.created_at), {
-                          addSuffix: true,
-                          locale: es,
-                        })}
-                      </span>
-                    </div>
-
-                    {inv.estado === 'PENDIENTE' && isExpired && (
-                      <div className="bg-yellow-50 dark:bg-yellow-950 p-3 rounded-lg">
-                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                          ⚠️ Esta invitación ha expirado
-                        </p>
-                      </div>
-                    )}
-
-                    {inv.estado === 'PENDIENTE' && !isExpired && inv.codigo_invitacion && (
-                      <div className="bg-muted p-3 rounded-lg space-y-2">
-                        <p className="text-sm font-medium">Link de invitación:</p>
-                        <div className="flex gap-2">
-                          <Input
-                            readOnly
-                            value={`${window.location.origin}/${window.location.pathname.split('/')[1]}/invite${tipo === 'lista' ? '/lista' : ''}/${inv.codigo_invitacion}`}
-                            className="font-mono text-xs"
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              navigator.clipboard.writeText(
-                                `${window.location.origin}/${window.location.pathname.split('/')[1]}/invite${tipo === 'lista' ? '/lista' : ''}/${inv.codigo_invitacion}`
-                              )
-                              toast({
-                                title: 'Link copiado',
-                                description: 'El link de invitación se copió al portapapeles',
-                              })
-                            }}
-                          >
-                            Copiar
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {inv.invitado_name && (
-                      <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                        <Avatar>
-                          <AvatarImage src={inv.invitado_image} />
-                          <AvatarFallback>
-                            {inv.invitado_name?.[0]?.toUpperCase() || '?'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{inv.invitado_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {inv.invitado_email}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      {inv.estado === 'ACEPTADA' ? (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium">Permisos:</p>
-                          <Select
-                            value={inv.rol}
-                            onValueChange={(value) => handleUpdateRole(inv.id, value)}
-                            disabled={updatingRoleId === inv.id}
-                          >
-                            <SelectTrigger className="w-[200px]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {tipo === 'sobre' ? (
-                                <>
-                                  <SelectItem value="ADMIN">
-                                    <div className="flex items-center gap-2">
-                                      <Shield className="h-4 w-4 text-orange-600" />
-                                      <span>Administrador</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="CONTRIBUTOR">
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-blue-600" />
-                                      <span>Colaborador</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="VIEWER">
-                                    <div className="flex items-center gap-2">
-                                      <Eye className="h-4 w-4 text-gray-600" />
-                                      <span>Visualizador</span>
-                                    </div>
-                                  </SelectItem>
-                                </>
-                              ) : (
-                                <>
-                                  <SelectItem value="EDITOR">
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-blue-600" />
-                                      <span>Editor</span>
-                                    </div>
-                                  </SelectItem>
-                                  <SelectItem value="EXECUTION_ONLY">
-                                    <div className="flex items-center gap-2">
-                                      <Eye className="h-4 w-4 text-gray-600" />
-                                      <span>Solo Ejecución</span>
-                                    </div>
-                                  </SelectItem>
-                                </>
-                              )}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      ) : (
                         <Badge variant="outline">
                           {tipo === 'sobre'
                             ? (inv.rol === 'ADMIN' ? 'Administrador' : inv.rol === 'CONTRIBUTOR' ? 'Colaborador' : 'Visualizador')
                             : (inv.rol === 'EDITOR' ? 'Editor' : 'Solo Ejecución')}
                         </Badge>
-                      )}
-                    </div>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                        <span className="text-3xl">{tipo === 'sobre' ? (inv.sobre_emoji || '📦') : '🛒'}</span>
+                        <div>
+                          <p className="font-medium">{itemTypeLabel}: {inv.sobre_nombre || inv.lista_nombre}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Te invitó a colaborar en {tipo === 'sobre' ? 'este sobre' : 'esta lista'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>
+                          Invitado{' '}
+                          {formatDistanceToNow(new Date(inv.created_at), {
+                            addSuffix: true,
+                            locale: es,
+                          })}
+                        </span>
+                      </div>
+
+                      <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
+                        <p className="font-medium text-sm">Ventajas de aceptar:</p>
+                        <ul className="text-sm space-y-1 text-muted-foreground">
+                          {tipo === 'sobre' ? (
+                            <>
+                              <li>✓ Presupuesto compartido en tiempo real</li>
+                              <li>✓ Todos ven los gastos del sobre</li>
+                              <li>✓ Sincronización automática</li>
+                            </>
+                          ) : (
+                            <>
+                              <li>✓ Lista compartida en tiempo real</li>
+                              <li>✓ Todos ven las compras</li>
+                              <li>✓ Sincronización automática</li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                    </CardContent>
+
+                    <CardFooter className="flex gap-2">
+                      <Button
+                        onClick={() => handleAccept(inv.id)}
+                        disabled={processingId === inv.id}
+                        className="flex-1"
+                      >
+                        {processingId === inv.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Aceptando...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="h-4 w-4 mr-2" />
+                            Aceptar
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => handleReject(inv.id, inv.sobre_nombre || inv.lista_nombre)}
+                        disabled={processingId === inv.id}
+                        className="flex-1"
+                      >
+                        {processingId === inv.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Rechazando...
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Crear mi {tipo === 'sobre' ? 'propio' : 'propia'} {inv.sobre_nombre || inv.lista_nombre}
+                          </>
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="enviadas" className="space-y-4 pt-2">
+              {currentEnviadas.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <Users className="h-12 w-12 text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground text-center">
+                      No has enviado invitaciones aún
+                    </p>
                   </CardContent>
                 </Card>
-              )
-            })
-          )}
-        </TabsContent>
-      </Tabs>
+              ) : (
+                currentEnviadas.map((inv: any) => {
+                  const estadoBadge = {
+                    PENDIENTE: { label: 'Pendiente', variant: 'default' as const },
+                    ACEPTADA: { label: 'Aceptada', variant: 'default' as const, className: 'bg-green-500' },
+                    RECHAZADA: { label: 'Rechazada', variant: 'destructive' as const },
+                    CANCELADA: { label: 'Cancelada', variant: 'secondary' as const },
+                  }[inv.estado] || { label: inv.estado, variant: 'outline' as const }
+
+                  const isExpired = new Date(inv.expires_at) < new Date()
+
+                  return (
+                    <Card key={inv.id} className="overflow-hidden">
+                      <CardHeader className="pb-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl">{tipo === 'sobre' ? (inv.sobre_emoji || '📦') : '🛒'}</span>
+                            <div>
+                              <CardTitle className="text-lg">{inv.sobre_nombre || inv.lista_nombre}</CardTitle>
+                              <CardDescription>
+                                Invitado: {inv.invitado_name || inv.invitado_email_o_telefono}
+                              </CardDescription>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={estadoBadge.variant} className={estadoBadge.className}>
+                              {estadoBadge.label}
+                            </Badge>
+                            {(inv.estado === 'PENDIENTE' || inv.estado === 'ACEPTADA') && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => openDeleteDrawer(inv)}
+                                title="Eliminar invitación"
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="space-y-4">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            Enviada{' '}
+                            {formatDistanceToNow(new Date(inv.created_at), {
+                              addSuffix: true,
+                              locale: es,
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Eye className="h-4 w-4" />
+                          <span>
+                            {isExpired
+                              ? 'Expirada'
+                              : `Expira el ${new Date(inv.expires_at).toLocaleDateString('es-CL')}`}
+                          </span>
+                        </div>
+
+                        {inv.codigo_invitacion && (
+                          <div className="rounded-lg border border-dashed border-muted-foreground/40 p-3">
+                            <p className="text-xs text-muted-foreground mb-1">Código</p>
+                            <p className="font-mono text-sm">{inv.codigo_invitacion}</p>
+                          </div>
+                        )}
+                      </CardContent>
+
+                      <CardFooter className="flex justify-end gap-2">
+                        {inv.estado === 'PENDIENTE' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openDeleteDrawer(inv)}
+                          >
+                            Cancelar invitación
+                          </Button>
+                        )}
+                      </CardFooter>
+                    </Card>
+                  )
+                })
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
     )
   }
+
 
   // Componente interno para el Drawer de eliminación
   function DrawerComponent() {

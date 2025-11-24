@@ -46,6 +46,56 @@ export interface ListaResult {
 }
 
 /**
+ * Verificar si el usuario tiene acceso a una lista
+ * Retorna true si es owner o colaborador
+ */
+export async function canUserAccessList(
+  listaId: string,
+  userId: string
+): Promise<boolean> {
+  try {
+    const lista = await getShoppingListById(listaId)
+    if (!lista) return false
+
+    // Check if user is owner
+    if (lista.user_id === userId) return true
+
+    // Check if user is collaborator
+    const participantes = await findParticipantesByLista(listaId)
+    return participantes.some((p: any) => p.usuario_id === userId)
+  } catch (error) {
+    console.error('Error checking user access to list:', error)
+    return false
+  }
+}
+
+/**
+ * Obtener el permiso/rol del usuario en una lista
+ * Retorna 'OWNER', 'EDITOR', 'EXECUTION_ONLY' o null si no tiene acceso
+ */
+export async function getUserPermissionForList(
+  listaId: string,
+  userId: string
+): Promise<RolListaUsuario | null> {
+  try {
+    const lista = await getShoppingListById(listaId)
+    if (!lista) return null
+
+    // Check if user is owner
+    if (lista.user_id === userId) return 'OWNER'
+
+    // Check if user is collaborator and get their role
+    const participantes = await findParticipantesByLista(listaId)
+    const participante = participantes.find((p: any) => p.usuario_id === userId)
+
+    return participante ? (participante.rol as RolListaUsuario) : null
+  } catch (error) {
+    console.error('Error getting user permission for list:', error)
+    return null
+  }
+}
+
+/**
  * Obtener una lista por ID con validación de permisos
  */
 export async function obtenerLista(
@@ -63,8 +113,7 @@ export async function obtenerLista(
     }
 
     // Verificar que el usuario tiene acceso (es owner o colaborador)
-    const participantes = await findParticipantesByLista(listaId)
-    const tieneAcceso = participantes.some((p: any) => p.usuario_id === userId)
+    const tieneAcceso = await canUserAccessList(listaId, userId)
 
     if (!tieneAcceso) {
       return {

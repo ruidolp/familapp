@@ -511,9 +511,16 @@ export function SobreCard({
         <InviteUserDialog
           open={inviteDialogOpen}
           onOpenChange={setInviteDialogOpen}
-          sobreId={id}
-          sobreNombre={nombre}
-          sobreEmoji={emoji}
+          tipo="sobre"
+          itemId={id}
+          itemNombre={nombre}
+          itemEmoji={emoji}
+          onSuccess={(method) => {
+            // If user chose WhatsApp, open manage invitations drawer
+            if (method === 'whatsapp') {
+              setManageInvitesOpen(true)
+            }
+          }}
         />
       )}
       {isOwner && (

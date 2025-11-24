@@ -5,6 +5,7 @@ import {
   updateShoppingListItem,
   deleteShoppingListItem,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
+import { getUserPermissionForList } from '@/application/services/shopping-lists.service'
 import { db } from '@/infrastructure/database/kysely'
 
 export async function PUT(
@@ -18,6 +19,8 @@ export async function PUT(
     }
 
     const { id: listId, itemId } = await context.params
+    const userId = session.user.id
+
     const list = await getShoppingListById(listId)
 
     if (!list) {
@@ -27,7 +30,9 @@ export async function PUT(
       )
     }
 
-    if (list.user_id !== session.user.id) {
+    // Check user permission (OWNER or EDITOR can update items)
+    const userPermission = await getUserPermissionForList(listId, userId)
+    if (!userPermission || userPermission === 'EXECUTION_ONLY') {
       return NextResponse.json(
         { error: 'No tienes permiso para editar esta lista' },
         { status: 403 }
@@ -144,6 +149,8 @@ export async function DELETE(
     }
 
     const { id: listId, itemId } = await context.params
+    const userId = session.user.id
+
     const list = await getShoppingListById(listId)
 
     if (!list) {
@@ -153,7 +160,9 @@ export async function DELETE(
       )
     }
 
-    if (list.user_id !== session.user.id) {
+    // Check user permission (OWNER or EDITOR can delete items)
+    const userPermission = await getUserPermissionForList(listId, userId)
+    if (!userPermission || userPermission === 'EXECUTION_ONLY') {
       return NextResponse.json(
         { error: 'No tienes permiso para editar esta lista' },
         { status: 403 }

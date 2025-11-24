@@ -3,7 +3,7 @@
  */
 
 import { useTranslations } from 'next-intl'
-import { Wallet, ArrowRightLeft, Plus } from 'lucide-react'
+import { Wallet, ArrowRightLeft, Plus, PlusCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -19,6 +19,7 @@ import {
 interface ContextualDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onCreateEnvelope: () => void
   onAddWallet: () => void
   onTransfer: () => void
   onDeposito: () => void
@@ -27,6 +28,7 @@ interface ContextualDrawerProps {
 export function ContextualDrawer({
   open,
   onOpenChange,
+  onCreateEnvelope,
   onAddWallet,
   onTransfer,
   onDeposito,
@@ -50,6 +52,22 @@ export function ContextualDrawer({
 
         <DrawerBody>
           <div className="space-y-2">
+            <Button
+              variant="outline"
+              className="w-full h-14 flex items-center justify-start gap-3"
+              onClick={() => handleAction(onCreateEnvelope)}
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                <PlusCircle className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="font-medium">{t('contextual.createEnvelopeLabel')}</p>
+                <p className="typography-body text-muted-foreground">
+                  {t('contextual.createEnvelopeDescription')}
+                </p>
+              </div>
+            </Button>
+
             <Button
               variant="outline"
               className="w-full h-14 flex items-center justify-start gap-3"

@@ -51,7 +51,7 @@ export async function findSobreById(sobreId: string) {
  * Buscar sobres por usuario (como owner o participante)
  */
 export async function findSobresByUser(userId: string) {
-  // Sobres propios + sobres compartidos donde participa
+  // Sobres propios (donde usuario_id = userId)
   const sobresOwner = await db
     .selectFrom('sobres')
     .selectAll()
@@ -59,31 +59,21 @@ export async function findSobresByUser(userId: string) {
     .where('deleted_at', 'is', null)
     .execute()
 
+  // Sobres compartidos donde participa (pero NO es owner)
   const sobresParticipante = await db
     .selectFrom('sobres')
     .innerJoin('sobres_usuarios', 'sobres.id', 'sobres_usuarios.sobre_id')
     .selectAll('sobres')
     .where('sobres_usuarios.usuario_id', '=', userId)
+    .where('sobres.usuario_id', '!=', userId) // Excluir sobres donde es owner
     .where('sobres.deleted_at', 'is', null)
     .execute()
 
-  // Marcar sobres propios con is_compartido = false
-  const sobresOwnerMapped = sobresOwner.map(s => ({
-    ...s,
-    is_compartido: false,
-  }))
+  // Combinar y ordenar
+  // IMPORTANTE: is_compartido viene de la DB, NO lo calculamos manualmente
+  const allSobres = [...sobresOwner, ...sobresParticipante]
 
-  // Marcar sobres compartidos con is_compartido = true
-  const sobresParticipanteMapped = sobresParticipante.map(s => ({
-    ...s,
-    is_compartido: true,
-  }))
-
-  // Combinar y eliminar duplicados (priorizar sobres propios)
-  const allSobres = [...sobresOwnerMapped, ...sobresParticipanteMapped]
-  const uniqueSobres = Array.from(new Map(allSobres.map((s) => [s.id, s])).values())
-
-  return uniqueSobres.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+  return allSobres.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
 }
 
 /**

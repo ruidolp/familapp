@@ -841,6 +841,8 @@
     },
     "contextual": {
       "title": "Acciones rápidas",
+      "createEnvelopeLabel": "Crear sobre",
+      "createEnvelopeDescription": "Organiza tu presupuesto con un nuevo sobre",
       "transferDescription": "Mueve dinero entre tus billeteras",
       "depositoLabel": "Nuevo depósito/retiro",
       "depositoDescription": "Registra ingresos o egresos externos"

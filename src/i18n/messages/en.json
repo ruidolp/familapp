@@ -534,6 +534,8 @@
     },
     "contextual": {
       "title": "Quick Actions",
+      "createEnvelopeLabel": "Create envelope",
+      "createEnvelopeDescription": "Organize your budget with a new envelope",
       "transferDescription": "Between your wallets",
       "depositoLabel": "New DEPOSIT/WITHDRAWAL",
       "depositoDescription": "Record external income or expenses"

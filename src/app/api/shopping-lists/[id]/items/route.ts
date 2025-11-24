@@ -6,6 +6,7 @@ import {
   getShoppingListItems,
   reorderShoppingListItems,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
+import { getUserPermissionForList } from '@/application/services/shopping-lists.service'
 
 export async function GET(
   req: NextRequest,
@@ -18,6 +19,8 @@ export async function GET(
     }
 
     const { id } = await context.params
+    const userId = session.user.id
+
     const list = await getShoppingListById(id)
 
     if (!list) {
@@ -27,7 +30,9 @@ export async function GET(
       )
     }
 
-    if (list.user_id !== session.user.id) {
+    // Check user permission (OWNER, EDITOR, or EXECUTION_ONLY can view items)
+    const userPermission = await getUserPermissionForList(id, userId)
+    if (!userPermission) {
       return NextResponse.json(
         { error: 'No tienes permiso para acceder a esta lista' },
         { status: 403 }
@@ -61,6 +66,8 @@ export async function POST(
     }
 
     const { id } = await context.params
+    const userId = session.user.id
+
     const list = await getShoppingListById(id)
 
     if (!list) {
@@ -70,7 +77,9 @@ export async function POST(
       )
     }
 
-    if (list.user_id !== session.user.id) {
+    // Check user permission (OWNER or EDITOR can add items)
+    const userPermission = await getUserPermissionForList(id, userId)
+    if (!userPermission || userPermission === 'EXECUTION_ONLY') {
       return NextResponse.json(
         { error: 'No tienes permiso para editar esta lista' },
         { status: 403 }
@@ -152,6 +161,8 @@ export async function PUT(
     }
 
     const { id } = await context.params
+    const userId = session.user.id
+
     const list = await getShoppingListById(id)
 
     if (!list) {
@@ -161,7 +172,9 @@ export async function PUT(
       )
     }
 
-    if (list.user_id !== session.user.id) {
+    // Check user permission (OWNER or EDITOR can reorder items)
+    const userPermission = await getUserPermissionForList(id, userId)
+    if (!userPermission || userPermission === 'EXECUTION_ONLY') {
       return NextResponse.json(
         { error: 'No tienes permiso para editar esta lista' },
         { status: 403 }

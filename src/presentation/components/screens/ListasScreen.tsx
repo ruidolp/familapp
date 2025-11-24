@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, ChevronDown, UserPlus, ListCheck, Pencil, ExternalLink, Users } from 'lucide-react'
+import { useLocale } from 'next-intl'
+import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, ChevronDown, UserPlus, ListCheck, Pencil, ExternalLink, Users, Bell } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +18,8 @@ import { ExecutionHistoryDrawer } from '@/components/drawers/ExecutionHistoryDra
 import { InviteUserDialog, type ContactMethod } from '@/components/sobres/invite-user-dialog'
 import { ManageListInvitationsDrawer } from '@/presentation/components/listas/manage-list-invitations-drawer'
 import { SharedBadge } from '@/presentation/components/sobres/shared-badge'
+import { PendingRegistrationsAlert } from '@/presentation/components/listas/PendingRegistrationsAlert'
+import { OwnerRegisterPurchaseDrawer } from '@/presentation/components/drawers/OwnerRegisterPurchaseDrawer'
 import { notify } from '@/infrastructure/lib/notifications'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
@@ -56,15 +59,19 @@ interface ListasScreenProps {
 
 export function ListasScreen({ userId, menuAction, onMenuActionHandled }: ListasScreenProps) {
   const router = useRouter()
+  const locale = useLocale()
   const { formatNumber } = useCurrency()
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [sharedLists, setSharedLists] = useState<ShoppingList[]>([])
   const [activeExecutions, setActiveExecutions] = useState<ExecutionDisplay[]>([])
   const [completedExecutions, setCompletedExecutions] = useState<ExecutionDisplay[]>([])
   const [loading, setLoading] = useState(false)
+  const [ownedListIds, setOwnedListIds] = useState<string[]>([])
   const [createDrawerOpen, setCreateDrawerOpen] = useState(false)
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false)
+  const [ownerRegisterDrawerOpen, setOwnerRegisterDrawerOpen] = useState(false)
   const [selectedExecution, setSelectedExecution] = useState<ExecutionDisplay | null>(null)
+  const [selectedExecutionForOwner, setSelectedExecutionForOwner] = useState<any>(null)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [showActiveExecutions, setShowActiveExecutions] = useState(false)
   const [showCompletedExecutions, setShowCompletedExecutions] = useState(false)
@@ -111,6 +118,15 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
       onMenuActionHandled?.()
     }
   }, [menuAction, onMenuActionHandled])
+
+  // FIX: Memoize owned list IDs to prevent creating new array on every render
+  useEffect(() => {
+    const ids = lists.filter(l => !l._isShared).map(l => l.id)
+    // Only update if actually changed (compare stringified versions)
+    if (JSON.stringify(ids) !== JSON.stringify(ownedListIds)) {
+      setOwnedListIds(ids)
+    }
+  }, [lists])
 
   const fetchLists = async () => {
     setLoading(true)
@@ -365,13 +381,13 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   }
 
   const handleOpenList = (listId: string) => {
-    router.push(`/shopping-lists/${listId}`)
+    router.push(`/${locale}/shopping-lists/${listId}`)
   }
 
   const handleOpenExecution = (execution: ExecutionDisplay) => {
     // Para ejecuciones locales usar localId, para del servidor usar id
     const id = (execution as any).localId || (execution as any).id
-    router.push(`/shopping-executions/${id}`)
+    router.push(`/${locale}/shopping-executions/${id}`)
   }
 
   // Separate lists into pending and executed
@@ -637,6 +653,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     const endTime = formatTime(endDate)
     const total = getExecutionTotal(execution)
     const storeName = (execution as any).store_name
+    const hasPendingRegistration = (execution as any).owner_registration_status === 'pending'
 
     return (
       <Card
@@ -651,6 +668,9 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               <h3 className="font-semibold typography-body truncate">
                 {listName}
               </h3>
+              {hasPendingRegistration && (
+                <Bell size={14} className="text-orange-500 animate-pulse" />
+              )}
             </div>
             <p className="mb-2 typography-caption font-semibold text-muted-foreground">
               {completedText} {endTime && `· ${endTime}`}
@@ -874,6 +894,36 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
           listaNombre={listInvitesTarget.nombre}
         />
       )}
+
+      {/* Pending Registrations Alert - Only for owned lists, not shared lists */}
+      {/* FIX: Use memoized ownedListIds instead of creating new array on every render */}
+      <PendingRegistrationsAlert
+        listIds={ownedListIds}
+        onRegisterNow={(execution) => {
+          setSelectedExecutionForOwner(execution)
+          setOwnerRegisterDrawerOpen(true)
+        }}
+        onDismissAll={() => {
+          // Refresh data
+          fetchLists()
+          fetchActiveExecutions()
+          fetchCompletedExecutions()
+        }}
+      />
+
+      {/* Owner Register Purchase Drawer */}
+      <OwnerRegisterPurchaseDrawer
+        open={ownerRegisterDrawerOpen}
+        onOpenChange={setOwnerRegisterDrawerOpen}
+        execution={selectedExecutionForOwner}
+        userId={userId}
+        onSuccess={() => {
+          // Refresh data
+          fetchLists()
+          fetchActiveExecutions()
+          fetchCompletedExecutions()
+        }}
+      />
     </div>
   )
 }
