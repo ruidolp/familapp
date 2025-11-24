@@ -694,7 +694,7 @@
     },
     "finalize": {
       "title": "Resumen de compra",
-      "description": "Revisa todo antes de finalizar ✅",
+      "description": "Revisa todo antes de finalizar",
       "purchased": "Comprados",
       "discarded": "Descartados",
         "pending": "Pendientes",
@@ -709,7 +709,7 @@
         "totalPaid": "Total pagado (opcional)",
         "totalPaidDescription": "Ingresa el monto real del ticket si es diferente",
         "finalizing": "Finalizando...",
-        "submit": "Finalizar y guardar",
+        "submit": "Finalizar compra",
         "cancel": "Cancelar"
       },
       "settings": {
@@ -870,7 +870,7 @@
       "selectEnvelope": "Seleccionar sobre",
       "selectEnvelopePlaceholder": "Elige un sobre",
       "category": "Categoría",
-      "addNewCategory": "+ Nueva categoría",
+      "addNewCategory": "Nueva categoría",
       "categoryNamePlaceholder": "Nombre de la categoría",
       "categoryEmoji": "🏷️",
       "creating": "Registrando...",
@@ -878,7 +878,7 @@
       "cancel": "Cancelar",
       "details": "Detalle",
       "brand": "Marca o lugar",
-      "addNewBrand": "+ Nueva Marca",
+      "addNewBrand": "Nueva Marca",
       "brandPlaceholder": "Buscar o crear marca...",
       "brandOptional": "opcional",
       "pressEnter": "Presiona Enter para crear una nueva marca",

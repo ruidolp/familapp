@@ -34,6 +34,7 @@ import {
   updateMarcasCache,
 } from '@/infrastructure/utils/marcas-storage'
 import { useCurrency } from '@/presentation/providers/currency-provider'
+import { X } from 'lucide-react'
 
 const DEFAULT_CATEGORY_EMOJI = '📁'
 
@@ -74,6 +75,33 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <div className="flex items-center gap-2">
       <div className="h-5 w-1 bg-primary rounded-full" />
       <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
+    </div>
+  )
+}
+
+function SelectionBadge({
+  emoji,
+  label,
+  onClear,
+}: {
+  emoji?: string
+  label: string
+  onClear: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-primary bg-primary/10 px-3 py-2">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        {emoji && <span className="text-lg">{emoji}</span>}
+        <span className="text-foreground">{label}</span>
+      </div>
+      <button
+        type="button"
+        onClick={onClear}
+        className="rounded-full p-1 text-primary transition-colors hover:bg-primary/10"
+        aria-label="Limpiar selección"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
   )
 }
@@ -150,24 +178,14 @@ export function CrearGastoDrawer({
 
   const fetchData = async () => {
     try {
-      const [sobresRes, categoriasRes, marcasRes, configRes] = await Promise.all([
+      const [sobresRes, configRes] = await Promise.all([
         fetch('/api/sobres'),
-        fetch('/api/categorias'),
-        fetch('/api/subcategorias'),
         fetch('/api/user/config'),
       ])
 
       if (sobresRes.ok) {
         const data = await sobresRes.json()
         setSobres(data.sobres || [])
-      }
-      if (categoriasRes.ok) {
-        const data = await categoriasRes.json()
-        setCategorias(data.categorias || [])
-      }
-      if (marcasRes.ok) {
-        const data = await marcasRes.json()
-        setMarcas(data.subcategorias || [])
       }
       if (configRes.ok) {
         const configData = await configRes.json()
@@ -208,7 +226,29 @@ export function CrearGastoDrawer({
       const response = await fetch(`/api/sobres/${sobreId}/categorias`)
       if (response.ok) {
         const data = await response.json()
-        setCategorias(data.categorias || [])
+        const categoriasList = data.categorias || []
+        setCategorias(categoriasList)
+
+        // Cargar marcas de cada categoría del sobre
+        const allMarcas: Marca[] = []
+        await Promise.all(
+          categoriasList.map(async (cat: Categoria) => {
+            try {
+              const marcasRes = await fetch(`/api/categorias/${cat.id}/subcategorias`)
+              if (marcasRes.ok) {
+                const marcasData = await marcasRes.json()
+                const normalizedMarcas = (marcasData.subcategorias || []).map((marca: any) => ({
+                  ...marca,
+                  categoria_id: marca.categoria_id || marca.categoriaId,
+                }))
+                allMarcas.push(...normalizedMarcas)
+              }
+            } catch (err) {
+              console.error(`Error cargando marcas de categoría ${cat.id}:`, err)
+            }
+          })
+        )
+        setMarcas(allMarcas)
       }
     } catch (error) {
       console.error('Error fetching categorías del sobre:', error)
@@ -466,6 +506,13 @@ export function CrearGastoDrawer({
     }
   }, [monto, sobreSeleccionado, sobres])
 
+  useEffect(() => {
+    setMarcaSeleccionada('')
+    setCrearMarcaMode(false)
+    setInputMarca('')
+    setMarcasSugeridas([])
+  }, [categoriaSeleccionada])
+
   const sobreActual = sobres.find((s) => s.id === sobreSeleccionado)
   const marcasDelCategoria = categoriaSeleccionada
     ? marcas.filter((m) => m.categoria_id === categoriaSeleccionada)
@@ -605,24 +652,40 @@ export function CrearGastoDrawer({
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-2">
-                  {categoriasOrdenadas.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => setCategoriaSeleccionada(c.id)}
-                      className={[
-                        'min-h-[44px] w-full rounded-xl px-3 py-2 text-sm font-medium flex items-center gap-2 border transition-all text-left whitespace-normal break-words leading-tight',
-                        categoriaSeleccionada === c.id
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-muted text-foreground border-transparent hover:bg-muted/80',
-                      ].join(' ')}
-                    >
-                      {c.emoji && <span className="text-lg">{c.emoji}</span>}
-                      <span className="flex-1">{c.nombre}</span>
-                    </button>
-                  ))}
-                </div>
+                {categoriaSeleccionada ? (
+                  (() => {
+                    const categoriaActiva = categoriasOrdenadas.find(
+                      (c) => c.id === categoriaSeleccionada,
+                    )
+                    if (!categoriaActiva) return null
+                    return (
+                      <SelectionBadge
+                        emoji={categoriaActiva.emoji}
+                        label={categoriaActiva.nombre}
+                        onClear={() => {
+                          setCategoriaSeleccionada('')
+                          setMarcaSeleccionada('')
+                        }}
+                      />
+                    )
+                  })()
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {categoriasOrdenadas.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => setCategoriaSeleccionada(c.id)}
+                        className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
+                      >
+                        <div className="flex items-center gap-2">
+                          {c.emoji && <span className="text-lg">{c.emoji}</span>}
+                          <span className="flex-1">{c.nombre}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </Card>
           </div>
@@ -653,25 +716,38 @@ export function CrearGastoDrawer({
                   </div>
 
                   {/* Grid de marcas existentes */}
-                  {marcasDelCategoria.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2">
-                      {marcasDelCategoria.map((marca) => (
-                        <button
-                          key={marca.id}
-                          type="button"
-                          onClick={() => handleSelectMarca(marca)}
-                          className={[
-                            'min-h-[44px] w-full rounded-xl px-3 py-2 text-sm font-medium flex items-center gap-2 border transition-all text-left whitespace-normal break-words leading-tight',
-                            marcaSeleccionada === marca.id
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'bg-muted text-foreground border-transparent hover:bg-muted/80',
-                          ].join(' ')}
-                        >
-                          {marca.emoji && <span className="text-lg">{marca.emoji}</span>}
-                          <span className="flex-1">{marca.nombre}</span>
-                        </button>
-                      ))}
-                    </div>
+                  {marcaSeleccionada ? (
+                    (() => {
+                      const marcaActiva = marcasDelCategoria.find(
+                        (marca) => marca.id === marcaSeleccionada,
+                      )
+                      if (!marcaActiva) return null
+                      return (
+                        <SelectionBadge
+                          emoji={marcaActiva.emoji}
+                          label={marcaActiva.nombre}
+                          onClear={handleRemoveMarca}
+                        />
+                      )
+                    })()
+                  ) : (
+                    marcasDelCategoria.length > 0 && (
+                      <div className="grid grid-cols-2 gap-2">
+                        {marcasDelCategoria.map((marca) => (
+                          <button
+                            key={marca.id}
+                            type="button"
+                            onClick={() => handleSelectMarca(marca)}
+                            className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
+                          >
+                            <div className="flex items-center gap-2">
+                              {marca.emoji && <span className="text-lg">{marca.emoji}</span>}
+                              <span className="flex-1">{marca.nombre}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )
                   )}
 
                   {/* Crear nueva marca */}
@@ -727,16 +803,6 @@ export function CrearGastoDrawer({
                     </div>
                   )}
 
-                  {/* Botón para limpiar selección de marca (por si se equivoca) */}
-                  {marcaSeleccionada && (
-                    <button
-                      type="button"
-                      onClick={handleRemoveMarca}
-                      className="text-[11px] text-muted-foreground underline underline-offset-2"
-                    >
-                      {t('gastos.create.clearBrandSelection')}
-                    </button>
-                  )}
                 </div>
               )}
 
@@ -793,7 +859,7 @@ export function CrearGastoDrawer({
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
                 placeholder={t('gastos.create.commentPlaceholder')}
-                className="h-10"
+                className="h-10 bg-background"
               />
             </div>
 

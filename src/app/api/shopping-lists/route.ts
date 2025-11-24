@@ -33,10 +33,38 @@ export async function GET(req: NextRequest) {
         .groupBy('shopping_list_id')
         .execute()
 
+    const collaboratorDetails = ownedListIds.length === 0
+      ? []
+      : await db
+        .selectFrom('shopping_list_collaborators as slc')
+        .innerJoin('users as u', 'slc.user_id', 'u.id')
+        .select([
+          'slc.shopping_list_id',
+          'u.id as collaborator_id',
+          'u.name as collaborator_name',
+          'u.email as collaborator_email',
+        ])
+        .where('slc.deleted_at', 'is', null)
+        .where('slc.shopping_list_id', 'in', ownedListIds)
+        .where('u.id', '!=', session.user.id)
+        .execute()
+
     // Create a map of list id -> collaborator count
     const collaboratorCountMap = new Map(
       collaboratorCounts.map((row: any) => [row.shopping_list_id, row.collaborator_count])
     )
+
+    const collaboratorDetailMap = new Map<string, Array<{ id: string; name: string | null; email: string | null }>>()
+    for (const detail of collaboratorDetails) {
+      const entry = {
+        id: detail.collaborator_id,
+        name: detail.collaborator_name,
+        email: detail.collaborator_email,
+      }
+      const arr = collaboratorDetailMap.get(detail.shopping_list_id) || []
+      arr.push(entry)
+      collaboratorDetailMap.set(detail.shopping_list_id, arr)
+    }
 
     // Get item counts for all lists (owned + shared)
     const allListIds = [...lists.map(l => l.id), ...sharedLists.map(l => l.id)]
@@ -60,17 +88,39 @@ export async function GET(req: NextRequest) {
     )
 
     // Add item count and collaborator count to each list
-    const listsWithCounts = lists.map((list) => ({
-      ...list,
-      _itemCount: itemCountMap.get(list.id) || 0,
-      _collaboratorCount: collaboratorCountMap.get(list.id) || 0,
-    }))
+    const listsWithCounts = lists.map((list) => {
+      const collaboratorCount = collaboratorCountMap.get(list.id) || 0
+      const collaborators = collaboratorDetailMap.get(list.id) || []
+      return {
+        ...list,
+        _itemCount: itemCountMap.get(list.id) || 0,
+        ...(collaboratorCount > 0 ? { _collaboratorCount: collaboratorCount } : {}),
+        ...(collaborators.length > 0 ? { _collaborators: collaborators } : {}),
+      }
+    })
 
     // Add item count to shared lists
     const sharedListsWithCounts = sharedLists.map((list: any) => ({
       ...list,
       _itemCount: itemCountMap.get(list.id) || 0,
       _isShared: true, // Flag to identify shared lists
+      _sharedBy: list.shared_by_name || list.shared_by_email
+        ? {
+            name: list.shared_by_name,
+            email: list.shared_by_email,
+          }
+        : list.owner_name || list.owner_email
+          ? {
+              name: list.owner_name,
+              email: list.owner_email,
+            }
+          : undefined,
+      _ownerInfo: list.owner_name || list.owner_email
+        ? {
+            name: list.owner_name,
+            email: list.owner_email,
+          }
+        : undefined,
     }))
 
     return NextResponse.json({

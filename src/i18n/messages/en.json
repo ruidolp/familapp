@@ -424,7 +424,7 @@
     "categoryCard": {
       "purchases": "{count} purchases",
       "percentUsed": "{percent}% of the budget",
-      "quickExpense": "Quick expense",
+      "quickExpense": "Record expense",
       "editCategory": "Edit category"
     }
   },
@@ -562,7 +562,7 @@
       "selectEnvelope": "Select envelope",
       "selectEnvelopePlaceholder": "Envelope",
       "category": "Category",
-      "addNewCategory": "+ New",
+      "addNewCategory": "New category",
       "categoryNamePlaceholder": "Category name",
       "categoryEmoji": "🏷️",
       "creating": "Recording...",
@@ -570,6 +570,7 @@
       "cancel": "Cancel",
       "details": "Details",
       "brand": "Brand",
+      "addNewBrand": "New brand",
       "brandPlaceholder": "Search or create brand...",
       "brandOptional": "optional",
       "pressEnter": "Press Enter to create new brand",
@@ -942,7 +943,7 @@
         "totalPaid": "Total Paid (optional)",
         "totalPaidDescription": "Enter the actual amount of the ticket if it's different",
         "finalizing": "Finalizing...",
-        "submit": "Finalize and Sync",
+        "submit": "Finish purchase",
         "cancel": "Cancel"
       },
       "settings": {

@@ -84,7 +84,7 @@ export function FinalizeExecutionDrawer({
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-          <div className="bg-card-accent border border-card-accent rounded-2xl px-6 py-7 text-center">
+          <div className="bg-card-accent border border-card-accent rounded-2xl px-5 py-5 text-center">
             <p className="text-xs uppercase tracking-wide text-muted-foreground">
               {t('shopping.execution.finalize.calculatedTotal')}
             </p>
@@ -96,7 +96,7 @@ export function FinalizeExecutionDrawer({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             <StatusCard
               icon={<Check className="h-5 w-5" />}
               label={t('shopping.execution.finalize.purchased')}
@@ -118,12 +118,12 @@ export function FinalizeExecutionDrawer({
           </div>
 
           {hasPendingItems && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-xs sm:typography-body-sm">
+            <div className="flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3 text-warning">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <p className="text-xs sm:typography-body-sm">
                 {t('shopping.execution.finalize.pendingWarning', { count: pendingCount })}
-              </AlertDescription>
-            </Alert>
+              </p>
+            </div>
           )}
 
           <div className="rounded-xl border border-border/80 bg-card px-4 py-3 flex items-center justify-between">
@@ -201,7 +201,8 @@ interface StatusCardProps {
 }
 
 function StatusCard({ icon, label, value, variant = 'muted' }: StatusCardProps) {
-  const baseClasses = 'rounded-xl border px-4 py-4 text-center flex flex-col items-center gap-2'
+  const baseClasses =
+    'rounded-xl border px-3 py-3 text-center flex flex-col items-center gap-1 min-w-0'
   const variantClasses = {
     success: 'border-success/30 bg-success/10 text-success',
     warning: 'border-warning/30 bg-warning/10 text-warning',
@@ -210,9 +211,9 @@ function StatusCard({ icon, label, value, variant = 'muted' }: StatusCardProps) 
 
   return (
     <div className={cn(baseClasses, variantClasses[variant])}>
-      <div className="flex items-center justify-center typography-body-sm">{icon}</div>
-      <p className="typography-h2 leading-none">{value}</p>
-      <p className="typography-metadata">{label}</p>
+      <div className="flex items-center justify-center text-sm">{icon}</div>
+      <p className="text-2xl font-semibold leading-none">{value}</p>
+      <p className="typography-caption text-muted-foreground text-center">{label}</p>
     </div>
   )
 }

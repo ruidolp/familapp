@@ -167,10 +167,31 @@ export async function obtenerCategoria(
     }
 
     // Verificar que la categoría pertenece al usuario
-    if (categoria.usuario_id !== userId) {
-      return {
-        success: false,
-        error: 'No tienes permiso para acceder a esta categoría',
+    // O que el usuario es colaborador (CONTRIBUTOR/ADMIN) de un sobre que tiene esta categoría
+    const isOwner = categoria.usuario_id === userId
+
+    if (!isOwner) {
+      // Verificar si el usuario es colaborador de un sobre con esta categoría
+      const { db } = await import('@/infrastructure/database/kysely')
+      const colaborador = await db
+        .selectFrom('sobres_categorias as sc')
+        .innerJoin('sobres as s', 'sc.sobre_id', 's.id')
+        .innerJoin('sobres_usuarios as su', 's.id', 'su.sobre_id')
+        .select('su.rol')
+        .where('sc.categoria_id', '=', categoriaId)
+        .where('su.usuario_id', '=', userId)
+        .where('s.deleted_at', 'is', null)
+        .where((eb) => eb.or([
+          eb('su.rol', '=', 'CONTRIBUTOR'),
+          eb('su.rol', '=', 'ADMIN')
+        ]))
+        .executeTakeFirst()
+
+      if (!colaborador) {
+        return {
+          success: false,
+          error: 'No tienes permiso para acceder a esta categoría',
+        }
       }
     }
 
@@ -389,10 +410,31 @@ export async function obtenerSubcategoria(
     }
 
     // Verificar que la subcategoría pertenece al usuario
-    if (subcategoria.usuario_id !== userId) {
-      return {
-        success: false,
-        error: 'No tienes permiso para acceder a esta subcategoría',
+    // O que el usuario es colaborador (CONTRIBUTOR/ADMIN) de un sobre que tiene esta categoría
+    const isOwner = subcategoria.usuario_id === userId
+
+    if (!isOwner) {
+      // Verificar si el usuario es colaborador de un sobre con esta categoría
+      const { db } = await import('@/infrastructure/database/kysely')
+      const colaborador = await db
+        .selectFrom('sobres_categorias as sc')
+        .innerJoin('sobres as s', 'sc.sobre_id', 's.id')
+        .innerJoin('sobres_usuarios as su', 's.id', 'su.sobre_id')
+        .select('su.rol')
+        .where('sc.categoria_id', '=', subcategoria.categoria_id)
+        .where('su.usuario_id', '=', userId)
+        .where('s.deleted_at', 'is', null)
+        .where((eb) => eb.or([
+          eb('su.rol', '=', 'CONTRIBUTOR'),
+          eb('su.rol', '=', 'ADMIN')
+        ]))
+        .executeTakeFirst()
+
+      if (!colaborador) {
+        return {
+          success: false,
+          error: 'No tienes permiso para acceder a esta subcategoría',
+        }
       }
     }
 

@@ -18,7 +18,6 @@ export interface ListEditorPreferences {
 }
 
 export interface ExecutionConfigPreferences {
-  enablePrices: boolean
   showCategories: boolean
   showTimer: boolean
 }

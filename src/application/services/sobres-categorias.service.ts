@@ -43,12 +43,12 @@ export async function agregarCategoriaToSobre(
     }
 
     // Validar que el usuario puede modificar el sobre
-    // (propietario o participante CONTRIBUTOR en sobre compartido)
+    // (propietario, ADMIN o participante CONTRIBUTOR en sobre compartido)
     const isOwner = sobre.usuario_id === userId
     const participante = sobre.is_compartido
       ? await findParticipanteInSobre(sobreId, userId)
       : null
-    const canModify = isOwner || (participante && participante.rol === 'CONTRIBUTOR')
+    const canModify = isOwner || (participante && (participante.rol === 'CONTRIBUTOR' || participante.rol === 'ADMIN'))
 
     if (!canModify) {
       return {
@@ -148,12 +148,12 @@ export async function eliminarCategoriaFromSobre(
     }
 
     // Validar que el usuario puede modificar el sobre
-    // (propietario o participante CONTRIBUTOR en sobre compartido)
+    // (propietario, ADMIN o participante CONTRIBUTOR en sobre compartido)
     const isOwner = sobre.usuario_id === userId
     const participante = sobre.is_compartido
       ? await findParticipanteInSobre(sobreId, userId)
       : null
-    const canModify = isOwner || (participante && participante.rol === 'CONTRIBUTOR')
+    const canModify = isOwner || (participante && (participante.rol === 'CONTRIBUTOR' || participante.rol === 'ADMIN'))
 
     if (!canModify) {
       return {

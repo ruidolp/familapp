@@ -59,11 +59,18 @@ export async function findSobresByUser(userId: string) {
     .where('deleted_at', 'is', null)
     .execute()
 
+  // Add user_role = 'OWNER' to owned sobres
+  const sobresOwnerWithRole = sobresOwner.map(sobre => ({
+    ...sobre,
+    user_role: 'OWNER' as const,
+  }))
+
   // Sobres compartidos donde participa (pero NO es owner)
   const sobresParticipante = await db
     .selectFrom('sobres')
     .innerJoin('sobres_usuarios', 'sobres.id', 'sobres_usuarios.sobre_id')
     .selectAll('sobres')
+    .select('sobres_usuarios.rol as user_role')
     .where('sobres_usuarios.usuario_id', '=', userId)
     .where('sobres.usuario_id', '!=', userId) // Excluir sobres donde es owner
     .where('sobres.deleted_at', 'is', null)
@@ -71,7 +78,7 @@ export async function findSobresByUser(userId: string) {
 
   // Combinar y ordenar
   // IMPORTANTE: is_compartido viene de la DB, NO lo calculamos manualmente
-  const allSobres = [...sobresOwner, ...sobresParticipante]
+  const allSobres = [...sobresOwnerWithRole, ...sobresParticipante]
 
   return allSobres.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
 }

@@ -41,7 +41,8 @@ export function ExecutionHeader({
 }: ExecutionHeaderProps) {
   const { formatNumber } = useCurrency()
 
-  const isOverBudget = budgetEnabled && budgetAmount && totalSpent > budgetAmount
+  const isOverBudget = Boolean(budgetEnabled && budgetAmount && totalSpent > (budgetAmount ?? 0))
+  const remainingAmount = budgetAmount ? budgetAmount - totalSpent : 0
 
   return (
     <div className="sticky top-0 z-10 border-b bg-background">
@@ -71,12 +72,12 @@ export function ExecutionHeader({
 
           {budgetEnabled && budgetAmount && (
             <div className="rounded-2xl border border-border bg-muted/30 px-4 py-3">
-              <p className="text-xs uppercase text-muted-foreground">Presupuesto</p>
-              <p className={`text-2xl font-semibold ${isOverBudget ? 'text-destructive' : 'text-foreground'}`}>
-                {formatNumber(budgetAmount)}
+              <p className="text-xs uppercase text-muted-foreground">Restante</p>
+              <p className={`text-2xl font-semibold ${remainingAmount < 0 ? 'text-destructive' : 'text-foreground'}`}>
+                {formatNumber(remainingAmount)}
               </p>
               <p className="typography-metadata">
-                Restante: {formatNumber(Math.max(budgetAmount - totalSpent, 0))}
+                Presupuesto: {formatNumber(budgetAmount)}
               </p>
             </div>
           )}
@@ -91,15 +92,10 @@ export function ExecutionHeader({
               <span className="text-muted-foreground">{budgetPercentage.toFixed(0)}% del presupuesto</span>
             </div>
             <Progress
-              value={Math.min(budgetPercentage, 120)}
+              value={Math.min(Math.max(budgetPercentage, 0), 100)}
               className="h-2"
               indicatorClassName={isOverBudget ? 'bg-destructive' : 'bg-primary'}
             />
-            {isOverBudget && (
-              <p className="typography-caption text-destructive">
-                Excedente: {formatNumber(totalSpent - budgetAmount)}
-              </p>
-            )}
           </div>
         )}
       </div>

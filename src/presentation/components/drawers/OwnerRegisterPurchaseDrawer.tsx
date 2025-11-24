@@ -26,7 +26,7 @@ import {
 } from '@/presentation/components/ui/select'
 import { Card } from '@/presentation/components/ui/card'
 import { Badge } from '@/presentation/components/ui/badge'
-import { Store, User, MapPin, CalendarClock, DollarSign } from 'lucide-react'
+import { Store, User, MapPin, CalendarClock, DollarSign, X } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 
@@ -70,6 +70,33 @@ interface OwnerRegisterPurchaseDrawerProps {
   onSuccess: () => void
 }
 
+function SelectionBadge({
+  emoji,
+  label,
+  onClear,
+}: {
+  emoji?: string
+  label: string
+  onClear: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-primary bg-primary/10 px-3 py-2">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        {emoji && <span className="text-lg">{emoji}</span>}
+        <span className="text-foreground">{label}</span>
+      </div>
+      <button
+        type="button"
+        onClick={onClear}
+        className="rounded-full p-1 text-primary transition-colors hover:bg-primary/10"
+        aria-label="Cambiar selección"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  )
+}
+
 export function OwnerRegisterPurchaseDrawer({
   open,
   onOpenChange,
@@ -84,6 +111,8 @@ export function OwnerRegisterPurchaseDrawer({
   const [sobres, setSobres] = useState<Sobre[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
   const [subcategorias, setSubcategorias] = useState<Subcategoria[]>([])
+  const [executionItems, setExecutionItems] = useState<any[]>([])
+  const [autoBrandSelected, setAutoBrandSelected] = useState(false)
 
   // Selection state
   const [sobreId, setSobreId] = useState<string>('')
@@ -94,23 +123,41 @@ export function OwnerRegisterPurchaseDrawer({
   const [isRegistering, setIsRegistering] = useState(false)
   const [isDismissing, setIsDismissing] = useState(false)
 
-  // Load sobres on open
+  // Load sobres and execution items on open
   useEffect(() => {
     if (open && userId) {
       loadSobres()
     }
-  }, [open, userId])
+    if (open && execution) {
+      loadExecutionItems()
+    }
+  }, [open, userId, execution])
+
+  const loadExecutionItems = async () => {
+    if (!execution?.id) return
+    try {
+      const response = await fetch(`/api/shopping-executions/${execution.id}/items`)
+      if (response.ok) {
+        const data = await response.json()
+        setExecutionItems(data.items || [])
+      }
+    } catch (error) {
+      console.error('Error loading execution items:', error)
+    }
+  }
 
   // Load categories when sobre changes
   useEffect(() => {
     if (sobreId) {
       setCategoriaId('')
       setSubcategoriaId('')
+      setAutoBrandSelected(false)
       loadCategoriasBySobre(sobreId)
     } else {
       setCategorias([])
       setCategoriaId('')
       setSubcategorias([])
+      setAutoBrandSelected(false)
     }
   }, [sobreId])
 
@@ -118,12 +165,51 @@ export function OwnerRegisterPurchaseDrawer({
   useEffect(() => {
     if (categoriaId) {
       setSubcategoriaId('')
+      setAutoBrandSelected(false)
       loadSubcategoriasByCategoria(categoriaId)
     } else {
       setSubcategorias([])
       setSubcategoriaId('')
+      setAutoBrandSelected(false)
     }
   }, [categoriaId])
+
+  // Auto-select subcategoria if it exists in execution items or matches store name
+  useEffect(() => {
+    if (subcategorias.length === 0 || subcategoriaId || autoBrandSelected) return
+
+    const normalizedStore = execution?.store_name?.trim().toLowerCase()
+
+    if (normalizedStore) {
+      const storeMatch = subcategorias.find(
+        s => s.nombre?.trim().toLowerCase() === normalizedStore,
+      )
+      if (storeMatch) {
+        setSubcategoriaId(storeMatch.id)
+        setAutoBrandSelected(true)
+        return
+      }
+    }
+
+    if (executionItems.length > 0) {
+      const executionSubcategoriaIds = [
+        ...new Set(executionItems.map(item => item.subcategoria_id).filter(id => id)),
+      ]
+      const matchingSubcategoria = subcategorias.find(s =>
+        executionSubcategoriaIds.includes(s.id),
+      )
+
+      if (matchingSubcategoria) {
+        setSubcategoriaId(matchingSubcategoria.id)
+        setAutoBrandSelected(true)
+      }
+    }
+  }, [subcategorias, subcategoriaId, executionItems, execution, autoBrandSelected])
+
+  useEffect(() => {
+    if (!open) return
+    setAutoBrandSelected(false)
+  }, [open])
 
   // Auto-select first sobre
   useEffect(() => {
@@ -177,6 +263,8 @@ export function OwnerRegisterPurchaseDrawer({
       console.error('Error loading subcategorias:', error)
     }
   }
+
+  const selectedSubcategoria = subcategorias.find(s => s.id === subcategoriaId)
 
   const handleRegister = async () => {
     if (!execution) return
@@ -270,7 +358,21 @@ export function OwnerRegisterPurchaseDrawer({
     return formatter.format(date)
   }
 
-  const purchaseTotal = execution.total_manual || execution.total_calculated || 0
+  const executionItemsTotal = executionItems.reduce((sum, item) => {
+    const value = Number(item.precio_total ?? 0)
+    return sum + (isNaN(value) ? 0 : value)
+  }, 0)
+
+  const rawPurchaseTotal =
+    execution.total_manual ??
+    execution.total_calculated ??
+    execution.total_estimado ??
+    executionItemsTotal
+
+  const purchaseTotal =
+    typeof rawPurchaseTotal === 'number'
+      ? rawPurchaseTotal
+      : Number(rawPurchaseTotal ?? 0) || 0
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -382,22 +484,31 @@ export function OwnerRegisterPurchaseDrawer({
                   <Label className="flex items-center gap-2 typography-caption text-muted-foreground">
                     <Store className="h-3.5 w-3.5" /> Marca
                   </Label>
-                  {subcategorias.length > 0 ? (
+                  {subcategoriaId && selectedSubcategoria ? (
+                    <SelectionBadge
+                      emoji={selectedSubcategoria.emoji}
+                      label={selectedSubcategoria.nombre}
+                      onClear={() => {
+                        setSubcategoriaId('')
+                        setAutoBrandSelected(true)
+                      }}
+                    />
+                  ) : subcategorias.length > 0 ? (
                     <div className="grid grid-cols-2 gap-2">
                       {subcategorias.map(s => (
                         <button
                           key={s.id}
                           type="button"
-                          onClick={() => setSubcategoriaId(s.id)}
-                          className={[
-                            'min-h-[44px] w-full rounded-xl px-3 py-2 text-sm font-medium flex items-center gap-2 border transition-all text-left whitespace-normal break-words leading-tight',
-                            subcategoriaId === s.id
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'bg-muted text-foreground border-transparent hover:bg-muted/80',
-                          ].join(' ')}
+                          onClick={() => {
+                            setSubcategoriaId(s.id)
+                            setAutoBrandSelected(true)
+                          }}
+                          className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
                         >
-                          {s.emoji && <span className="text-lg">{s.emoji}</span>}
-                          <span className="flex-1">{s.nombre}</span>
+                          <div className="flex items-center gap-2">
+                            {s.emoji && <span className="text-lg">{s.emoji}</span>}
+                            <span className="flex-1">{s.nombre}</span>
+                          </div>
                         </button>
                       ))}
                     </div>

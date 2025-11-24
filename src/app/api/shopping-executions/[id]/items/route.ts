@@ -5,6 +5,7 @@ import {
   getExecutionItems,
   updateExecutionItem,
   createExecutionItem,
+  getShoppingListById,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
 
 export async function GET(
@@ -27,7 +28,15 @@ export async function GET(
       )
     }
 
-    if (execution.user_id !== session.user.id) {
+    const isExecutor = execution.user_id === session.user.id
+    let isListOwner = false
+
+    if (!isExecutor) {
+      const list = await getShoppingListById(execution.shopping_list_id)
+      isListOwner = !!list && list.user_id === session.user.id
+    }
+
+    if (!isExecutor && !isListOwner) {
       return NextResponse.json(
         { error: 'No tienes permiso para acceder a esta ejecución' },
         { status: 403 }

@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/presentation/components/ui/select'
 import { Card } from '@/presentation/components/ui/card'
-import { DollarSign, Store } from 'lucide-react'
+import { DollarSign, Store, X } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
 import {
   getPreferences,
@@ -61,6 +61,33 @@ interface Subcategoria {
   nombre: string
   emoji?: string
   categoria_id: string
+}
+
+function SelectionBadge({
+  emoji,
+  label,
+  onClear,
+}: {
+  emoji?: string
+  label: string
+  onClear: () => void
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-primary bg-primary/10 px-3 py-2">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        {emoji && <span className="text-lg">{emoji}</span>}
+        <span className="text-foreground">{label}</span>
+      </div>
+      <button
+        type="button"
+        onClick={onClear}
+        className="rounded-full p-1 text-primary transition-colors hover:bg-primary/10"
+        aria-label="Quitar selección"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  )
 }
 
 export interface ExecutionConfig {
@@ -115,7 +142,6 @@ export function ConfigureExecutionDrawer({
   const [budgetAmount, setBudgetAmount] = useState('')
 
   // UI preferences - Initialize with defaults (will be loaded from IndexedDB)
-  const [enablePrices, setEnablePrices] = useState(true)
   const [showCategories, setShowCategories] = useState(true)
   const [showTimer, setShowTimer] = useState(true)
   const [preferencesLoaded, setPreferencesLoaded] = useState(false)
@@ -142,12 +168,10 @@ export function ConfigureExecutionDrawer({
   useEffect(() => {
     const loadUserPreferences = async () => {
       const defaults: ExecutionConfigPreferences = {
-        enablePrices: true,
         showCategories: true,
         showTimer: true,
       }
       const prefs = await getPreferences('executionConfig', defaults)
-      setEnablePrices(prefs.enablePrices)
       setShowCategories(prefs.showCategories)
       setShowTimer(prefs.showTimer)
       setPreferencesLoaded(true)
@@ -231,12 +255,11 @@ export function ConfigureExecutionDrawer({
   useEffect(() => {
     if (preferencesLoaded) {
       savePreferences('executionConfig', {
-        enablePrices,
         showCategories,
         showTimer,
       })
     }
-  }, [enablePrices, showCategories, showTimer, preferencesLoaded])
+  }, [showCategories, showTimer, preferencesLoaded])
 
   const loadSobres = async () => {
     try {
@@ -353,7 +376,7 @@ export function ConfigureExecutionDrawer({
       store_name: storeName || undefined,
       budgetEnabled,
       budgetAmount: budgetEnabled ? parseFloat(budgetAmount) : undefined,
-      enablePrices,
+      enablePrices: true,
       showCategories,
       showTimer,
     }
@@ -373,6 +396,8 @@ export function ConfigureExecutionDrawer({
       setStoreName('')
     }
   }, [subcategoriaId, subcategorias])
+
+  const selectedSubcategoria = subcategorias.find(s => s.id === subcategoriaId)
 
   const brandCreationForm = (
     <div className="space-y-2 rounded-lg border-2 border-dashed border-primary/40 bg-muted/60 p-3">
@@ -445,7 +470,7 @@ export function ConfigureExecutionDrawer({
                     : t('register.title')
                   }
                 </p>
-                <p className="typography-metadata">{t('register.description')}</p>
+                <p className="typography-metadata text-foreground">{t('register.description')}</p>
               </div>
               <Switch checked={registerInBudget} onCheckedChange={setRegisterInBudget} />
             </div>
@@ -512,22 +537,25 @@ export function ConfigureExecutionDrawer({
                         {showCreateBrand ? commonT('cancel') : t('register.createBrand')}
                       </button>
                     </div>
-                    {subcategorias.length > 0 ? (
+                    {subcategoriaId && selectedSubcategoria ? (
+                      <SelectionBadge
+                        emoji={selectedSubcategoria.emoji}
+                        label={selectedSubcategoria.nombre}
+                        onClear={() => setSubcategoriaId('')}
+                      />
+                    ) : subcategorias.length > 0 ? (
                       <div className="grid grid-cols-2 gap-2">
                         {subcategorias.map(s => (
                           <button
                             key={s.id}
                             type="button"
                             onClick={() => setSubcategoriaId(s.id)}
-                            className={[
-                              'min-h-[44px] w-full rounded-xl px-3 py-2 text-sm font-medium flex items-center gap-2 border transition-all text-left whitespace-normal break-words leading-tight',
-                              subcategoriaId === s.id
-                                ? 'bg-primary text-primary-foreground border-primary'
-                                : 'bg-muted text-foreground border-transparent hover:bg-muted/80',
-                            ].join(' ')}
+                            className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
                           >
-                            {s.emoji && <span className="text-lg">{s.emoji}</span>}
-                            <span className="flex-1">{s.nombre}</span>
+                            <div className="flex items-center gap-2">
+                              {s.emoji && <span className="text-lg">{s.emoji}</span>}
+                              <span className="flex-1">{s.nombre}</span>
+                            </div>
                           </button>
                         ))}
                       </div>
@@ -535,15 +563,6 @@ export function ConfigureExecutionDrawer({
                       <p className="typography-metadata text-muted-foreground italic">
                         {t('register.brandPlaceholder')}
                       </p>
-                    )}
-                    {subcategoriaId && (
-                      <button
-                        type="button"
-                        onClick={() => setSubcategoriaId('')}
-                        className="text-[11px] text-muted-foreground underline underline-offset-2"
-                      >
-                        {t('register.brandClearSelection')}
-                      </button>
                     )}
                     {showCreateBrand && brandCreationForm}
                   </div>
@@ -567,22 +586,25 @@ export function ConfigureExecutionDrawer({
                       {showCreateBrand ? commonT('cancel') : t('register.createBrand')}
                     </button>
                   </div>
-                  {subcategorias.length > 0 ? (
+                  {subcategoriaId && selectedSubcategoria ? (
+                    <SelectionBadge
+                      emoji={selectedSubcategoria.emoji}
+                      label={selectedSubcategoria.nombre}
+                      onClear={() => setSubcategoriaId('')}
+                    />
+                  ) : subcategorias.length > 0 ? (
                     <div className="grid grid-cols-2 gap-2">
                       {subcategorias.map(s => (
                         <button
                           key={s.id}
                           type="button"
                           onClick={() => setSubcategoriaId(s.id)}
-                          className={[
-                            'min-h-[44px] w-full rounded-xl px-3 py-2 text-sm font-medium flex items-center gap-2 border transition-all text-left whitespace-normal break-words leading-tight',
-                            subcategoriaId === s.id
-                              ? 'bg-primary text-primary-foreground border-primary'
-                              : 'bg-muted text-foreground border-transparent hover:bg-muted/80',
-                          ].join(' ')}
+                          className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
                         >
-                          {s.emoji && <span className="text-lg">{s.emoji}</span>}
-                          <span className="flex-1">{s.nombre}</span>
+                          <div className="flex items-center gap-2">
+                            {s.emoji && <span className="text-lg">{s.emoji}</span>}
+                            <span className="flex-1">{s.nombre}</span>
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -593,7 +615,7 @@ export function ConfigureExecutionDrawer({
                   )}
                   {showCreateBrand && brandCreationForm}
                 </div>
-                <p className="typography-metadata">{t('register.disabledInfo')}</p>
+                <p className="typography-metadata text-foreground">{t('register.disabledInfo')}</p>
               </div>
             )}
           </Card>
@@ -602,7 +624,7 @@ export function ConfigureExecutionDrawer({
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <p className="typography-label text-foreground">{t('budget.title')}</p>
-                <p className="typography-metadata">{t('budget.description')}</p>
+                <p className="typography-metadata text-foreground">{t('budget.description')}</p>
               </div>
               <Switch checked={budgetEnabled} onCheckedChange={setBudgetEnabled} />
             </div>
@@ -620,20 +642,11 @@ export function ConfigureExecutionDrawer({
                   onChange={e => setBudgetAmount(e.target.value)}
                   className="typography-body-lg"
                 />
-                <p className="typography-metadata">{t('budget.note')}</p>
+                <p className="typography-metadata text-foreground">{t('budget.note')}</p>
               </div>
             )}
           </Card>
 
-          <Card className="mx-1 space-y-3 rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-start justify-between">
-              <div className="space-y-1">
-                <p className="typography-label">{t('prices.title')}</p>
-                <p className="typography-metadata">{t('prices.description')}</p>
-              </div>
-              <Switch checked={enablePrices} onCheckedChange={setEnablePrices} />
-            </div>
-          </Card>
         </div>
 
         <div className="border-t bg-background p-4">

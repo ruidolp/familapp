@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/presentation/hooks/use-toast'
-import { CheckCircle2, XCircle, Loader2, Clock, AlertCircle, ShoppingCart } from 'lucide-react'
+import { CheckCircle2, Loader2, Clock, AlertCircle, ShoppingCart, XCircle } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -199,67 +199,59 @@ export function InviteListaAcceptPage({ code, userId }: InviteListaAcceptPagePro
 
         <CardContent className="space-y-6">
           {/* Lista Info */}
-          <div className="flex items-center gap-4 p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg border-2 border-green-200 dark:border-green-800">
-            <ShoppingCart className="h-12 w-12 text-green-600 dark:text-green-400" />
+          <div className="flex items-center gap-4 rounded-lg border border-border bg-card/80 p-6 shadow-sm">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <ShoppingCart className="h-8 w-8" />
+            </div>
             <div className="flex-1">
-              <h3 className="text-2xl font-bold">{invitacion.lista_nombre}</h3>
+              <h3 className="text-xl font-bold text-foreground">{invitacion.lista_nombre}</h3>
               {invitacion.lista_descripcion && (
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {invitacion.lista_descripcion}
                 </p>
               )}
-              <p className="text-muted-foreground mt-2">
-                <span className="font-medium text-foreground">{invitacion.inviter_name || 'Alguien'}</span> te está invitando a colaborar en esta lista
+              <p className="mt-2 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">{invitacion.inviter_name || 'Alguien'}</span> te está invitando a colaborar en esta lista.
               </p>
             </div>
           </div>
 
           {/* Permissions Info */}
-          <div className="bg-muted p-4 rounded-lg space-y-3">
+          <div className="space-y-3 rounded-lg border border-border bg-muted/50 p-4">
             <p className="font-medium">Como {roleName.toLowerCase()} podrás:</p>
-            {isEditor ? (
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Ver todos los productos de la lista</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Agregar, editar y eliminar productos</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Ejecutar compras y marcar productos</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                  <span>Ver historial de compras</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <XCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                  <span>No podrás cambiar el nombre o descripción de la lista</span>
-                </li>
-              </ul>
-            ) : (
-              <ul className="text-sm space-y-2 text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <span>Ver todos los productos de la lista</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <span>Ejecutar compras y marcar productos comprados</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <XCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                  <span>No podrás agregar o editar productos</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <XCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
-                  <span>No podrás cambiar nombre o descripción</span>
-                </li>
-              </ul>
-            )}
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500 flex-shrink-0" />
+                <span>Ver todos los productos de la lista</span>
+              </li>
+              {isEditor ? (
+                <>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    <span>Agregar, editar y eliminar productos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    <span>Ejecutar compras y marcar productos</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    <span>Revisar el historial de compras</span>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-blue-500 flex-shrink-0" />
+                    <span>Ejecutar compras y marcar productos comprados</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-blue-500 flex-shrink-0" />
+                    <span>Recibir actualizaciones en tiempo real</span>
+                  </li>
+                </>
+              )}
+            </ul>
           </div>
 
           {/* Expiration Info */}
@@ -275,11 +267,11 @@ export function InviteListaAcceptPage({ code, userId }: InviteListaAcceptPagePro
           </div>
         </CardContent>
 
-        <CardFooter className="flex gap-3 pt-6">
+        <CardFooter className="flex flex-col gap-3 pt-6 sm:flex-row">
           <Button
             onClick={handleAccept}
             disabled={processing}
-            className="flex-1"
+            className="w-full"
             size="lg"
           >
             {processing ? (
@@ -298,7 +290,7 @@ export function InviteListaAcceptPage({ code, userId }: InviteListaAcceptPagePro
             variant="outline"
             onClick={handleReject}
             disabled={processing}
-            className="flex-1"
+            className="w-full"
             size="lg"
           >
             {processing ? (

@@ -51,10 +51,16 @@ export async function getSharedShoppingLists(userId: string) {
   return db
     .selectFrom('shopping_lists as sl')
     .innerJoin('shopping_list_collaborators as slc', 'sl.id', 'slc.shopping_list_id')
+    .innerJoin('users as owner', 'sl.user_id', 'owner.id')
+    .leftJoin('users as shared_by', 'slc.added_by', 'shared_by.id')
     .selectAll('sl')
     .select([
       'slc.permission_level as user_role',
       'slc.added_by as shared_by_user_id',
+      'owner.name as owner_name',
+      'owner.email as owner_email',
+      'shared_by.name as shared_by_name',
+      'shared_by.email as shared_by_email',
     ])
     .where('slc.user_id', '=', userId)
     .where('sl.user_id', '!=', userId) // No incluir listas propias
@@ -427,25 +433,67 @@ export async function getExecutionsByList(listId: string) {
 
 export async function getActiveExecutionsByUser(userId: string) {
   return db
-    .selectFrom('shopping_executions')
-    .selectAll()
-    .where('user_id', '=', userId)
-    .where('status', '=', 'IN_PROGRESS')
-    .where('deleted_at', 'is', null)
-    .orderBy('started_at', 'desc')
+    .selectFrom('shopping_executions as se')
+    .leftJoin('users as u', 'se.user_id', 'u.id')
+    .selectAll('se')
+    .select([
+      'u.name as executor_name',
+      'u.email as executor_email',
+    ])
+    .where('se.user_id', '=', userId)
+    .where('se.status', '=', 'IN_PROGRESS')
+    .where('se.deleted_at', 'is', null)
+    .orderBy('se.started_at', 'desc')
     .execute()
 }
 
 export async function getCompletedExecutionsByUser(userId: string, limit: number = 20) {
-  return db
-    .selectFrom('shopping_executions')
-    .selectAll()
-    .where('user_id', '=', userId)
-    .where('status', '=', 'COMPLETED')
-    .where('deleted_at', 'is', null)
-    .orderBy('completed_at', 'desc')
-    .limit(limit)
+  // Get executions where:
+  // 1. User executed them (user_id = userId)
+  // 2. OR user owns the list and registered the execution (owner_registration_status = 'registered')
+
+  const ownExecutions = await db
+    .selectFrom('shopping_executions as se')
+    .leftJoin('users as u', 'se.user_id', 'u.id')
+    .selectAll('se')
+    .select([
+      'u.name as executor_name',
+      'u.email as executor_email',
+    ])
+    .where('se.user_id', '=', userId)
+    .where('se.status', '=', 'COMPLETED')
+    .where('se.deleted_at', 'is', null)
+    .orderBy('se.completed_at', 'desc')
     .execute()
+
+  // Get executions registered by owner (from invited users)
+  const registeredExecutions = await db
+    .selectFrom('shopping_executions as se')
+    .innerJoin('shopping_lists as sl', 'se.shopping_list_id', 'sl.id')
+    .leftJoin('users as u', 'se.user_id', 'u.id')
+    .selectAll('se')
+    .select([
+      'u.name as executor_name',
+      'u.email as executor_email',
+    ])
+    .where('sl.user_id', '=', userId)
+    .where('se.user_id', '!=', userId)
+    .where('se.status', '=', 'COMPLETED')
+    .where('se.owner_registration_status', '=', 'registered')
+    .where('se.deleted_at', 'is', null)
+    .orderBy('se.completed_at', 'desc')
+    .execute()
+
+  // Combine and sort by completed_at
+  const allExecutions = [...ownExecutions, ...registeredExecutions]
+    .sort((a, b) => {
+      const aDate = a.completed_at ? new Date(a.completed_at).getTime() : 0
+      const bDate = b.completed_at ? new Date(b.completed_at).getTime() : 0
+      return bDate - aDate
+    })
+    .slice(0, limit)
+
+  return allExecutions
 }
 
 // ============================================

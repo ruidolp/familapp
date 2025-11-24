@@ -121,6 +121,8 @@ export function PendingRegistrationsAlert({
   if (loading || pendingExecutions.length === 0) return null
 
   const count = pendingExecutions.length
+  const firstExecution = pendingExecutions[0]
+  const guestName = firstExecution?.executor_name || firstExecution?.executor_email || 'tu invitado'
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
@@ -132,9 +134,15 @@ export function PendingRegistrationsAlert({
           </AlertDialogTitle>
           <AlertDialogDescription asChild>
             <div className="space-y-2">
-              <div>
-                Hay <strong>{count}</strong> compra{count > 1 ? 's' : ''} realizada{count > 1 ? 's' : ''} por invitados que {count > 1 ? 'no están registradas' : 'no está registrada'} en tus sobres.
-              </div>
+              {count === 1 ? (
+                <div>
+                  Hay 1 compra realizada por invitado <strong>{guestName}</strong> que no está registrada en tus sobres.
+                </div>
+              ) : (
+                <div>
+                  Hay <strong>{count}</strong> compra{count > 1 ? 's' : ''} realizada{count > 1 ? 's' : ''} por invitados que no están registradas en tus sobres.
+                </div>
+              )}
               <div className="text-sm">
                 ¿Quieres registrar{count > 1 ? 'las' : 'la'} en tu presupuesto?
               </div>

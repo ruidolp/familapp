@@ -14,10 +14,9 @@ import { Button } from '@/presentation/components/ui/button'
 import { Input } from '@/presentation/components/ui/input'
 import { Label } from '@/presentation/components/ui/label'
 import { Card, CardContent } from '@/presentation/components/ui/card'
-import { Badge } from '@/presentation/components/ui/badge'
 import { Alert, AlertDescription } from '@/presentation/components/ui/alert'
 import { useToast } from '@/presentation/hooks/use-toast'
-import { Loader2, Mail, Phone, Shield, Users, Eye, Check, X, AlertTriangle, MessageCircle } from 'lucide-react'
+import { Loader2, Mail, Phone, Shield, Users, Eye, Check, MessageCircle } from 'lucide-react'
 import { cn } from '@/infrastructure/lib/utils'
 
 interface InviteUserDialogProps {
@@ -67,7 +66,7 @@ export function InviteUserDialog({
     ADMIN: {
       icon: Shield,
       name: 'Administrador',
-      description: 'Control total del presupuesto y configuraciones del sobre.',
+      description: 'Gestiona presupuesto, categorías y participantes sin límites.',
       accentColor: 'text-orange-600',
       accentBg: 'bg-orange-100 dark:bg-orange-950/40',
       permissions: [
@@ -80,7 +79,7 @@ export function InviteUserDialog({
     CONTRIBUTOR: {
       icon: Users,
       name: 'Colaborador',
-      description: 'Colabora agregando gastos y categorías sin tocar el presupuesto.',
+      description: 'Crea gastos y organiza categorías sin modificar el presupuesto.',
       accentColor: 'text-blue-600',
       accentBg: 'bg-blue-100 dark:bg-blue-950/40',
       permissions: [
@@ -94,7 +93,7 @@ export function InviteUserDialog({
     VIEWER: {
       icon: Eye,
       name: 'Visualizador',
-      description: 'Ideal para quienes solo necesitan visibilidad y seguimiento.',
+      description: 'Solo consulta el sobre y su historial.',
       accentColor: 'text-gray-600',
       accentBg: 'bg-gray-100 dark:bg-gray-950/40',
       permissions: [
@@ -110,7 +109,7 @@ export function InviteUserDialog({
     EDITOR: {
       icon: Users,
       name: 'Editor',
-      description: 'Puede editar productos y ejecutar compras.',
+      description: 'Agrega y actualiza productos, además ejecuta compras.',
       accentColor: 'text-blue-600',
       accentBg: 'bg-blue-100 dark:bg-blue-950/40',
       permissions: [
@@ -125,7 +124,7 @@ export function InviteUserDialog({
     EXECUTION_ONLY: {
       icon: Eye,
       name: 'Solo Ejecución',
-      description: 'Solo puede realizar las compras.',
+      description: 'Solo marca compras como realizadas.',
       accentColor: 'text-gray-600',
       accentBg: 'bg-gray-100 dark:bg-gray-950/40',
       permissions: [
@@ -269,9 +268,7 @@ export function InviteUserDialog({
   const selectedRoleConfig = roleConfig[selectedRoleKey as keyof typeof roleConfig]
   const SelectedRoleIcon = selectedRoleConfig.icon
 
-  const permissionsToDisplay = tipo === 'lista'
-    ? selectedRoleConfig.permissions.filter(perm => perm.allowed)
-    : selectedRoleConfig.permissions
+  const permissionsToDisplay = selectedRoleConfig.permissions.filter((perm) => perm.allowed)
 
   const formatPermissionLabel = (text: string) => text
 
@@ -304,10 +301,26 @@ export function InviteUserDialog({
           </DialogDescription>
         </DialogHeader>
 
+        <Card className="border border-border bg-card/80 shadow-sm">
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl text-primary">
+              {itemEmoji || (tipo === 'sobre' ? '📦' : '🛒')}
+            </div>
+            <div>
+              <p className="font-semibold leading-tight text-foreground">{itemNombre}</p>
+              <p className="text-xs text-muted-foreground">
+                {tipo === 'sobre'
+                  ? 'Colaboración en un sobre compartido'
+                  : 'Colaboración en una lista compartida'}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         <div className="space-y-5">
           <div className="space-y-3">
             <Label>Método de invitación</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {contactOptions.map((option) => {
                 const Icon = option.icon
                 const isSelected = contactMethod === option.key
@@ -315,10 +328,15 @@ export function InviteUserDialog({
                   <button
                     key={option.key}
                     type="button"
-                    onClick={() => setContactMethod(option.key)}
+                    onClick={() => {
+                      if (contactMethod !== option.key) {
+                        setContact('')
+                      }
+                      setContactMethod(option.key)
+                    }}
                     disabled={loading}
                     className={cn(
-                      'rounded-2xl border p-3 text-left transition',
+                      'w-full rounded-2xl border p-3 text-left transition',
                       isSelected ? 'border-primary bg-primary/10 shadow-sm' : 'border-border hover:border-primary/40',
                       loading && 'opacity-60'
                     )}
@@ -363,15 +381,8 @@ export function InviteUserDialog({
           </div>
 
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label>Selecciona el rol</Label>
-              {selectedRoleConfig.tag && (
-                <Badge variant="outline" className="border-primary/30 text-primary">
-                  {selectedRoleConfig.tag}
-                </Badge>
-              )}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
+            <Label>Selecciona el rol</Label>
+            <div className="flex flex-col gap-2">
               {selectableRoles.map((roleKey) => {
                 const config = roleConfig[roleKey]
                 const Icon = config.icon
@@ -383,7 +394,7 @@ export function InviteUserDialog({
                     onClick={() => setRol(roleKey)}
                     disabled={loading}
                     className={cn(
-                      'rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+                      'w-full rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
                       isSelected ? 'border-primary bg-primary/10 shadow-sm' : 'border-border hover:border-primary/40',
                       loading && 'opacity-60'
                     )}
@@ -393,11 +404,6 @@ export function InviteUserDialog({
                         <Icon className={cn('h-4 w-4', isSelected ? 'text-primary' : 'text-muted-foreground')} />
                         <span className="font-semibold text-sm">{config.name}</span>
                       </div>
-                      {((tipo === 'sobre' && roleKey === 'CONTRIBUTOR') || (tipo === 'lista' && roleKey === 'EDITOR')) && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">
-                          Recomendado
-                        </span>
-                      )}
                     </div>
                   </button>
                 )
@@ -411,53 +417,22 @@ export function InviteUserDialog({
                   </div>
                   <div>
                     <p className="font-semibold">{selectedRoleConfig.name}</p>
-                    <p className="text-sm text-muted-foreground">{selectedRoleConfig.description}</p>
-                  </div>
-                </div>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{selectedRoleConfig.description}</p>
+                 </div>
+               </div>
                 <div className="space-y-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Como {selectedRoleConfig.name} podrás
+                  </p>
                   {permissionsToDisplay.map((perm, idx) => (
                     <div key={`${selectedRoleKey}-${idx}`} className="flex items-center gap-2 text-sm">
-                      {perm.allowed ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-600" />
-                      ) : (
-                        <X className="h-3.5 w-3.5 text-muted-foreground" />
-                      )}
-                      <span className={perm.allowed ? 'text-foreground' : 'text-muted-foreground line-through'}>
-                        {formatPermissionLabel(perm.text)}
-                      </span>
+                      <Check className="h-3.5 w-3.5 text-emerald-600" />
+                      <span className="text-foreground">{formatPermissionLabel(perm.text)}</span>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {tipo === 'sobre' && rol === 'ADMIN' && (
-            <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
-              <AlertTriangle className="h-4 w-4 text-orange-600" />
-              <AlertDescription className="text-sm text-orange-900 dark:text-orange-100">
-                Este rol puede agregar o quitar presupuesto del sobre.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="rounded-2xl border border-border bg-muted/50 p-4">
-            <p className="mb-2 text-sm font-medium text-foreground">Al aceptar la invitación:</p>
-            <ul className="space-y-1 text-sm text-muted-foreground">
-              {tipo === 'sobre' ? (
-                <>
-                  <li>✓ Verán el presupuesto en tiempo real</li>
-                  <li>✓ Accederán al historial de gastos</li>
-                  <li>✓ Los cambios se sincronizan automáticamente</li>
-                </>
-              ) : (
-                <>
-                  <li>✓ Verán la lista en tiempo real</li>
-                  <li>✓ Accederán al historial de compras</li>
-                  <li>✓ Los cambios se sincronizan automáticamente</li>
-                </>
-              )}
-            </ul>
           </div>
 
           {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}

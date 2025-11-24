@@ -22,7 +22,7 @@ import {
 import { Button } from '@/presentation/components/ui/button'
 import { Input } from '@/presentation/components/ui/input'
 import { Label } from '@/presentation/components/ui/label'
-import { Calculator } from 'lucide-react'
+import { Calculator, Minus, Plus } from 'lucide-react'
 import { CalculatorDrawer } from './CalculatorDrawer'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 import type { LocalExecutionItem } from '@/domain/types/shopping-execution'
@@ -113,6 +113,20 @@ export function PriceInputDrawer({
     }
   }
 
+  const adjustCantidad = (delta: number) => {
+    if (!item) return
+    const fallback = item.cantidad_comprada || item.cantidad_planeada || 1
+    const parsed = parseFloat(cantidad || String(fallback))
+    const current = !isNaN(parsed) && parsed > 0 ? parsed : fallback
+    const increment = decimales > 0 ? delta * stepValue : delta
+    const minValue = decimales > 0 ? stepValue : 1
+    const nextRaw = current + increment
+    const nextValue = Math.max(minValue, nextRaw)
+    const formatted =
+      decimales > 0 ? nextValue.toFixed(decimales) : String(Math.round(nextValue))
+    handleCantidadChange(formatted)
+  }
+
   const handleSave = () => {
     const data: { unitario?: number; total?: number; cantidad?: number } = {}
 
@@ -171,16 +185,38 @@ export function PriceInputDrawer({
                 <Label htmlFor="cantidad" className="typography-label">
                   Cantidad comprada
                 </Label>
-                <Input
-                  id="cantidad"
-                  type="number"
-                  inputMode="decimal"
-                  step={stepValue}
-                  value={cantidad}
-                  onChange={e => handleCantidadChange(e.target.value)}
-                  placeholder={String(item.cantidad_planeada || 1)}
-                  className="h-12 typography-body-lg"
-                />
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12 rounded-2xl"
+                    onClick={() => adjustCantidad(-1)}
+                    aria-label="Disminuir cantidad"
+                  >
+                    <Minus className="h-5 w-5" />
+                  </Button>
+                  <Input
+                    id="cantidad"
+                    type="number"
+                    inputMode="decimal"
+                    step={stepValue}
+                    value={cantidad}
+                    onChange={e => handleCantidadChange(e.target.value)}
+                    placeholder={String(item.cantidad_planeada || 1)}
+                    className="h-14 flex-1 text-center text-2xl font-semibold"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12 rounded-2xl"
+                    onClick={() => adjustCantidad(1)}
+                    aria-label="Aumentar cantidad"
+                  >
+                    <Plus className="h-5 w-5" />
+                  </Button>
+                </div>
                 <p className="typography-metadata">
                   Planeado: {item.cantidad_planeada} {item.unidad_medida || 'unidad(es)'}
                 </p>

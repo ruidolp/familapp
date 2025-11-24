@@ -9,7 +9,6 @@ import { CrearSobreDrawer } from '@/components/drawers/CrearSobreDrawer'
 import { AgregarPresupuestoDrawer } from '@/components/drawers/AgregarPresupuestoDrawer'
 import { ReducirPresupuestoDrawer } from '@/components/drawers/ReducirPresupuestoDrawer'
 import { CrearGastoDrawer } from '@/components/drawers/CrearGastoDrawer'
-import { AgregarCategoriaDrawer } from '@/components/drawers/AgregarCategoriaDrawer'
 import { EditarCategoriasMarcasDrawer } from '@/components/drawers/EditarCategoriasMarcasDrawer'
 import { VerDetalleTransaccionesDrawer } from '@/components/drawers/VerDetalleTransaccionesDrawer'
 import { VerDetalleCategoriaTransaccionesDrawer } from '@/components/drawers/VerDetalleCategoriaTransaccionesDrawer'
@@ -30,6 +29,7 @@ interface Sobre {
   resumen?: any[]
   is_compartido?: boolean
   usuario_id?: string
+  user_role?: 'OWNER' | 'ADMIN' | 'CONTRIBUTOR' | 'VIEWER'
 }
 
 interface WarningType {
@@ -57,7 +57,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const [agregarPresupuestoOpen, setAgregarPresupuestoOpen] = useState(false)
   const [reducirPresupuestoOpen, setReducirPresupuestoOpen] = useState(false)
   const [crearGastoOpen, setCrearGastoOpen] = useState(false)
-  const [agregarCategoriaOpen, setAgregarCategoriaOpen] = useState(false)
   const [editarCategoriasOpen, setEditarCategoriasOpen] = useState(false)
   const [verDetalleOpen, setVerDetalleOpen] = useState(false)
   const [detalleCategoriaOpen, setDetalleCategoriaOpen] = useState(false)
@@ -149,12 +148,9 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     if (!menuAction) return
 
     switch (menuAction) {
-      case 'nuevo-sobre':
-        setCrearSobreOpen(true)
-        break
       case 'nueva-categoria':
         if (sobres.length > 0) {
-          handleAgregarCategoria(sobres[selectedIndex])
+          handleEditarCategorias(sobres[selectedIndex])
         }
         break
       case 'nuevo-gasto':
@@ -279,11 +275,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     setCrearGastoOpen(true)
   }
 
-  const handleAgregarCategoria = (sobre: Sobre) => {
-    setSobreSeleccionado(sobre)
-    setAgregarCategoriaOpen(true)
-  }
-
   const handleEditarCategorias = (sobre: Sobre) => {
     setSobreSeleccionado(sobre)
     setEditarCategoriasOpen(true)
@@ -306,20 +297,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     setCrearGastoOpen(false)
     setSobreSeleccionadoParaGasto('')
     setCategoriaPreseleccionada('')
-  }
-
-  const handleAgregarCategoriaSuccess = async () => {
-    const previousIndex = selectedIndex
-
-    await fetchSobres()
-
-    setTimeout(() => {
-      if (emblaApi && previousIndex >= 0) {
-        emblaApi.scrollTo(previousIndex)
-      }
-    }, 100)
-
-    setAgregarCategoriaOpen(false)
   }
 
   const scrollToSlide = (index: number) => {
@@ -368,11 +345,11 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                     diaInicioPeriodo={diaInicioPeriodo}
                     isCompartido={Boolean(sobre.is_compartido)}
                     isOwner={sobre.usuario_id === userId}
+                    userRole={sobre.user_role || 'OWNER'}
                     onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
                     onVerDetalle={() => handleDetalleSobre(sobre)}
                     onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
                     onEditarCategorias={() => handleEditarCategorias(sobre)}
-                    onAgregarCategoria={() => handleAgregarCategoria(sobre)}
                     onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}
                     onVerTransaccionesCategoria={(categoriaId, categoriaNombre) =>
                       handleDetalleCategoria(categoriaId, categoriaNombre, sobre.id, sobre.nombre)
@@ -422,19 +399,12 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         onSuccess={handleCrearGastoSuccess}
       />
 
-      <AgregarCategoriaDrawer
-        open={agregarCategoriaOpen}
-        onOpenChange={setAgregarCategoriaOpen}
-        sobreId={sobreSeleccionado?.id || ''}
-        sobreName={sobreSeleccionado?.nombre || ''}
-        userId={userId}
-        onSuccess={handleAgregarCategoriaSuccess}
-      />
       <EditarCategoriasMarcasDrawer
         open={editarCategoriasOpen}
         onOpenChange={setEditarCategoriasOpen}
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
+        userRole={sobreSeleccionado?.user_role || 'OWNER'}
         onSuccess={refreshSobres}
       />
 

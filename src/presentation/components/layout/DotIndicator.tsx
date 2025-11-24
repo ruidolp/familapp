@@ -19,8 +19,8 @@ interface DotIndicatorProps {
 export function DotIndicator({
   total,
   current,
-  activeColor = 'bg-white',
-  inactiveColor = 'bg-white/30',
+  activeColor = 'bg-foreground',
+  inactiveColor = 'bg-foreground/40',
   size = 'md',
 }: DotIndicatorProps) {
   const sizeClasses = {

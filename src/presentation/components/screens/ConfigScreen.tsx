@@ -5,6 +5,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { LogOut, Palette, Check, Mail, UserCog } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
@@ -15,6 +16,7 @@ import { AccountConfigDrawer } from '@/presentation/components/drawers/AccountCo
 
 export function ConfigScreen() {
   const router = useRouter()
+  const { data: session } = useSession()
   const { theme: currentTheme, themes, setTheme, isLoading } = useTheme()
   const [showThemes, setShowThemes] = useState(false)
   const [invitacionesPendientes, setInvitacionesPendientes] = useState(0)
@@ -169,6 +171,14 @@ export function ConfigScreen() {
       {/* Sección de Sesión */}
       <div className="rounded-lg border bg-card p-6 space-y-4">
         <h3 className="typography-h3">Sesión</h3>
+        <div className="rounded-2xl border border-dashed border-border bg-background/40 px-4 py-3">
+          <p className="typography-body font-semibold text-foreground">
+            {session?.user?.name || 'Tu cuenta'}
+          </p>
+          {session?.user?.email && (
+            <p className="typography-body-sm text-muted-foreground">{session.user.email}</p>
+          )}
+        </div>
 
         <Button
           variant="destructive"
