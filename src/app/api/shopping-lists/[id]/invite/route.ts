@@ -5,7 +5,52 @@ import {
   getShoppingListById,
   createInvitacionLista,
   findParticipantesByLista,
+  findInvitacionesListasByLista,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
+
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id: listaId } = await context.params
+    const lista = await getShoppingListById(listaId)
+    if (!lista) {
+      return NextResponse.json({ error: 'Lista no encontrada' }, { status: 404 })
+    }
+
+    const participantes = await findParticipantesByLista(listaId)
+    const participante = participantes.find((p: any) => p.usuario_id === session.user.id)
+    const isOwner =
+      lista.user_id === session.user.id || (participante && participante.rol === 'OWNER')
+
+    if (!isOwner) {
+      return NextResponse.json(
+        { error: 'Solo el propietario puede ver las invitaciones' },
+        { status: 403 }
+      )
+    }
+
+    const invitaciones = await findInvitacionesListasByLista(listaId)
+
+    return NextResponse.json({
+      success: true,
+      invitaciones,
+      total: invitaciones.length,
+    })
+  } catch (error: any) {
+    console.error('❌ GET /api/shopping-lists/[id]/invite error:', error)
+    return NextResponse.json(
+      { error: error.message || 'Error al obtener invitaciones' },
+      { status: 500 }
+    )
+  }
+}
 
 export async function POST(
   req: NextRequest,

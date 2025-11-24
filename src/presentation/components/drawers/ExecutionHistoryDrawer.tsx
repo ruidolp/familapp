@@ -194,6 +194,12 @@ export function ExecutionHistoryDrawer({
   const estimatedBudget = budgetReference
   const formattedDateTime = formatDateTime(startDate)
 
+  // Budget registration info
+  const sobreInfo = (execution as any).sobre_info
+  const categoriaInfo = (execution as any).categoria_info
+  const marcaInfo = (execution as any).marca_info
+  const hasRegistrationInfo = sobreInfo || categoriaInfo || marcaInfo
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full max-h-[90vh] sm:max-h-[82vh] sm:max-w-5xl sm:mx-auto sm:rounded-3xl sm:border sm:border-border/80 sm:px-0 sm:shadow-2xl bg-background">
@@ -218,6 +224,30 @@ export function ExecutionHistoryDrawer({
               </span>
             )}
           </div>
+
+          {/* Budget registration info */}
+          {hasRegistrationInfo && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {sobreInfo && (
+                <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border border-primary/40">
+                  {sobreInfo.emoji && <span>{sobreInfo.emoji}</span>}
+                  {sobreInfo.nombre}
+                </Badge>
+              )}
+              {categoriaInfo && (
+                <Badge variant="outline" className="gap-1">
+                  {categoriaInfo.emoji && <span>{categoriaInfo.emoji}</span>}
+                  {categoriaInfo.nombre}
+                </Badge>
+              )}
+              {marcaInfo && (
+                <Badge variant="outline" className="gap-1 border-muted-foreground/40">
+                  {marcaInfo.emoji && <span>{marcaInfo.emoji}</span>}
+                  {marcaInfo.nombre}
+                </Badge>
+              )}
+            </div>
+          )}
         </SheetHeader>
 
         <SheetBody className="space-y-5 px-4 pb-4 sm:px-8">

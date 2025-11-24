@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { monedaPrincipalId, timezone, locale, pais, primerDiaSemana } = body
+    const { monedaPrincipalId, timezone, locale, pais, primerDiaSemana, diaInicioPeriodo } = body
 
     // Validar campo requerido
     if (!monedaPrincipalId) {
@@ -120,6 +120,7 @@ export async function POST(req: NextRequest) {
         locale,
         pais,
         primerDiaSemana,
+        diaInicioPeriodo,
       }
     )
 

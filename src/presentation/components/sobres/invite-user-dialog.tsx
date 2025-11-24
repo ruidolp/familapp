@@ -23,14 +23,18 @@ import { cn } from '@/infrastructure/lib/utils'
 interface InviteUserDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  sobreId: string
-  sobreNombre: string
-  sobreEmoji?: string
+  tipo: 'sobre' | 'lista'
+  itemId: string
+  itemNombre: string
+  itemEmoji?: string
+  onSuccess?: (method: ContactMethod) => void
 }
 
-type RolOption = 'ADMIN' | 'CONTRIBUTOR' | 'VIEWER' | 'OWNER'
+type RolSobre = 'ADMIN' | 'CONTRIBUTOR' | 'VIEWER' | 'OWNER'
+type RolLista = 'EDITOR' | 'EXECUTION_ONLY' | 'OWNER'
+type RolOption = RolSobre | RolLista
 
-type ContactMethod = 'email' | 'whatsapp'
+export type ContactMethod = 'email' | 'whatsapp'
 
 interface RoleInfo {
   icon: typeof Shield
@@ -45,19 +49,21 @@ interface RoleInfo {
 export function InviteUserDialog({
   open,
   onOpenChange,
-  sobreId,
-  sobreNombre,
-  sobreEmoji,
+  tipo,
+  itemId,
+  itemNombre,
+  itemEmoji,
+  onSuccess,
 }: InviteUserDialogProps) {
   const locale = useLocale()
   const [contact, setContact] = useState('')
   const [contactMethod, setContactMethod] = useState<ContactMethod>('email')
-  const [rol, setRol] = useState<RolOption>('CONTRIBUTOR')
+  const [rol, setRol] = useState<RolOption>(tipo === 'sobre' ? 'CONTRIBUTOR' : 'EDITOR')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const baseRoleConfig: Record<'ADMIN' | 'CONTRIBUTOR' | 'VIEWER', RoleInfo> = {
+  const baseSobreRoleConfig: Record<'ADMIN' | 'CONTRIBUTOR' | 'VIEWER', RoleInfo> = {
     ADMIN: {
       icon: Shield,
       name: 'Administrador',
@@ -100,19 +106,69 @@ export function InviteUserDialog({
     },
   }
 
-  const roleConfig: Record<RolOption, RoleInfo> = {
-    ...baseRoleConfig,
+  const baseListaRoleConfig: Record<'EDITOR' | 'EXECUTION_ONLY', RoleInfo> = {
+    EDITOR: {
+      icon: Users,
+      name: 'Editor',
+      description: 'Puede editar productos y ejecutar compras.',
+      accentColor: 'text-blue-600',
+      accentBg: 'bg-blue-100 dark:bg-blue-950/40',
+      permissions: [
+        { text: 'Agregar productos', allowed: true },
+        { text: 'Editar productos', allowed: true },
+        { text: 'Ejecutar compras', allowed: true },
+        { text: 'Cambiar nombre/descripción', allowed: false },
+        { text: 'Eliminar lista', allowed: false },
+      ],
+      tag: 'Recomendada',
+    },
+    EXECUTION_ONLY: {
+      icon: Eye,
+      name: 'Solo Ejecución',
+      description: 'Solo puede realizar las compras.',
+      accentColor: 'text-gray-600',
+      accentBg: 'bg-gray-100 dark:bg-gray-950/40',
+      permissions: [
+        { text: 'Ejecutar compras', allowed: true },
+        { text: 'Ver productos', allowed: true },
+        { text: 'Editar productos', allowed: false },
+        { text: 'Modificar lista', allowed: false },
+      ],
+    },
+  }
+
+  const sobreRoleConfig: Record<RolSobre, RoleInfo> = {
+    ...baseSobreRoleConfig,
     OWNER: {
-      ...baseRoleConfig.ADMIN,
+      ...baseSobreRoleConfig.ADMIN,
       name: 'Propietario',
       description: 'Creador del sobre con todos los permisos.',
     },
   }
 
+  const listaRoleConfig: Record<RolLista, RoleInfo> = {
+    ...baseListaRoleConfig,
+    OWNER: {
+      ...baseListaRoleConfig.EDITOR,
+      name: 'Propietario',
+      description: 'Creador de la lista con todos los permisos.',
+      permissions: [
+        { text: 'Agregar productos', allowed: true },
+        { text: 'Editar productos', allowed: true },
+        { text: 'Ejecutar compras', allowed: true },
+        { text: 'Cambiar nombre/descripción', allowed: true },
+        { text: 'Eliminar lista', allowed: true },
+      ],
+    },
+  }
+
+  const roleConfig = tipo === 'sobre' ? sobreRoleConfig : listaRoleConfig
+
   const buildInvitationLink = (code?: string | null) => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
     if (code) {
-      return `${baseUrl}/${locale}/invite/${code}`
+      const path = tipo === 'sobre' ? 'invite' : 'invite/lista'
+      return `${baseUrl}/${locale}/${path}/${code}`
     }
     return `${baseUrl}/${locale}/invitations`
   }
@@ -140,7 +196,9 @@ export function InviteUserDialog({
     setErrorMessage(null)
     setLoading(true)
     try {
-      const res = await fetch(`/api/sobres/${sobreId}/invite`, {
+      const methodUsed = contactMethod
+      const endpoint = tipo === 'sobre' ? `/api/sobres/${itemId}/invite` : `/api/shopping-lists/${itemId}/invite`
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contact: trimmed, rol }),
@@ -153,20 +211,25 @@ export function InviteUserDialog({
 
       const data = await res.json()
 
+      const itemType = tipo === 'sobre' ? 'sobre' : 'lista'
       toast({
         title: '¡Invitación creada!',
         description:
           contactMethod === 'email'
             ? 'Enviamos un correo con la invitación.'
-            : 'Comparte el enlace desde WhatsApp para que se unan al sobre.',
+            : `Comparte el enlace desde WhatsApp para que se unan a ${itemType === 'sobre' ? 'al sobre' : 'la lista'}.`,
       })
 
-      if (contactMethod === 'whatsapp') {
+      if (methodUsed === 'whatsapp') {
         const inviteLink = buildInvitationLink(data.invitacion?.codigo_invitacion)
-        const message = `Hola, te invito a administrar el sobre ${sobreEmoji || ''} ${sobreNombre} en Familapp. Ingresa aquí: ${inviteLink}`
+        const verb = tipo === 'sobre' ? 'administrar el sobre' : 'colaborar en la lista'
+        const message = `Hola, te invito a ${verb} ${itemEmoji || ''} ${itemNombre} en Familapp. Ingresa aquí: ${inviteLink}`
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
         window.open(whatsappUrl, '_blank', 'noreferrer')
+        handleClose()
       }
+
+      onSuccess?.(methodUsed)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo enviar la invitación'
       setErrorMessage(message)
@@ -177,7 +240,7 @@ export function InviteUserDialog({
 
   const handleClose = () => {
     setContact('')
-    setRol('CONTRIBUTOR')
+    setRol(tipo === 'sobre' ? 'CONTRIBUTOR' : 'EDITOR')
     setContactMethod('email')
     setErrorMessage(null)
     onOpenChange(false)
@@ -196,10 +259,21 @@ export function InviteUserDialog({
     { key: 'whatsapp', label: 'WhatsApp', description: 'Comparte el link por chat', icon: MessageCircle },
   ]
 
-  const selectableRoles: RolOption[] = ['ADMIN', 'CONTRIBUTOR', 'VIEWER']
-  const selectedRoleKey = rol === 'OWNER' ? 'ADMIN' : rol
-  const selectedRoleConfig = roleConfig[selectedRoleKey]
+  const selectableRoles: RolOption[] = tipo === 'sobre'
+    ? (['ADMIN', 'CONTRIBUTOR', 'VIEWER'] as RolSobre[])
+    : (['EDITOR', 'EXECUTION_ONLY'] as RolLista[])
+
+  const selectedRoleKey = rol === 'OWNER'
+    ? (tipo === 'sobre' ? 'ADMIN' : 'EDITOR')
+    : rol
+  const selectedRoleConfig = roleConfig[selectedRoleKey as keyof typeof roleConfig]
   const SelectedRoleIcon = selectedRoleConfig.icon
+
+  const permissionsToDisplay = tipo === 'lista'
+    ? selectedRoleConfig.permissions.filter(perm => perm.allowed)
+    : selectedRoleConfig.permissions
+
+  const formatPermissionLabel = (text: string) => text
 
   const getStatusBadge = (estado: string) => {
     const base = 'border px-2.5 py-0.5 text-xs font-medium rounded-full'
@@ -220,11 +294,13 @@ export function InviteUserDialog({
       <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">{sobreEmoji || '📦'}</span>
-            <span className="truncate">Invitar a {sobreNombre}</span>
+            <span className="text-2xl">{itemEmoji || (tipo === 'sobre' ? '📦' : '🛒')}</span>
+            <span className="truncate">Invitar a {itemNombre}</span>
           </DialogTitle>
           <DialogDescription>
-            Comparte este sobre con otra persona para gestionar el presupuesto juntos
+            {tipo === 'sobre'
+              ? 'Comparte este sobre con otra persona para gestionar el presupuesto juntos'
+              : 'Comparte esta lista con otra persona para gestionar las compras juntos'}
           </DialogDescription>
         </DialogHeader>
 
@@ -280,7 +356,7 @@ export function InviteUserDialog({
               </div>
               <p className="text-xs text-muted-foreground">
                 {contactMethod === 'email'
-                  ? 'Enviaremos un correo con el enlace para unirse al sobre.'
+                  ? `Enviaremos un correo con el enlace para unirse ${tipo === 'sobre' ? 'al sobre' : 'a la lista'}.`
                   : 'Usa código de país. Se abrirá WhatsApp con un mensaje listo para enviar.'}
               </p>
             </div>
@@ -317,7 +393,7 @@ export function InviteUserDialog({
                         <Icon className={cn('h-4 w-4', isSelected ? 'text-primary' : 'text-muted-foreground')} />
                         <span className="font-semibold text-sm">{config.name}</span>
                       </div>
-                      {roleKey === 'CONTRIBUTOR' && (
+                      {((tipo === 'sobre' && roleKey === 'CONTRIBUTOR') || (tipo === 'lista' && roleKey === 'EDITOR')) && (
                         <span className="text-[10px] font-semibold uppercase tracking-wide text-primary">
                           Recomendado
                         </span>
@@ -339,7 +415,7 @@ export function InviteUserDialog({
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  {selectedRoleConfig.permissions.map((perm, idx) => (
+                  {permissionsToDisplay.map((perm, idx) => (
                     <div key={`${selectedRoleKey}-${idx}`} className="flex items-center gap-2 text-sm">
                       {perm.allowed ? (
                         <Check className="h-3.5 w-3.5 text-emerald-600" />
@@ -347,7 +423,7 @@ export function InviteUserDialog({
                         <X className="h-3.5 w-3.5 text-muted-foreground" />
                       )}
                       <span className={perm.allowed ? 'text-foreground' : 'text-muted-foreground line-through'}>
-                        {perm.text}
+                        {formatPermissionLabel(perm.text)}
                       </span>
                     </div>
                   ))}
@@ -356,7 +432,7 @@ export function InviteUserDialog({
             </Card>
           </div>
 
-          {rol === 'ADMIN' && (
+          {tipo === 'sobre' && rol === 'ADMIN' && (
             <Alert className="border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950">
               <AlertTriangle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-sm text-orange-900 dark:text-orange-100">
@@ -368,9 +444,19 @@ export function InviteUserDialog({
           <div className="rounded-2xl border border-border bg-muted/50 p-4">
             <p className="mb-2 text-sm font-medium text-foreground">Al aceptar la invitación:</p>
             <ul className="space-y-1 text-sm text-muted-foreground">
-              <li>✓ Verán el presupuesto en tiempo real</li>
-              <li>✓ Accederán al historial de gastos</li>
-              <li>✓ Los cambios se sincronizan automáticamente</li>
+              {tipo === 'sobre' ? (
+                <>
+                  <li>✓ Verán el presupuesto en tiempo real</li>
+                  <li>✓ Accederán al historial de gastos</li>
+                  <li>✓ Los cambios se sincronizan automáticamente</li>
+                </>
+              ) : (
+                <>
+                  <li>✓ Verán la lista en tiempo real</li>
+                  <li>✓ Accederán al historial de compras</li>
+                  <li>✓ Los cambios se sincronizan automáticamente</li>
+                </>
+              )}
             </ul>
           </div>
 

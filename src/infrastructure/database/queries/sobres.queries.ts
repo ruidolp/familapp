@@ -67,8 +67,20 @@ export async function findSobresByUser(userId: string) {
     .where('sobres.deleted_at', 'is', null)
     .execute()
 
-  // Combinar y eliminar duplicados
-  const allSobres = [...sobresOwner, ...sobresParticipante]
+  // Marcar sobres propios con is_compartido = false
+  const sobresOwnerMapped = sobresOwner.map(s => ({
+    ...s,
+    is_compartido: false,
+  }))
+
+  // Marcar sobres compartidos con is_compartido = true
+  const sobresParticipanteMapped = sobresParticipante.map(s => ({
+    ...s,
+    is_compartido: true,
+  }))
+
+  // Combinar y eliminar duplicados (priorizar sobres propios)
+  const allSobres = [...sobresOwnerMapped, ...sobresParticipanteMapped]
   const uniqueSobres = Array.from(new Map(allSobres.map((s) => [s.id, s])).values())
 
   return uniqueSobres.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())

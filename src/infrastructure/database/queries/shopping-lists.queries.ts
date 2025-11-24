@@ -47,6 +47,23 @@ export async function getShoppingListsByUser(userId: string) {
     .execute()
 }
 
+export async function getSharedShoppingLists(userId: string) {
+  return db
+    .selectFrom('shopping_lists as sl')
+    .innerJoin('shopping_list_collaborators as slc', 'sl.id', 'slc.shopping_list_id')
+    .selectAll('sl')
+    .select([
+      'slc.permission_level as user_role',
+      'slc.added_by as shared_by_user_id',
+    ])
+    .where('slc.user_id', '=', userId)
+    .where('sl.user_id', '!=', userId) // No incluir listas propias
+    .where('sl.deleted_at', 'is', null)
+    .where('slc.deleted_at', 'is', null)
+    .orderBy('sl.updated_at', 'desc')
+    .execute()
+}
+
 export async function getShoppingListById(id: string) {
   return db
     .selectFrom('shopping_lists')
@@ -990,6 +1007,30 @@ export async function findInvitacionesListasEnviadasByUser(userId: string) {
     .execute()
 }
 
+export async function findInvitacionesListasByLista(listaId: string) {
+  return await db
+    .selectFrom('invitaciones_listas as inv')
+    .leftJoin('users as invitado', 'invitado.id', 'inv.invitado_user_id')
+    .select([
+      'inv.id',
+      'inv.lista_id',
+      'inv.invitado_email_o_telefono',
+      'inv.estado',
+      'inv.rol',
+      'inv.created_at',
+      'inv.updated_at',
+      'inv.expires_at',
+      'inv.invitado_user_id',
+      'invitado.name as invitado_name',
+      'invitado.email as invitado_email',
+      'invitado.image as invitado_image',
+    ])
+    .where('inv.lista_id', '=', listaId)
+    .where('inv.estado', 'in', ['PENDIENTE', 'ACEPTADA'])
+    .orderBy('inv.created_at', 'desc')
+    .execute()
+}
+
 /**
  * Obtener invitación por ID
  */
@@ -1181,4 +1222,3 @@ export async function updateParticipanteListaRole(
     .where('user_id', '=', userId)
     .execute()
 }
-

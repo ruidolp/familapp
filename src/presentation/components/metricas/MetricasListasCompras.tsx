@@ -127,7 +127,7 @@ export function MetricasListasCompras({ userId, onBack }: MetricasListasComprasP
           <h1 className="typography-h3 text-foreground">Listas de Compras</h1>
           <p className="typography-body-sm text-foreground">{monthName}</p>
           <p className="typography-body-sm text-muted-foreground">
-            Ciclo <span className="font-semibold">{cycleLabel}</span>
+            PERIODO <span className="font-semibold">{cycleLabel}</span>
           </p>
         </div>
       </div>

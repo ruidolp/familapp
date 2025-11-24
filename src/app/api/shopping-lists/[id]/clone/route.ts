@@ -4,6 +4,7 @@ import {
   getShoppingListById,
   cloneShoppingList,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
+import { canUserAccessList } from '@/application/services/shopping-lists.service'
 
 export async function POST(
   req: NextRequest,
@@ -25,7 +26,9 @@ export async function POST(
       )
     }
 
-    if (list.user_id !== session.user.id) {
+    // Permitir clonar si el usuario es OWNER o tiene acceso como colaborador
+    const hasAccess = await canUserAccessList(id, session.user.id)
+    if (!hasAccess) {
       return NextResponse.json(
         { error: 'No tienes permiso para clonar esta lista' },
         { status: 403 }

@@ -19,7 +19,7 @@ import {
 import { CategoriaCard } from '@/components/cards/CategoriaCard'
 import { useSobreCategories } from '@/presentation/hooks/useSobres'
 import { useCurrency } from '@/presentation/providers/currency-provider'
-import { getCurrentBudgetCycle, formatBudgetCycle } from '@/infrastructure/utils/budget-cycle'
+import { getCurrentBudgetCycle, formatDetailedBudgetRange } from '@/infrastructure/utils/budget-cycle'
 import { InviteUserDialog } from '@/components/sobres/invite-user-dialog'
 import { SharedBadge } from '@/components/sobres/shared-badge'
 import { ManageInvitationsDrawer } from '@/components/sobres/manage-invitations-drawer'
@@ -133,8 +133,8 @@ export function SobreCard({
     [diaInicioPeriodo]
   )
 
-  const cycleLabel = useMemo(
-    () => formatBudgetCycle(budgetCycle),
+  const periodLabel = useMemo(
+    () => formatDetailedBudgetRange(budgetCycle),
     [budgetCycle]
   )
 
@@ -144,6 +144,18 @@ export function SobreCard({
 
   const presupuestoLibre = presupuesto - gastadoNum
   const porcentajeGastado = presupuesto > 0 ? (gastadoNum / presupuesto) * 100 : 0
+
+  const actionButtonClass = 'h-12 w-full justify-start gap-2'
+
+  const handleOpenManageInvites = () => {
+    setAccionesOpen(false)
+    setManageInvitesOpen(true)
+  }
+
+  const handleInvitePerson = () => {
+    setAccionesOpen(false)
+    setInviteDialogOpen(true)
+  }
 
   // Hook para obtener categorías
   const { categorias, loading: categoriasLoadingHook, refetch: refetchCategorias } = useSobreCategories(id)
@@ -210,7 +222,7 @@ export function SobreCard({
                 <span className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-white/60">
                   Periodo
                 </span>
-                <span className="text-sm font-semibold text-white">{`"${cycleLabel}"`}</span>
+                <span className="text-sm font-semibold text-white">{periodLabel}</span>
               </div>
               <div className="space-y-1">
                 <h2 className="typography-h1 leading-tight">{nombre}</h2>
@@ -251,7 +263,7 @@ export function SobreCard({
                     <div className="flex flex-col gap-2">
                       <Button
                         variant="secondary"
-                        className="h-12 justify-start gap-2"
+                        className={actionButtonClass}
                         onClick={(e) => {
                           e.stopPropagation()
                           setAccionesOpen(false)
@@ -263,7 +275,7 @@ export function SobreCard({
                       </Button>
                       <Button
                         variant="secondary"
-                        className="h-12 justify-start gap-2"
+                        className={actionButtonClass}
                         disabled={presupuestoLibre <= 0}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -274,11 +286,10 @@ export function SobreCard({
                         <ArrowDownRight className="h-4 w-4" />
                         {t('card.actions.reduce')}
                       </Button>
-                    </div>
-                    <Button
-                      variant="secondary"
-                      className="h-12 justify-start gap-2"
-                      onClick={(e) => {
+                      <Button
+                        variant="secondary"
+                        className={actionButtonClass}
+                        onClick={(e) => {
                           e.stopPropagation()
                           setAccionesOpen(false)
                           onVerDetalle?.()
@@ -287,6 +298,7 @@ export function SobreCard({
                         <List className="h-4 w-4" />
                         {t('card.actions.transactions')}
                       </Button>
+                    </div>
                   </Card>
 
                   <Card className="p-3 space-y-3 bg-muted/40">
@@ -296,7 +308,7 @@ export function SobreCard({
                     <div className="flex flex-col gap-2">
                       <Button
                         variant="secondary"
-                        className="h-12 justify-start gap-2"
+                        className={actionButtonClass}
                         onClick={(e) => {
                           e.stopPropagation()
                           setAccionesOpen(false)
@@ -308,7 +320,7 @@ export function SobreCard({
                       </Button>
                       <Button
                         variant="secondary"
-                        className="h-12 justify-start gap-2"
+                        className={actionButtonClass}
                         onClick={(e) => {
                           e.stopPropagation()
                           setAccionesOpen(false)
@@ -318,36 +330,47 @@ export function SobreCard({
                         <Plus className="h-4 w-4" />
                         {t('card.actions.newCategory')}
                       </Button>
-                      {isOwner && (
+                    </div>
+                  </Card>
+
+                  {isOwner && (
+                    <Card className="p-3 space-y-3 bg-muted/40">
+                      <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
+                        Compartir
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {isCompartido && (
+                          <Button
+                            variant="secondary"
+                            className={actionButtonClass}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenManageInvites()
+                            }}
+                          >
+                            <Users className="h-4 w-4" />
+                            Gestionar Invitados
+                          </Button>
+                        )}
+                        {!isCompartido && (
+                          <p className="text-xs font-semibold text-muted-foreground">
+                            Aún no has compartido este sobre, invita a alguien para colaborar.
+                          </p>
+                        )}
                         <Button
                           variant="secondary"
-                          className="h-12 justify-start gap-2"
+                          className={actionButtonClass}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setAccionesOpen(false)
-                            setManageInvitesOpen(true)
-                          }}
-                        >
-                          <Users className="h-4 w-4" />
-                          Gestión de invitaciones
-                        </Button>
-                      )}
-                      {isOwner && (
-                        <Button
-                          variant="secondary"
-                          className="h-12 justify-start gap-2"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setAccionesOpen(false)
-                            setInviteDialogOpen(true)
+                            handleInvitePerson()
                           }}
                         >
                           <UserPlus className="h-4 w-4" />
-                          Invitar
+                          Invitar una persona
                         </Button>
-                      )}
-                    </div>
-                  </Card>
+                      </div>
+                    </Card>
+                  )}
                 </DrawerBody>
                 <DrawerFooter>
                   <DrawerClose asChild>

@@ -25,7 +25,7 @@ export function MonthYearSelector({ currentCycle, onPrev, onNext }: MonthYearSel
         variant="outline"
         size="icon"
         onClick={onPrev}
-        aria-label="Ciclo anterior"
+        aria-label="Periodo anterior"
       >
         <ChevronLeft size={20} />
       </Button>
@@ -42,7 +42,7 @@ export function MonthYearSelector({ currentCycle, onPrev, onNext }: MonthYearSel
         size="icon"
         onClick={onNext}
         disabled={isCurrentCycle()}
-        aria-label="Ciclo siguiente"
+        aria-label="Periodo siguiente"
       >
         <ChevronRight size={20} />
       </Button>

@@ -47,6 +47,7 @@ interface Sobre {
   emoji?: string
   presupuesto_asignado: number
   gastado?: number
+  is_compartido?: boolean
 }
 
 interface Categoria {
@@ -80,6 +81,8 @@ interface ConfigureExecutionDrawerProps {
   onOpenChange: (open: boolean) => void
   userId: string
   onConfirm: (config: ExecutionConfig) => void
+  isSharedList?: boolean  // Si es una lista compartida
+  isListOwner?: boolean   // Si el usuario es owner de la lista
 }
 
 export function ConfigureExecutionDrawer({
@@ -87,9 +90,14 @@ export function ConfigureExecutionDrawer({
   onOpenChange,
   userId,
   onConfirm,
+  isSharedList = false,
+  isListOwner = true,
 }: ConfigureExecutionDrawerProps) {
   const t = useTranslations('shopping.execution.configure')
   const commonT = useTranslations('common')
+
+  // Determinar si el usuario es invitado en una lista compartida
+  const isInvitedUser = isSharedList && !isListOwner
 
   // Data
   const [sobres, setSobres] = useState<Sobre[]>([])
@@ -419,14 +427,24 @@ export function ConfigureExecutionDrawer({
       <SheetContent className="flex h-[92vh] flex-col overflow-hidden sm:max-w-[480px]">
         <SheetHeader className="text-left">
           <SheetTitle className="typography-h3">{t('title')}</SheetTitle>
-          <SheetDescription>{t('description')}</SheetDescription>
+          <SheetDescription>
+            {isInvitedUser
+              ? 'Estás ejecutando una compra de una lista compartida'
+              : t('description')
+            }
+          </SheetDescription>
         </SheetHeader>
 
         <div className="flex-1 space-y-5 overflow-y-auto py-5">
           <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
-                <p className="typography-label text-foreground">{t('register.title')}</p>
+                <p className="typography-label text-foreground">
+                  {isInvitedUser
+                    ? '¿Quieres registrar el gasto en tus sobres?'
+                    : t('register.title')
+                  }
+                </p>
                 <p className="typography-metadata">{t('register.description')}</p>
               </div>
               <Switch checked={registerInBudget} onCheckedChange={setRegisterInBudget} />
@@ -445,8 +463,13 @@ export function ConfigureExecutionDrawer({
                     <SelectContent>
                       {sobres.map(s => (
                         <SelectItem key={s.id} value={s.id}>
-                          {s.emoji && <span className="mr-1">{s.emoji}</span>}
-                          <span className="truncate">{s.nombre}</span>
+                          <div className="flex items-center gap-2 w-full">
+                            {s.emoji && <span>{s.emoji}</span>}
+                            <span className="truncate flex-1">{s.nombre}</span>
+                            {s.is_compartido && (
+                              <span className="text-xs text-muted-foreground">(Compartido)</span>
+                            )}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>

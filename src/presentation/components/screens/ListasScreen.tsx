@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, ChevronDown } from 'lucide-react'
+import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, ChevronDown, UserPlus, ListCheck, Pencil, ExternalLink, Users } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +14,9 @@ import {
 import { CreateShoppingListDrawer } from '@/components/drawers/CreateShoppingListDrawer'
 import { EditShoppingListDrawer } from '@/components/drawers/EditShoppingListDrawer'
 import { ExecutionHistoryDrawer } from '@/components/drawers/ExecutionHistoryDrawer'
+import { InviteUserDialog, type ContactMethod } from '@/components/sobres/invite-user-dialog'
+import { ManageListInvitationsDrawer } from '@/presentation/components/listas/manage-list-invitations-drawer'
+import { SharedBadge } from '@/presentation/components/sobres/shared-badge'
 import { notify } from '@/infrastructure/lib/notifications'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
@@ -28,6 +31,9 @@ interface ShoppingList {
   created_at: string
   updated_at: string
   _itemCount?: number // Agregado por el backend si está disponible
+  _isShared?: boolean // Flag para listas compartidas
+  user_role?: string // Rol del usuario en la lista compartida
+  _collaboratorCount?: number // Número de colaboradores (solo para OWNER)
 }
 
 interface ShoppingExecution {
@@ -52,6 +58,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const router = useRouter()
   const { formatNumber } = useCurrency()
   const [lists, setLists] = useState<ShoppingList[]>([])
+  const [sharedLists, setSharedLists] = useState<ShoppingList[]>([])
   const [activeExecutions, setActiveExecutions] = useState<ExecutionDisplay[]>([])
   const [completedExecutions, setCompletedExecutions] = useState<ExecutionDisplay[]>([])
   const [loading, setLoading] = useState(false)
@@ -61,7 +68,12 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
   const [showActiveExecutions, setShowActiveExecutions] = useState(false)
   const [showCompletedExecutions, setShowCompletedExecutions] = useState(false)
+  const [showSharedLists, setShowSharedLists] = useState(false)
   const [editingList, setEditingList] = useState<ShoppingList | null>(null)
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [invitingList, setInvitingList] = useState<ShoppingList | null>(null)
+  const [manageListInvitesOpen, setManageListInvitesOpen] = useState(false)
+  const [listInvitesTarget, setListInvitesTarget] = useState<ShoppingList | null>(null)
 
   // Cargar listas y ejecuciones al montar
   useEffect(() => {
@@ -107,6 +119,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
       if (response.ok) {
         const data = await response.json()
         setLists(data.lists || [])
+        setSharedLists(data.sharedLists || [])
       } else {
         notify.error('Error al cargar listas')
       }
@@ -260,6 +273,30 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     setEditDrawerOpen(true)
   }
 
+  const handleInviteUser = (list: ShoppingList) => {
+    setInvitingList(list)
+    setInviteDialogOpen(true)
+  }
+
+  const handleManageListInvites = (list: ShoppingList) => {
+    setListInvitesTarget(list)
+    setManageListInvitesOpen(true)
+  }
+
+  const handleInviteDialogSuccess = (method: ContactMethod) => {
+    if (method === 'whatsapp' && invitingList) {
+      setListInvitesTarget(invitingList)
+      setManageListInvitesOpen(true)
+    }
+  }
+
+  const handleListInvitesDrawerChange = (open: boolean) => {
+    setManageListInvitesOpen(open)
+    if (!open) {
+      setListInvitesTarget(null)
+    }
+  }
+
   const handleUpdateList = async (nombre: string, descripcion?: string) => {
     if (!editingList) return
 
@@ -341,6 +378,12 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const pendingLists = lists.filter(list => list.purchase_count === 0)
   const executedLists = lists.filter(list => list.purchase_count > 0)
 
+  const renderSectionEmptyState = (message: string) => (
+    <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
+      {message}
+    </div>
+  )
+
   // Helper to render a list card
   const renderListCard = (list: ShoppingList) => (
     <Card
@@ -350,9 +393,21 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold typography-body truncate">
-            {list.nombre}
-          </h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold typography-body truncate">
+              {list.nombre}
+            </h3>
+            {/* Badge para listas compartidas donde el usuario es invitado */}
+            {list._isShared && list.user_role && (
+              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 whitespace-nowrap">
+                {list.user_role === 'EDITOR' ? 'Editor' : list.user_role === 'EXECUTION_ONLY' ? 'Solo Compra' : list.user_role}
+              </span>
+            )}
+            {/* Badge para listas propias compartidas con otros */}
+            {!list._isShared && list._collaboratorCount && list._collaboratorCount > 0 && (
+              <SharedBadge />
+            )}
+          </div>
           {list.descripcion && (
             <p className="typography-caption font-semibold text-muted-foreground line-clamp-2 mt-1">
               {list.descripcion}
@@ -391,16 +446,43 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                 handleOpenList(list.id)
               }}
             >
+              <ExternalLink size={14} className="mr-2" />
               Abrir
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                handleEditList(list)
-              }}
-            >
-              Editar
-            </DropdownMenuItem>
+
+            {/* Solo mostrar estas opciones si NO es una lista compartida (usuario es OWNER) */}
+            {!list._isShared && (
+              <>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleEditList(list)
+                  }}
+                >
+                  <Pencil size={14} className="mr-2" />
+                  Editar
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleInviteUser(list)
+                  }}
+                >
+                  <UserPlus size={14} className="mr-2" />
+                  Invitar usuario
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleManageListInvites(list)
+                  }}
+                >
+                  <Users size={14} className="mr-2" />
+                  Gestionar invitados
+                </DropdownMenuItem>
+              </>
+            )}
+
             <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
@@ -410,16 +492,20 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               <Copy size={14} className="mr-2" />
               Clonar
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                handleDeleteList(list.id, list.nombre)
-              }}
-              className="text-destructive"
-            >
-              <Trash2 size={14} className="mr-2" />
-              Eliminar
-            </DropdownMenuItem>
+
+            {/* Solo permitir eliminar si es OWNER */}
+            {!list._isShared && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteList(list.id, list.nombre)
+                }}
+                className="text-destructive"
+              >
+                <Trash2 size={14} className="mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -629,88 +715,119 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     <div className="flex flex-col h-full">
       {/* Lists Grid */}
       <div className="flex-1 overflow-y-auto p-4">
-        {lists.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
-            <ShoppingCart size={64} className="opacity-20" />
-            <p className="text-center">
-              No tienes listas de compras aún
-              <br />
-              <span className="typography-body-sm">Crea tu primera lista para empezar</span>
-            </p>
-            <Button onClick={handleOpenCreateDrawer} className="gap-2 rounded-full px-4 py-2 text-base font-semibold">
-              <Plus size={18} />
-              Crear Lista
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-8">
-            {/* All Lists */}
-            {lists.length > 0 && (
-              <div>
-                <h3 className="font-semibold typography-body text-foreground mb-3 pl-1">
-                  Mis Listas ({lists.length})
-                </h3>
+        <div className="space-y-8">
+          {lists.length === 0 ? (
+            <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border bg-card px-6 py-10 text-muted-foreground">
+              <ShoppingCart size={64} className="opacity-20" />
+              <p className="text-center">
+                No tienes listas de compras aún
+                <br />
+                <span className="typography-body-sm">Crea tu primera lista para empezar</span>
+              </p>
+              <Button onClick={handleOpenCreateDrawer} className="gap-2 rounded-full px-4 py-2 text-base font-semibold">
+                <Plus size={18} />
+                Crear Lista
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <h3 className="font-semibold typography-body text-foreground mb-3 pl-1 flex items-center gap-2">
+                <ListCheck className="h-4 w-4 text-muted-foreground" />
+                <span>Mis Listas ({lists.length})</span>
+              </h3>
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {lists.map(renderListCard)}
+              </div>
+            </div>
+          )}
+
+          {/* Shared Lists Section */}
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowSharedLists(prev => !prev)}
+              aria-expanded={showSharedLists}
+              className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
+            >
+              <span className="font-semibold typography-body text-foreground">
+                👥 Listas compartidas conmigo ({sharedLists.length})
+              </span>
+              <ChevronDown
+                className={cn(
+                  'h-5 w-5 text-muted-foreground transition-transform',
+                  showSharedLists ? 'rotate-180' : ''
+                )}
+              />
+            </button>
+            {showSharedLists && (
+              sharedLists.length > 0 ? (
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {lists.map(renderListCard)}
+                  {sharedLists.map(renderListCard)}
                 </div>
-              </div>
-            )}
-
-            {/* Active Executions Section */}
-            {activeExecutions.length > 0 && (
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => setShowActiveExecutions(prev => !prev)}
-                  aria-expanded={showActiveExecutions}
-                  className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
-                >
-                  <span className="font-semibold typography-body text-foreground">
-                    ⏱️ Compras en curso ({activeExecutions.length})
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      'h-5 w-5 text-muted-foreground transition-transform',
-                      showActiveExecutions ? 'rotate-180' : ''
-                    )}
-                  />
-                </button>
-                {showActiveExecutions && (
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {activeExecutions.map(renderExecutionCard)}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Completed Executions Section */}
-            {completedExecutions.length > 0 && (
-              <div className="space-y-3">
-                <button
-                  type="button"
-                  onClick={() => setShowCompletedExecutions(prev => !prev)}
-                  aria-expanded={showCompletedExecutions}
-                  className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
-                >
-                  <span className="font-semibold typography-body text-foreground">
-                    ✓ Compras Finalizadas ({completedExecutions.length})
-                  </span>
-                  <ChevronDown
-                    className={cn(
-                      'h-5 w-5 text-muted-foreground transition-transform',
-                      showCompletedExecutions ? 'rotate-180' : ''
-                    )}
-                  />
-                </button>
-                {showCompletedExecutions && (
-                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {completedExecutions.map(renderCompletedExecutionCard)}
-                  </div>
-                )}
-              </div>
+              ) : (
+                renderSectionEmptyState('Todavía no tienes listas compartidas')
+              )
             )}
           </div>
-        )}
+
+          {/* Active Executions Section */}
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowActiveExecutions(prev => !prev)}
+              aria-expanded={showActiveExecutions}
+              className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
+            >
+              <span className="font-semibold typography-body text-foreground">
+                ⏱️ Compras en curso ({activeExecutions.length})
+              </span>
+              <ChevronDown
+                className={cn(
+                  'h-5 w-5 text-muted-foreground transition-transform',
+                  showActiveExecutions ? 'rotate-180' : ''
+                )}
+              />
+            </button>
+            {showActiveExecutions && (
+              activeExecutions.length > 0 ? (
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {activeExecutions.map(renderExecutionCard)}
+                </div>
+              ) : (
+                renderSectionEmptyState('No hay compras en curso en este momento')
+              )
+            )}
+          </div>
+
+          {/* Completed Executions Section */}
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowCompletedExecutions(prev => !prev)}
+              aria-expanded={showCompletedExecutions}
+              className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
+            >
+              <span className="font-semibold typography-body text-foreground">
+                ✓ Compras Finalizadas ({completedExecutions.length})
+              </span>
+              <ChevronDown
+                className={cn(
+                  'h-5 w-5 text-muted-foreground transition-transform',
+                  showCompletedExecutions ? 'rotate-180' : ''
+                )}
+              />
+            </button>
+            {showCompletedExecutions && (
+              completedExecutions.length > 0 ? (
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                  {completedExecutions.map(renderCompletedExecutionCard)}
+                </div>
+              ) : (
+                renderSectionEmptyState('No tienes compras finalizadas todavía')
+              )
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Create Shopping List Drawer */}
@@ -735,6 +852,28 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
         isOpen={historyDrawerOpen}
         onOpenChange={setHistoryDrawerOpen}
       />
+
+      {/* Invite User Dialog */}
+      {invitingList && (
+        <InviteUserDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          tipo="lista"
+          itemId={invitingList.id}
+          itemNombre={invitingList.nombre}
+          itemEmoji="🛒"
+          onSuccess={handleInviteDialogSuccess}
+        />
+      )}
+
+      {listInvitesTarget && (
+        <ManageListInvitationsDrawer
+          open={manageListInvitesOpen}
+          onOpenChange={handleListInvitesDrawerChange}
+          listaId={listInvitesTarget.id}
+          listaNombre={listInvitesTarget.nombre}
+        />
+      )}
     </div>
   )
 }

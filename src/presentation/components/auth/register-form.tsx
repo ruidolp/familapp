@@ -48,7 +48,12 @@ interface AuthConfig {
 
 type RegisterFormData = RegisterWithEmailInput | RegisterWithPhoneInput
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  inviteListaCode?: string
+  inviteSobreCode?: string
+}
+
+export function RegisterForm({ inviteListaCode, inviteSobreCode }: RegisterFormProps = {}) {
   const router = useRouter()
   const locale = useLocale()
   const { toast } = useToast()
@@ -91,8 +96,16 @@ export function RegisterForm() {
   const handleOAuthSignIn = async (provider: 'google' | 'facebook') => {
     setIsLoading(true)
     try {
+      // Determine callback URL based on invitation context
+      let callbackUrl = `/${locale}/dashboard`
+      if (inviteListaCode) {
+        callbackUrl = `/${locale}/invite/lista/${inviteListaCode}`
+      } else if (inviteSobreCode) {
+        callbackUrl = `/${locale}/invite/${inviteSobreCode}`
+      }
+
       await signIn(provider, {
-        callbackUrl: `/${locale}/dashboard`,
+        callbackUrl,
       })
     } catch (error) {
       toast({
@@ -128,7 +141,14 @@ export function RegisterForm() {
         })
 
         if (signInResult?.ok) {
-          router.push(`/${locale}/dashboard`)
+          // Redirect based on invitation context
+          if (inviteListaCode) {
+            router.push(`/${locale}/invite/lista/${inviteListaCode}`)
+          } else if (inviteSobreCode) {
+            router.push(`/${locale}/invite/${inviteSobreCode}`)
+          } else {
+            router.push(`/${locale}/dashboard`)
+          }
           router.refresh()
         } else {
           // If auto-login fails, redirect to login page

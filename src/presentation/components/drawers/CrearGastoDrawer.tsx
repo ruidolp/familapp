@@ -43,6 +43,7 @@ interface Sobre {
   emoji?: string
   presupuesto_asignado: number
   gastado?: number
+  is_compartido?: boolean
 }
 
 interface Categoria {
@@ -522,10 +523,13 @@ export function CrearGastoDrawer({
                       <SelectContent>
                         {sobres.map((s) => (
                           <SelectItem key={s.id} value={s.id}>
-                            <span className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-full">
                               <span>{s.emoji}</span>
-                              <span>{s.nombre}</span>
-                            </span>
+                              <span className="flex-1">{s.nombre}</span>
+                              {s.is_compartido && (
+                                <span className="text-xs text-muted-foreground">(Compartido)</span>
+                              )}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>

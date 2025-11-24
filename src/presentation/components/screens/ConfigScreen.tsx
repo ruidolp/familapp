@@ -5,19 +5,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { LogOut, Palette, Check, Mail, FlaskConical } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
+import { LogOut, Palette, Check, Mail, UserCog } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useTheme } from '@/presentation/providers/theme-provider'
+import { AccountConfigDrawer } from '@/presentation/components/drawers/AccountConfigDrawer'
 
 export function ConfigScreen() {
   const router = useRouter()
-  const params = useParams<{ locale: string }>()
   const { theme: currentTheme, themes, setTheme, isLoading } = useTheme()
   const [showThemes, setShowThemes] = useState(false)
   const [invitacionesPendientes, setInvitacionesPendientes] = useState(0)
+  const [accountConfigOpen, setAccountConfigOpen] = useState(false)
 
   // Obtener invitaciones pendientes
   useEffect(() => {
@@ -150,16 +151,16 @@ export function ConfigScreen() {
         </button>
       </div>
 
-      {/* Sección de pruebas */}
+      {/* Configuración de la cuenta */}
       <div className="rounded-lg border bg-card">
         <button
           type="button"
           className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition"
-          onClick={() => router.push(`/${params?.locale || 'es'}/mail-test`)}
+          onClick={() => setAccountConfigOpen(true)}
         >
           <div className="flex items-center gap-2 typography-body-sm font-semibold">
-            <FlaskConical className="h-5 w-5" />
-            <span>Prueba de Email</span>
+            <UserCog className="h-5 w-5" />
+            <span>Configuración de la cuenta</span>
           </div>
           <span className="text-xs text-muted-foreground">➜</span>
         </button>
@@ -178,6 +179,8 @@ export function ConfigScreen() {
           Cerrar sesión
         </Button>
       </div>
+
+      <AccountConfigDrawer open={accountConfigOpen} onOpenChange={setAccountConfigOpen} />
     </div>
   )
 }

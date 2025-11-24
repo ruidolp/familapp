@@ -42,7 +42,12 @@ interface AuthConfig {
   }
 }
 
-export function LoginForm() {
+interface LoginFormProps {
+  inviteListaCode?: string
+  inviteSobreCode?: string
+}
+
+export function LoginForm({ inviteListaCode, inviteSobreCode }: LoginFormProps = {}) {
   const router = useRouter()
   const locale = useLocale()
   const { toast } = useToast()
@@ -95,7 +100,14 @@ export function LoginForm() {
           title: t('success.title'),
           description: t('success.description'),
         })
-        router.push(`/${locale}/dashboard`)
+        // Redirect based on invitation context
+        if (inviteListaCode) {
+          router.push(`/${locale}/invite/lista/${inviteListaCode}`)
+        } else if (inviteSobreCode) {
+          router.push(`/${locale}/invite/${inviteSobreCode}`)
+        } else {
+          router.push(`/${locale}/dashboard`)
+        }
         router.refresh()
       }
     } catch (error) {
@@ -112,8 +124,16 @@ export function LoginForm() {
   const handleOAuthSignIn = async (provider: 'google' | 'facebook') => {
     setIsLoading(true)
     try {
+      // Determine callback URL based on invitation context
+      let callbackUrl = `/${locale}/dashboard`
+      if (inviteListaCode) {
+        callbackUrl = `/${locale}/invite/lista/${inviteListaCode}`
+      } else if (inviteSobreCode) {
+        callbackUrl = `/${locale}/invite/${inviteSobreCode}`
+      }
+
       await signIn(provider, {
-        callbackUrl: `/${locale}/dashboard`,
+        callbackUrl,
       })
     } catch (error) {
       toast({

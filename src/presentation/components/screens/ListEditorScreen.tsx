@@ -75,6 +75,8 @@ interface EditorData {
     nombre: string
     descripcion?: string
     purchase_count: number
+    user_role?: string
+    is_owner?: boolean
   }
   items: ListItemWithProduct[]
   catalog: Product[]
@@ -1160,23 +1162,32 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
       {/* Input Fixed at Bottom */}
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <ProductQuantityInput
-          onAddProduct={(name, qty) => handleAddItem(name, false, undefined, qty)}
-          availableProducts={(() => {
-            // Show catalog products first (they have categories)
-            const catalogProducts = (data?.catalog || []).map((p) => ({ ...p, is_catalog: true }))
+        {data?.listInfo?.user_role === 'EXECUTION_ONLY' ? (
+          <div className="flex items-center justify-center gap-2 p-4 bg-muted rounded-lg border border-border">
+            <AlertCircle className="h-5 w-5 text-muted-foreground" />
+            <p className="text-sm text-muted-foreground font-medium">
+              No puedes agregar productos
+            </p>
+          </div>
+        ) : (
+          <ProductQuantityInput
+            onAddProduct={(name, qty) => handleAddItem(name, false, undefined, qty)}
+            availableProducts={(() => {
+              // Show catalog products first (they have categories)
+              const catalogProducts = (data?.catalog || []).map((p) => ({ ...p, is_catalog: true }))
 
-            // Only show custom products that are NOT in the catalog (to avoid duplicates)
-            const catalogNames = new Set(catalogProducts.map(p => p.nombre.toLowerCase()))
-            const uniqueCustomProducts = (data?.customProducts || [])
-              .filter(p => !catalogNames.has(p.nombre.toLowerCase()))
-              .map((p) => ({ ...p, is_catalog: false }))
+              // Only show custom products that are NOT in the catalog (to avoid duplicates)
+              const catalogNames = new Set(catalogProducts.map(p => p.nombre.toLowerCase()))
+              const uniqueCustomProducts = (data?.customProducts || [])
+                .filter(p => !catalogNames.has(p.nombre.toLowerCase()))
+                .map((p) => ({ ...p, is_catalog: false }))
 
-            return [...catalogProducts, ...uniqueCustomProducts]
-          })()}
-          onSettingsClick={() => setOptionsDrawerOpen(true)}
-          onFocusChange={setInputFocused}
-        />
+              return [...catalogProducts, ...uniqueCustomProducts]
+            })()}
+            onSettingsClick={() => setOptionsDrawerOpen(true)}
+            onFocusChange={setInputFocused}
+          />
+        )}
       </div>
 
       {/* Options Drawer */}
@@ -1212,6 +1223,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         onOpenChange={setConfigureExecutionOpen}
         userId={userId}
         onConfirm={handleExecutePurchase}
+        isSharedList={data?.listInfo?.user_role !== undefined && data?.listInfo?.user_role !== 'OWNER'}
+        isListOwner={data?.listInfo?.is_owner ?? true}
       />
     </div>
   )

@@ -92,6 +92,34 @@ export function formatBudgetCycle(
 }
 
 /**
+ * Formatea el ciclo de presupuesto con mayor detalle para UI destacadas
+ * Formato: "Lunes 05 Enero 25 al Martes 04 Febrero 25"
+ */
+export function formatDetailedBudgetRange(
+  cycle: BudgetCycle,
+  locale: string = 'es-ES'
+): string {
+  const weekdayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'long' })
+  const monthFormatter = new Intl.DateTimeFormat(locale, { month: 'long' })
+  const yearFormatter = new Intl.DateTimeFormat(locale, { year: '2-digit' })
+
+  const capitalize = (text: string) => (text ? text.charAt(0).toUpperCase() + text.slice(1) : text)
+
+  const formatDate = (date: Date) => {
+    const weekday = capitalize(weekdayFormatter.format(date))
+    const month = capitalize(monthFormatter.format(date))
+    const day = date.getDate().toString().padStart(2, '0')
+    const year = yearFormatter.format(date)
+    return `${weekday} ${day} ${month} ${year}`
+  }
+
+  const startLabel = formatDate(cycle.startDate)
+  const endLabel = formatDate(cycle.endDate)
+
+  return `${startLabel} al ${endLabel}`
+}
+
+/**
  * Obtiene el nombre del mes calendario (para mostrar como título)
  * Ejemplo: "Diciembre"
  *

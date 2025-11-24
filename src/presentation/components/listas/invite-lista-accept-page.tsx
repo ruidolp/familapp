@@ -209,7 +209,7 @@ export function InviteListaAcceptPage({ code, userId }: InviteListaAcceptPagePro
                 </p>
               )}
               <p className="text-muted-foreground mt-2">
-                Te está invitando a colaborar en esta lista
+                <span className="font-medium text-foreground">{invitacion.inviter_name || 'Alguien'}</span> te está invitando a colaborar en esta lista
               </p>
             </div>
           </div>

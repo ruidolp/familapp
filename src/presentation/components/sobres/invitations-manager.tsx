@@ -3,9 +3,10 @@
 /**
  * Invitations Manager Component
  *
- * Gestiona las invitaciones a sobres compartidos
+ * Gestiona las invitaciones a sobres y listas compartidas
  * - Recibidas: Invitaciones pendientes que puedo aceptar/rechazar
- * - Enviadas: Invitaciones que he enviado, organizadas por sobre
+ * - Enviadas: Invitaciones que he enviado
+ * - Sobres/Listas: Selector para elegir tipo de invitación
  */
 
 import { useState, useEffect } from 'react'
@@ -56,15 +57,50 @@ interface InvitacionEnviada {
   invitado_user_id?: string | null
 }
 
+interface InvitacionListaRecibida {
+  id: string
+  lista_id: string
+  lista_nombre: string
+  rol: string
+  created_at: string
+  expires_at: string
+  inviter_name?: string
+  inviter_email?: string
+  inviter_image?: string
+}
+
+interface InvitacionListaEnviada {
+  id: string
+  lista_id: string
+  lista_nombre: string
+  rol: string
+  estado: string
+  created_at: string
+  expires_at: string
+  invitado_email_o_telefono: string
+  codigo_invitacion?: string
+  invitado_name?: string
+  invitado_email?: string
+  invitado_image?: string
+  invitado_user_id?: string | null
+}
+
 export function InvitationsManager() {
+  // Sobres invitations
   const [invitacionesRecibidas, setInvitacionesRecibidas] = useState<InvitacionRecibida[]>([])
   const [invitacionesEnviadas, setInvitacionesEnviadas] = useState<InvitacionEnviada[]>([])
+
+  // Listas invitations
+  const [invitacionesListasRecibidas, setInvitacionesListasRecibidas] = useState<InvitacionListaRecibida[]>([])
+  const [invitacionesListasEnviadas, setInvitacionesListasEnviadas] = useState<InvitacionListaEnviada[]>([])
+
   const [loading, setLoading] = useState(true)
   const [processingId, setProcessingId] = useState<string | null>(null)
   const [deleteDrawerOpen, setDeleteDrawerOpen] = useState(false)
-  const [selectedInvitation, setSelectedInvitation] = useState<InvitacionEnviada | null>(null)
+  const [selectedInvitation, setSelectedInvitation] = useState<InvitacionEnviada | InvitacionListaEnviada | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'recibidas' | 'enviadas'>('recibidas')
+  const [tipo, setTipo] = useState<'sobre' | 'lista'>('sobre')
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
@@ -84,12 +120,21 @@ export function InvitationsManager() {
 
   const fetchInvitaciones = async () => {
     try {
-      const res = await fetch('/api/sobres/invitations')
-      if (!res.ok) throw new Error('Error al cargar invitaciones')
+      // Fetch sobres invitations
+      const resSobres = await fetch('/api/sobres/invitations')
+      if (resSobres.ok) {
+        const dataSobres = await resSobres.json()
+        setInvitacionesRecibidas(dataSobres.recibidas || [])
+        setInvitacionesEnviadas(dataSobres.enviadas || [])
+      }
 
-      const data = await res.json()
-      setInvitacionesRecibidas(data.recibidas || [])
-      setInvitacionesEnviadas(data.enviadas || [])
+      // Fetch listas invitations
+      const resListas = await fetch('/api/shopping-lists/invitations')
+      if (resListas.ok) {
+        const dataListas = await resListas.json()
+        setInvitacionesListasRecibidas(dataListas.recibidas || [])
+        setInvitacionesListasEnviadas(dataListas.enviadas || [])
+      }
     } catch (error) {
       toast({
         title: 'Error',
@@ -104,7 +149,11 @@ export function InvitationsManager() {
   const handleAccept = async (invitacionId: string) => {
     setProcessingId(invitacionId)
     try {
-      const res = await fetch(`/api/sobres/invitations/${invitacionId}/accept`, {
+      const endpoint = tipo === 'sobre'
+        ? `/api/sobres/invitations/${invitacionId}/accept`
+        : `/api/shopping-lists/invitations/${invitacionId}/accept`
+
+      const res = await fetch(endpoint, {
         method: 'POST',
       })
 
@@ -113,14 +162,16 @@ export function InvitationsManager() {
       const data = await res.json()
 
       toast({
-        title: '¡Te uniste al sobre!',
-        description: data.message || `Ahora eres parte de "${data.sobre?.nombre}"`,
+        title: tipo === 'sobre' ? '¡Te uniste al sobre!' : '¡Te uniste a la lista!',
+        description: data.message || (tipo === 'sobre'
+          ? `Ahora eres parte de "${data.sobre?.nombre}"`
+          : `Ahora eres parte de "${data.lista?.nombre}"`),
       })
 
       // Refrescar lista
       await fetchInvitaciones()
 
-      // Refrescar página para mostrar nuevo sobre
+      // Refrescar página para mostrar nuevo elemento
       router.refresh()
     } catch (error) {
       toast({
@@ -133,10 +184,14 @@ export function InvitationsManager() {
     }
   }
 
-  const handleReject = async (invitacionId: string, sobreNombre: string) => {
+  const handleReject = async (invitacionId: string, itemNombre: string) => {
     setProcessingId(invitacionId)
     try {
-      const res = await fetch(`/api/sobres/invitations/${invitacionId}/reject`, {
+      const endpoint = tipo === 'sobre'
+        ? `/api/sobres/invitations/${invitacionId}/reject`
+        : `/api/shopping-lists/invitations/${invitacionId}/reject`
+
+      const res = await fetch(endpoint, {
         method: 'POST',
       })
 
@@ -146,14 +201,16 @@ export function InvitationsManager() {
 
       toast({
         title: 'Invitación rechazada',
-        description: data.message || `Rechazaste la invitación a "${sobreNombre}"`,
+        description: data.message || (tipo === 'sobre'
+          ? `Rechazaste la invitación a "${itemNombre}"`
+          : `Rechazaste la invitación a "${itemNombre}"`),
       })
 
       // Refrescar lista
       await fetchInvitaciones()
 
-      // Si se creó un sobre, refrescar página
-      if (data.sobre_creado) {
+      // Si se creó un item, refrescar página
+      if (data.sobre_creado || data.lista_creada) {
         router.refresh()
       }
     } catch (error) {
@@ -199,7 +256,11 @@ export function InvitationsManager() {
 
     setDeleteLoading(true)
     try {
-      const res = await fetch(`/api/sobres/invitations/${selectedInvitation.id}`, {
+      const endpoint = tipo === 'sobre'
+        ? `/api/sobres/invitations/${selectedInvitation.id}`
+        : `/api/shopping-lists/invitations/${selectedInvitation.id}`
+
+      const res = await fetch(endpoint, {
         method: 'DELETE',
       })
 
@@ -231,7 +292,11 @@ export function InvitationsManager() {
   const handleUpdateRole = async (invitacionId: string, newRole: string) => {
     setUpdatingRoleId(invitacionId)
     try {
-      const res = await fetch(`/api/sobres/invitations/${invitacionId}`, {
+      const endpoint = tipo === 'sobre'
+        ? `/api/sobres/invitations/${invitacionId}`
+        : `/api/shopping-lists/invitations/${invitacionId}`
+
+      const res = await fetch(endpoint, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rol: newRole }),
@@ -267,6 +332,13 @@ export function InvitationsManager() {
     )
   }
 
+  // Variables dinámicas según el tipo seleccionado
+  const currentRecibidas = tipo === 'sobre' ? invitacionesRecibidas : invitacionesListasRecibidas
+  const currentEnviadas = tipo === 'sobre' ? invitacionesEnviadas : invitacionesListasEnviadas
+  const itemEmoji = tipo === 'sobre' ? '📦' : '🛒'
+  const itemTypeLabel = tipo === 'sobre' ? 'Sobre' : 'Lista'
+  const titleLabel = tipo === 'sobre' ? 'sobres' : 'listas'
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
@@ -282,37 +354,96 @@ export function InvitationsManager() {
         <div>
           <h2 className="text-2xl font-bold">Invitaciones</h2>
           <p className="text-muted-foreground">
-            Gestiona tus invitaciones a sobres compartidos
+            Gestiona tus invitaciones a sobres y listas compartidas
           </p>
         </div>
       </div>
 
+      {/* Tabs para seleccionar tipo: Sobres o Listas */}
       <Tabs
-        value={activeTab}
-        onValueChange={(value) => handleTabChange(value as 'recibidas' | 'enviadas')}
+        value={tipo}
+        onValueChange={(value) => setTipo(value as 'sobre' | 'lista')}
         className="w-full"
       >
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="recibidas">
-            Recibidas
-            {invitacionesRecibidas.length > 0 && (
-              <Badge variant="destructive" className="ml-2">
-                {invitacionesRecibidas.length}
+          <TabsTrigger value="sobre">
+            Sobres
+            {(invitacionesRecibidas.length + invitacionesEnviadas.length) > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {invitacionesRecibidas.length + invitacionesEnviadas.length}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="enviadas">
-            Enviadas
-            {invitacionesEnviadas.length > 0 && (
-              <Badge className="ml-2">
-                {invitacionesEnviadas.length}
+          <TabsTrigger value="lista">
+            Listas
+            {(invitacionesListasRecibidas.length + invitacionesListasEnviadas.length) > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {invitacionesListasRecibidas.length + invitacionesListasEnviadas.length}
               </Badge>
             )}
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="sobre" className="mt-4">
+          <InvitacionesTabs />
+        </TabsContent>
+
+        <TabsContent value="lista" className="mt-4">
+          <InvitacionesTabs />
+        </TabsContent>
+      </Tabs>
+
+      {/* Drawer for deleting invitations */}
+      <DrawerComponent />
+    </div>
+  )
+
+  // Componente interno para las tabs de Recibidas/Enviadas
+  function InvitacionesTabs() {
+    return (
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => handleTabChange(value as 'recibidas' | 'enviadas')}
+        className="w-full"
+      >
+        <Card className="bg-card/80 border border-border/80 shadow-sm">
+          <CardContent className="space-y-2 p-4">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              Filtrar invitaciones
+            </p>
+            <TabsList className="grid w-full grid-cols-2 gap-2 bg-transparent p-0">
+              <TabsTrigger
+                value="recibidas"
+                className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-tertiary/40 data-[state=active]:bg-tertiary/20 data-[state=active]:text-foreground"
+              >
+                <span className="flex items-center gap-2">
+                  Recibidas
+                  {currentRecibidas.length > 0 && (
+                    <Badge variant="destructive" className="ml-1 text-[10px]">
+                      {currentRecibidas.length}
+                    </Badge>
+                  )}
+                </span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="enviadas"
+                className="h-9 rounded-2xl border border-transparent bg-muted/30 text-[11px] font-semibold tracking-wide data-[state=active]:border-primary/40 data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+              >
+                <span className="flex items-center gap-2">
+                  Enviadas
+                  {currentEnviadas.length > 0 && (
+                    <Badge className="ml-1 text-[10px]">
+                      {currentEnviadas.length}
+                    </Badge>
+                  )}
+                </span>
+              </TabsTrigger>
+            </TabsList>
+          </CardContent>
+        </Card>
+
         <TabsContent value="recibidas" className="space-y-4">
-          {invitacionesRecibidas.length === 0 ? (
+          {currentRecibidas.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Users className="h-12 w-12 text-muted-foreground mb-4" />
@@ -322,7 +453,7 @@ export function InvitationsManager() {
               </CardContent>
             </Card>
           ) : (
-            invitacionesRecibidas.map((inv) => (
+            currentRecibidas.map((inv: any) => (
               <Card key={inv.id} className="overflow-hidden">
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
@@ -343,18 +474,20 @@ export function InvitationsManager() {
                       </div>
                     </div>
                     <Badge variant="outline">
-                      {inv.rol === 'ADMIN' ? 'Administrador' : inv.rol === 'CONTRIBUTOR' ? 'Colaborador' : 'Visualizador'}
+                      {tipo === 'sobre'
+                        ? (inv.rol === 'ADMIN' ? 'Administrador' : inv.rol === 'CONTRIBUTOR' ? 'Colaborador' : 'Visualizador')
+                        : (inv.rol === 'EDITOR' ? 'Editor' : 'Solo Ejecución')}
                     </Badge>
                   </div>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
                   <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
-                    <span className="text-3xl">{inv.sobre_emoji || '📦'}</span>
+                    <span className="text-3xl">{tipo === 'sobre' ? (inv.sobre_emoji || '📦') : '🛒'}</span>
                     <div>
-                      <p className="font-medium">Sobre: {inv.sobre_nombre}</p>
+                      <p className="font-medium">{itemTypeLabel}: {inv.sobre_nombre || inv.lista_nombre}</p>
                       <p className="text-sm text-muted-foreground">
-                        Te invitó a colaborar en este sobre
+                        Te invitó a colaborar en {tipo === 'sobre' ? 'este sobre' : 'esta lista'}
                       </p>
                     </div>
                   </div>
@@ -373,9 +506,19 @@ export function InvitationsManager() {
                   <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
                     <p className="font-medium text-sm">Ventajas de aceptar:</p>
                     <ul className="text-sm space-y-1 text-muted-foreground">
-                      <li>✓ Presupuesto compartido en tiempo real</li>
-                      <li>✓ Todos ven los gastos del sobre</li>
-                      <li>✓ Sincronización automática</li>
+                      {tipo === 'sobre' ? (
+                        <>
+                          <li>✓ Presupuesto compartido en tiempo real</li>
+                          <li>✓ Todos ven los gastos del sobre</li>
+                          <li>✓ Sincronización automática</li>
+                        </>
+                      ) : (
+                        <>
+                          <li>✓ Lista compartida en tiempo real</li>
+                          <li>✓ Todos ven las compras</li>
+                          <li>✓ Sincronización automática</li>
+                        </>
+                      )}
                     </ul>
                   </div>
                 </CardContent>
@@ -400,7 +543,7 @@ export function InvitationsManager() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => handleReject(inv.id, inv.sobre_nombre)}
+                    onClick={() => handleReject(inv.id, inv.sobre_nombre || inv.lista_nombre)}
                     disabled={processingId === inv.id}
                     className="flex-1"
                   >
@@ -412,7 +555,7 @@ export function InvitationsManager() {
                     ) : (
                       <>
                         <XCircle className="h-4 w-4 mr-2" />
-                        Crear mi propio {inv.sobre_nombre}
+                        Crear mi {tipo === 'sobre' ? 'propio' : 'propia'} {inv.sobre_nombre || inv.lista_nombre}
                       </>
                     )}
                   </Button>
@@ -423,7 +566,7 @@ export function InvitationsManager() {
         </TabsContent>
 
         <TabsContent value="enviadas" className="space-y-4">
-          {invitacionesEnviadas.length === 0 ? (
+          {currentEnviadas.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">
                 <Users className="h-12 w-12 text-muted-foreground mb-4" />
@@ -433,7 +576,7 @@ export function InvitationsManager() {
               </CardContent>
             </Card>
           ) : (
-            invitacionesEnviadas.map((inv) => {
+            currentEnviadas.map((inv: any) => {
               const estadoBadge = {
                 PENDIENTE: { label: 'Pendiente', variant: 'default' as const },
                 ACEPTADA: { label: 'Aceptada', variant: 'default' as const, className: 'bg-green-500' },
@@ -448,9 +591,9 @@ export function InvitationsManager() {
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-3xl">{inv.sobre_emoji || '📦'}</span>
+                        <span className="text-3xl">{tipo === 'sobre' ? (inv.sobre_emoji || '📦') : '🛒'}</span>
                         <div>
-                          <CardTitle className="text-lg">{inv.sobre_nombre}</CardTitle>
+                          <CardTitle className="text-lg">{inv.sobre_nombre || inv.lista_nombre}</CardTitle>
                           <CardDescription>
                             Invitado: {inv.invitado_name || inv.invitado_email_o_telefono}
                           </CardDescription>
@@ -501,7 +644,7 @@ export function InvitationsManager() {
                         <div className="flex gap-2">
                           <Input
                             readOnly
-                            value={`${window.location.origin}/${window.location.pathname.split('/')[1]}/invite/${inv.codigo_invitacion}`}
+                            value={`${window.location.origin}/${window.location.pathname.split('/')[1]}/invite${tipo === 'lista' ? '/lista' : ''}/${inv.codigo_invitacion}`}
                             className="font-mono text-xs"
                           />
                           <Button
@@ -509,7 +652,7 @@ export function InvitationsManager() {
                             variant="outline"
                             onClick={() => {
                               navigator.clipboard.writeText(
-                                `${window.location.origin}/${window.location.pathname.split('/')[1]}/invite/${inv.codigo_invitacion}`
+                                `${window.location.origin}/${window.location.pathname.split('/')[1]}/invite${tipo === 'lista' ? '/lista' : ''}/${inv.codigo_invitacion}`
                               )
                               toast({
                                 title: 'Link copiado',
@@ -553,30 +696,51 @@ export function InvitationsManager() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="ADMIN">
-                                <div className="flex items-center gap-2">
-                                  <Shield className="h-4 w-4 text-orange-600" />
-                                  <span>Administrador</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="CONTRIBUTOR">
-                                <div className="flex items-center gap-2">
-                                  <Users className="h-4 w-4 text-blue-600" />
-                                  <span>Colaborador</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="VIEWER">
-                                <div className="flex items-center gap-2">
-                                  <Eye className="h-4 w-4 text-gray-600" />
-                                  <span>Visualizador</span>
-                                </div>
-                              </SelectItem>
+                              {tipo === 'sobre' ? (
+                                <>
+                                  <SelectItem value="ADMIN">
+                                    <div className="flex items-center gap-2">
+                                      <Shield className="h-4 w-4 text-orange-600" />
+                                      <span>Administrador</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="CONTRIBUTOR">
+                                    <div className="flex items-center gap-2">
+                                      <Users className="h-4 w-4 text-blue-600" />
+                                      <span>Colaborador</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="VIEWER">
+                                    <div className="flex items-center gap-2">
+                                      <Eye className="h-4 w-4 text-gray-600" />
+                                      <span>Visualizador</span>
+                                    </div>
+                                  </SelectItem>
+                                </>
+                              ) : (
+                                <>
+                                  <SelectItem value="EDITOR">
+                                    <div className="flex items-center gap-2">
+                                      <Users className="h-4 w-4 text-blue-600" />
+                                      <span>Editor</span>
+                                    </div>
+                                  </SelectItem>
+                                  <SelectItem value="EXECUTION_ONLY">
+                                    <div className="flex items-center gap-2">
+                                      <Eye className="h-4 w-4 text-gray-600" />
+                                      <span>Solo Ejecución</span>
+                                    </div>
+                                  </SelectItem>
+                                </>
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
                       ) : (
                         <Badge variant="outline">
-                          {inv.rol === 'ADMIN' ? 'Administrador' : inv.rol === 'CONTRIBUTOR' ? 'Colaborador' : 'Visualizador'}
+                          {tipo === 'sobre'
+                            ? (inv.rol === 'ADMIN' ? 'Administrador' : inv.rol === 'CONTRIBUTOR' ? 'Colaborador' : 'Visualizador')
+                            : (inv.rol === 'EDITOR' ? 'Editor' : 'Solo Ejecución')}
                         </Badge>
                       )}
                     </div>
@@ -587,7 +751,12 @@ export function InvitationsManager() {
           )}
         </TabsContent>
       </Tabs>
+    )
+  }
 
+  // Componente interno para el Drawer de eliminación
+  function DrawerComponent() {
+    return (
       <Drawer
         open={deleteDrawerOpen}
         onOpenChange={(open) => {
@@ -600,15 +769,14 @@ export function InvitationsManager() {
       >
         <DrawerContent>
           <div className="mx-auto w-full max-w-md space-y-4 px-4 py-6">
-          <DrawerHeader className="px-0">
-            <DrawerTitle>Eliminar invitación</DrawerTitle>
-            <DrawerDescription>
-              {selectedInvitation?.estado === 'ACEPTADA'
-                ? 'Esta persona dejará de tener acceso al sobre. '
-                  + 'Se removerá su permiso inmediatamente.'
-                : 'La invitación se cancelará y el link dejará de funcionar.'}
-            </DrawerDescription>
-          </DrawerHeader>
+            <DrawerHeader className="px-0">
+              <DrawerTitle>Eliminar invitación</DrawerTitle>
+              <DrawerDescription>
+                {selectedInvitation?.estado === 'ACEPTADA'
+                  ? `Esta persona dejará de tener acceso ${tipo === 'sobre' ? 'al sobre' : 'a la lista'}. Se removerá su permiso inmediatamente.`
+                  : 'La invitación se cancelará y el link dejará de funcionar.'}
+              </DrawerDescription>
+            </DrawerHeader>
 
             <DrawerFooter className="px-0">
               <Button
@@ -632,6 +800,6 @@ export function InvitationsManager() {
           </div>
         </DrawerContent>
       </Drawer>
-    </div>
-  )
+    )
+  }
 }

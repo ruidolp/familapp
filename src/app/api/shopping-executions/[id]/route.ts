@@ -36,6 +36,41 @@ export async function GET(
 
     const items = await getExecutionItems(id)
 
+    // Get sobre, categoria, and subcategoria names if they exist
+    let sobreInfo = null
+    let categoriaInfo = null
+    let marcaInfo = null
+
+    if (execution.sobre_id) {
+      const sobre = await db
+        .selectFrom('sobres')
+        .select(['id', 'nombre', 'emoji'])
+        .where('id', '=', execution.sobre_id)
+        .where('deleted_at', 'is', null)
+        .executeTakeFirst()
+      sobreInfo = sobre || null
+    }
+
+    if (execution.categoria_sobre_id) {
+      const categoria = await db
+        .selectFrom('categorias_sobre')
+        .select(['id', 'nombre', 'emoji'])
+        .where('id', '=', execution.categoria_sobre_id)
+        .where('deleted_at', 'is', null)
+        .executeTakeFirst()
+      categoriaInfo = categoria || null
+    }
+
+    if (execution.subcategoria_id) {
+      const marca = await db
+        .selectFrom('subcategorias_sobre')
+        .select(['id', 'nombre', 'emoji'])
+        .where('id', '=', execution.subcategoria_id)
+        .where('deleted_at', 'is', null)
+        .executeTakeFirst()
+      marcaInfo = marca || null
+    }
+
     // Calculate totals
     const totalCalculated = items.reduce((sum: number, item: any) => {
       if (item.es_comprado && item.precio_total) {
@@ -46,7 +81,12 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      execution,
+      execution: {
+        ...execution,
+        sobre_info: sobreInfo,
+        categoria_info: categoriaInfo,
+        marca_info: marcaInfo,
+      },
       items,
       totalCalculated,
     })

@@ -10,6 +10,7 @@ import {
   getFavorites,
   getFrequentProducts,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
+import { getUserPermissionForList } from '@/application/services/shopping-lists.service'
 
 /**
  * GET /api/shopping-lists/[id]/editor-data
@@ -40,7 +41,7 @@ export async function GET(
     const { id } = await context.params
     const userId = session.user.id
 
-    // Get list and verify ownership
+    // Get list and verify access (owner or collaborator)
     const list = await getShoppingListById(id)
     if (!list) {
       return NextResponse.json(
@@ -49,12 +50,17 @@ export async function GET(
       )
     }
 
-    if (list.user_id !== userId) {
+    // Check user permission (OWNER, EDITOR, or EXECUTION_ONLY)
+    const userPermission = await getUserPermissionForList(id, userId)
+    if (!userPermission) {
       return NextResponse.json(
         { error: 'No tienes permiso para acceder a esta lista' },
         { status: 403 }
       )
     }
+
+    const isOwner = list.user_id === userId
+    const userRole = isOwner ? 'OWNER' : userPermission
 
     // Load all data in parallel to minimize latency
     const [
@@ -107,6 +113,8 @@ export async function GET(
         purchase_count: list.purchase_count || 0,
         created_at: list.created_at,
         updated_at: list.updated_at,
+        user_role: userRole, // User's role in this list
+        is_owner: isOwner, // Whether user is the owner
       },
 
       // Current list items
