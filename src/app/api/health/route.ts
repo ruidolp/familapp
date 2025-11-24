@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       config: {
         selfSignupEnabled: appConfig.auth.registration.allowSelfSignup,
         emailEnabled: appConfig.email.enabled,
+        emailProvider: appConfig.email.provider,
         smsEnabled: appConfig.sms.enabled,
         recoveryEnabled: appConfig.auth.recovery.enabled,
         confirmationEnabled: appConfig.auth.confirmation.enabled,

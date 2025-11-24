@@ -172,6 +172,14 @@ GOOGLE_CLIENT_SECRET="..."
 SMTP_HOST="smtp.gmail.com"
 SMTP_USER="tu@email.com"
 SMTP_PASSWORD="tu-password"
+
+# MailerSend (Opcional - activa email sin SMTP)
+MAILERSEND_API_KEY="tu-api-key-mailersend"
+MAILERSEND_SENDER_EMAIL="notificaciones@tu-dominio.com"
+MAILERSEND_SENDER_NAME="Familapp"
+MAILERSEND_REPLY_TO="soporte@tu-dominio.com" # opcional
+EMAIL_BRAND_NAME="Familapp"
+# EMAIL_PROVIDER="mailersend" # opcional, se autodetecta si existe el API key
 ```
 
 ## 🚀 Desarrollo Local

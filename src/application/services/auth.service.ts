@@ -27,6 +27,7 @@ import {
 import { hashPassword, verifyPassword, generateVerificationCode, generateCodeExpiration, sanitizeEmail, sanitizePhone } from '@/infrastructure/utils/crypto'
 import { detectIdentifierType } from '@/infrastructure/utils/validation'
 import { appConfig } from '@/config/app.config'
+import { sendRecoveryEmail, sendVerificationEmail } from '@/infrastructure/services/email/email.service'
 import type {
   RegisterCredentials,
   LoginCredentials,
@@ -102,8 +103,15 @@ export async function registerUser(
         used_at: null,
       })
 
-      // TODO: Enviar código por email o SMS
-      // await sendVerificationCode(user, code)
+      if (appConfig.email.enabled && credentials.accountType === 'EMAIL' && user.email) {
+        await sendVerificationEmail({
+          email: user.email,
+          name: user.name,
+          code,
+        })
+      }
+
+      // TODO: Enviar código por SMS para cuentas telefónicas
     }
 
     const domainUser = mapToDomainUser(user)
@@ -255,8 +263,15 @@ export async function requestPasswordRecovery(
       used_at: null,
     })
 
-    // TODO: Enviar código por email o SMS
-    // await sendRecoveryCode(user, code)
+    if (appConfig.email.enabled && identifierType === 'email' && user.email) {
+      await sendRecoveryEmail({
+        email: user.email,
+        name: user.name,
+        code,
+      })
+    }
+
+    // TODO: Enviar código por SMS si se solicitó con teléfono
 
     return { success: true }
   } catch (error) {

@@ -4,13 +4,19 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, TrendingUp, Wallet, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { MonthYearSelector } from './MonthYearSelector'
 import { BarChart } from './BarChart'
 import { LockedMetricCard } from './LockedMetricCard'
+import { cn } from '@/infrastructure/lib/utils'
 import {
   getCurrentBudgetCycle,
-  formatBudgetCycle,
-  getMonthName,
   getPreviousCycle,
   getNextCycle,
   type BudgetCycle,
@@ -29,6 +35,8 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
   const [topMarcas, setTopMarcas] = useState<any[]>([])
   const [balanceActual, setBalanceActual] = useState<any>(null)
   const [hasData, setHasData] = useState(true)
+  const [sobres, setSobres] = useState<Array<{ id: string; nombre: string; emoji?: string | null }>>([])
+  const [selectedSobreId, setSelectedSobreId] = useState<string>('all')
 
   // Cargar configuración del usuario
   useEffect(() => {
@@ -53,10 +61,35 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
   }, [])
 
   useEffect(() => {
+    const fetchSobres = async () => {
+      try {
+        const response = await fetch('/api/sobres')
+        if (response.ok) {
+          const data = await response.json()
+          setSobres(data.sobres || [])
+        }
+      } catch (error) {
+        console.error('Error al cargar sobres:', error)
+      }
+    }
+
+    fetchSobres()
+  }, [])
+
+  useEffect(() => {
     if (currentCycle) {
       fetchMetrics()
     }
-  }, [currentCycle])
+  }, [currentCycle, selectedSobreId])
+
+  useEffect(() => {
+    if (selectedSobreId !== 'all' && sobres.length > 0) {
+      const exists = sobres.some((sobre) => sobre.id === selectedSobreId)
+      if (!exists) {
+        setSelectedSobreId('all')
+      }
+    }
+  }, [sobres, selectedSobreId])
 
   const fetchMetrics = async () => {
     if (!currentCycle) return
@@ -66,9 +99,14 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
       const startDate = currentCycle.startDate.toISOString()
       const endDate = currentCycle.endDate.toISOString()
 
+      const params = new URLSearchParams({ startDate, endDate })
+      if (selectedSobreId !== 'all') {
+        params.append('sobreId', selectedSobreId)
+      }
+
       // Fetch distribución de gastos por categoría
       const distribucionRes = await fetch(
-        `/api/metricas/sobres/distribucion-gastos?startDate=${startDate}&endDate=${endDate}`
+        `/api/metricas/sobres/distribucion-gastos?${params.toString()}`
       )
       if (distribucionRes.ok) {
         const data = await distribucionRes.json()
@@ -78,7 +116,7 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
 
       // Fetch top marcas
       const marcasRes = await fetch(
-        `/api/metricas/sobres/top-marcas?startDate=${startDate}&endDate=${endDate}`
+        `/api/metricas/sobres/top-marcas?${params.toString()}`
       )
       if (marcasRes.ok) {
         const data = await marcasRes.json()
@@ -88,7 +126,8 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
       // Fetch balance actual (solo para ciclo actual)
       const now = new Date()
       if (now >= currentCycle.startDate && now <= currentCycle.endDate) {
-        const balanceRes = await fetch('/api/metricas/sobres/balance-actual')
+        const balanceQuery = selectedSobreId !== 'all' ? `?sobreId=${selectedSobreId}` : ''
+        const balanceRes = await fetch(`/api/metricas/sobres/balance-actual${balanceQuery}`)
         if (balanceRes.ok) {
           const data = await balanceRes.json()
           setBalanceActual(data.balance)
@@ -121,8 +160,6 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
     )
   }
 
-  const monthName = getMonthName(currentCycle)
-  const cycleLabel = formatBudgetCycle(currentCycle)
   const isCurrentCycle = () => {
     const now = new Date()
     return now >= currentCycle.startDate && now <= currentCycle.endDate
@@ -142,10 +179,6 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
         </Button>
         <div className="flex-1">
           <h1 className="typography-h3 text-foreground">Sobres</h1>
-          <p className="typography-body-sm text-foreground">{monthName}</p>
-          <p className="typography-body-sm text-muted-foreground">
-            Ciclo <span className="font-semibold">{cycleLabel}</span>
-          </p>
         </div>
       </div>
 
@@ -157,6 +190,28 @@ export function MetricasSobres({ userId, onBack }: MetricasSobresProps) {
           onPrev={handlePrevCycle}
           onNext={handleNextCycle}
         />
+
+        <Card className="p-4">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">Selecciona el sobre</p>
+            <Select value={selectedSobreId} onValueChange={setSelectedSobreId}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Todos los sobres" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los sobres</SelectItem>
+                {sobres.map((sobre) => (
+                  <SelectItem key={sobre.id} value={sobre.id}>
+                    <span className="flex items-center gap-2">
+                      <span>{sobre.emoji || '📁'}</span>
+                      <span className="truncate">{sobre.nombre}</span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </Card>
 
         {!hasData && !loading ? (
           <Card className="p-8 text-center">

@@ -500,3 +500,385 @@ export async function findCategoriasWithGastosBySobre(sobreId: string) {
   // Ordenar por número de compras descendente (más usado primero)
   return categoriasWithGastos.sort((a, b) => b.compras - a.compras)
 }
+
+/**
+ * ============================================================================
+ * INVITACIONES A SOBRES
+ * ============================================================================
+ */
+
+/**
+ * Crear invitación a sobre
+ */
+export async function createInvitacionSobre(data: {
+  sobre_id: string
+  invitado_por_id: string
+  invitado_email_o_telefono: string
+  invitado_user_id?: string | null
+  codigo_invitacion?: string | null
+  rol: RolSobreUsuario
+}) {
+  return await db
+    .insertInto('invitaciones_sobres')
+    .values({
+      ...data,
+      estado: 'PENDIENTE',
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+/**
+ * Buscar invitación por código único
+ */
+export async function findInvitacionByCodigo(codigo: string) {
+  return await db
+    .selectFrom('invitaciones_sobres as inv')
+    .innerJoin('sobres', 'sobres.id', 'inv.sobre_id')
+    .innerJoin('users as inviter', 'inviter.id', 'inv.invitado_por_id')
+    .select([
+      'inv.id',
+      'inv.sobre_id',
+      'inv.rol',
+      'inv.estado',
+      'inv.expires_at',
+      'sobres.nombre as sobre_nombre',
+      'sobres.emoji as sobre_emoji',
+      'sobres.presupuesto_asignado',
+      'inviter.name as inviter_name',
+      'inviter.email as inviter_email',
+      'inviter.image as inviter_image',
+    ])
+    .where('inv.codigo_invitacion', '=', codigo)
+    .where('inv.estado', '=', 'PENDIENTE')
+    .where('inv.expires_at', '>', new Date())
+    .executeTakeFirst()
+}
+
+/**
+ * Buscar invitaciones pendientes por email/teléfono
+ * (antes de que el usuario se registre)
+ */
+export async function findInvitacionesPendientesByContact(
+  emailOrPhone: string
+): Promise<Array<{ sobre_nombre: string; sobre_id: string; invitacion_id: string }>> {
+  const contact = emailOrPhone.toLowerCase().trim()
+
+  return await db
+    .selectFrom('invitaciones_sobres as inv')
+    .innerJoin('sobres', 'sobres.id', 'inv.sobre_id')
+    .select([
+      'sobres.nombre as sobre_nombre',
+      'sobres.id as sobre_id',
+      'inv.id as invitacion_id',
+    ])
+    .where('inv.invitado_email_o_telefono', '=', contact)
+    .where('inv.estado', '=', 'PENDIENTE')
+    .where('inv.expires_at', '>', new Date())
+    .where('sobres.deleted_at', 'is', null)
+    .execute()
+}
+
+/**
+ * Buscar invitaciones pendientes de un usuario (ya registrado)
+ */
+export async function findInvitacionesPendientesByUser(userId: string) {
+  return await db
+    .selectFrom('invitaciones_sobres as inv')
+    .innerJoin('sobres', 'sobres.id', 'inv.sobre_id')
+    .innerJoin('users as inviter', 'inviter.id', 'inv.invitado_por_id')
+    .select([
+      'inv.id',
+      'inv.sobre_id',
+      'inv.rol',
+      'inv.created_at',
+      'inv.expires_at',
+      'sobres.nombre as sobre_nombre',
+      'sobres.emoji as sobre_emoji',
+      'sobres.color as sobre_color',
+      'sobres.presupuesto_asignado',
+      'inviter.name as inviter_name',
+      'inviter.email as inviter_email',
+      'inviter.image as inviter_image',
+    ])
+    .where('inv.invitado_user_id', '=', userId)
+    .where('inv.estado', '=', 'PENDIENTE')
+    .where('inv.expires_at', '>', new Date())
+    .orderBy('inv.created_at', 'desc')
+    .execute()
+}
+
+/**
+ * Buscar invitaciones enviadas de un sobre
+ */
+export async function findInvitacionesBySobre(sobreId: string) {
+  return await db
+    .selectFrom('invitaciones_sobres as inv')
+    .leftJoin('users', 'users.id', 'inv.invitado_user_id')
+    .select([
+      'inv.id',
+      'inv.invitado_email_o_telefono',
+      'inv.estado',
+      'inv.rol',
+      'inv.created_at',
+      'inv.expires_at',
+      'inv.codigo_invitacion',
+      'users.name as invitado_name',
+      'users.email as invitado_email',
+      'users.image as invitado_image',
+    ])
+    .where('inv.sobre_id', '=', sobreId)
+    .orderBy('inv.created_at', 'desc')
+    .execute()
+}
+
+/**
+ * Buscar invitaciones enviadas por un usuario (todas sus invitaciones)
+ */
+export async function findInvitacionesEnviadasByUser(userId: string) {
+  return await db
+    .selectFrom('invitaciones_sobres as inv')
+    .innerJoin('sobres', 'sobres.id', 'inv.sobre_id')
+    .leftJoin('users', 'users.id', 'inv.invitado_user_id')
+    .select([
+      'inv.id',
+      'inv.sobre_id',
+      'inv.invitado_email_o_telefono',
+      'inv.estado',
+      'inv.rol',
+      'inv.created_at',
+      'inv.expires_at',
+      'inv.codigo_invitacion',
+      'inv.invitado_user_id',
+      'sobres.nombre as sobre_nombre',
+      'sobres.emoji as sobre_emoji',
+      'sobres.color as sobre_color',
+      'users.name as invitado_name',
+      'users.email as invitado_email',
+      'users.image as invitado_image',
+    ])
+    .where('inv.invitado_por_id', '=', userId)
+    .where('sobres.deleted_at', 'is', null)
+    .orderBy('inv.created_at', 'desc')
+    .execute()
+}
+
+/**
+ * Obtener invitación por ID (incluye estado y dueños)
+ */
+export async function findInvitacionById(invitacionId: string) {
+  return await db
+    .selectFrom('invitaciones_sobres')
+    .select([
+      'id',
+      'sobre_id',
+      'invitado_por_id',
+      'invitado_user_id',
+      'estado',
+    ])
+    .where('id', '=', invitacionId)
+    .executeTakeFirst()
+}
+
+/**
+ * Aceptar invitación y agregar como participante
+ */
+export async function acceptInvitacionSobre(invitacionId: string, userId: string) {
+  // 1. Obtener datos de invitación
+  const inv = await db
+    .selectFrom('invitaciones_sobres')
+    .selectAll()
+    .where('id', '=', invitacionId)
+    .executeTakeFirstOrThrow()
+
+  // 2. Verificar si el sobre tiene nombre conflictivo (HOGAR o PERSONAL)
+  const sobre = await findSobreById(inv.sobre_id)
+  if (!sobre) throw new Error('Sobre no encontrado')
+
+  // 3. Renombrar sobre existente si hay conflicto
+  await renameSobreIfConflict(userId, sobre.nombre)
+
+  // 4. Actualizar estado de invitación
+  await db
+    .updateTable('invitaciones_sobres')
+    .set({
+      estado: 'ACEPTADA',
+      invitado_user_id: userId, // Asociar user_id si venía null
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+
+  // 5. Marcar sobre como compartido
+  await db
+    .updateTable('sobres')
+    .set({
+      is_compartido: true,
+      updated_at: new Date(),
+    })
+    .where('id', '=', inv.sobre_id)
+    .execute()
+
+  // 6. Agregar como participante
+  const participante = await addParticipanteToSobre(inv.sobre_id, userId, inv.rol, 0)
+
+  return {
+    invitacion: inv,
+    sobre: { ...sobre, is_compartido: true },
+    participante,
+  }
+}
+
+/**
+ * Rechazar invitación
+ */
+export async function rejectInvitacionSobre(invitacionId: string) {
+  // Obtener datos antes de rechazar
+  const invitacion = await db
+    .selectFrom('invitaciones_sobres as inv')
+    .innerJoin('sobres', 'sobres.id', 'inv.sobre_id')
+    .select([
+      'inv.id',
+      'inv.invitado_user_id',
+      'inv.invitado_email_o_telefono',
+      'sobres.nombre as sobre_nombre',
+    ])
+    .where('inv.id', '=', invitacionId)
+    .executeTakeFirst()
+
+  // Marcar como rechazada
+  await db
+    .updateTable('invitaciones_sobres')
+    .set({
+      estado: 'RECHAZADA',
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+
+  return invitacion
+}
+
+/**
+ * Cancelar invitación (por el que invitó)
+ */
+export async function cancelInvitacionSobre(invitacionId: string, userId: string) {
+  // Verificar que sea el owner del sobre
+  const inv = await db
+    .selectFrom('invitaciones_sobres as inv')
+    .innerJoin('sobres', 'sobres.id', 'inv.sobre_id')
+    .select(['inv.id', 'sobres.usuario_id'])
+    .where('inv.id', '=', invitacionId)
+    .executeTakeFirst()
+
+  if (!inv) throw new Error('Invitación no encontrada')
+  if (inv.usuario_id !== userId) throw new Error('No tienes permiso para cancelar esta invitación')
+
+  return await db
+    .updateTable('invitaciones_sobres')
+    .set({
+      estado: 'CANCELADA',
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+}
+
+/**
+ * Actualizar rol de invitación
+ */
+export async function updateInvitacionRole(
+  invitacionId: string,
+  newRole: string,
+  invitadoUserId?: string | null
+) {
+  // 1. Actualizar rol en invitaciones_sobres
+  await db
+    .updateTable('invitaciones_sobres')
+    .set({
+      rol: newRole as any,
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+
+  // 2. Si la invitación fue aceptada y existe usuario, actualizar también en sobres_usuarios
+  if (invitadoUserId) {
+    const invitacion = await db
+      .selectFrom('invitaciones_sobres')
+      .select(['sobre_id', 'estado'])
+      .where('id', '=', invitacionId)
+      .executeTakeFirst()
+
+    if (invitacion && invitacion.estado === 'ACEPTADA') {
+      await db
+        .updateTable('sobres_usuarios')
+        .set({
+          rol: newRole as any,
+          updated_at: new Date(),
+        })
+        .where('sobre_id', '=', invitacion.sobre_id)
+        .where('usuario_id', '=', invitadoUserId)
+        .execute()
+    }
+  }
+}
+
+/**
+ * Renombrar sobre del usuario si existe conflicto de nombre
+ */
+export async function renameSobreIfConflict(userId: string, nombreSobre: string) {
+  const sobreExistente = await db
+    .selectFrom('sobres')
+    .selectAll()
+    .where('usuario_id', '=', userId)
+    .where((eb) =>
+      eb.or([
+        eb('nombre', 'ilike', nombreSobre),
+        eb('nombre', 'ilike', `${nombreSobre} %`), // Para evitar conflictos con nombres modificados
+      ])
+    )
+    .where('deleted_at', 'is', null)
+    .executeTakeFirst()
+
+  if (sobreExistente) {
+    await db
+      .updateTable('sobres')
+      .set({
+        nombre: `${sobreExistente.nombre} (old)`,
+        updated_at: new Date(),
+      })
+      .where('id', '=', sobreExistente.id)
+      .execute()
+
+    return sobreExistente
+  }
+
+  return null
+}
+
+/**
+ * Asociar invitación pendiente a usuario recién registrado
+ */
+export async function associateInvitacionesToNewUser(
+  emailOrPhone: string,
+  userId: string
+): Promise<number> {
+  const contact = emailOrPhone.toLowerCase().trim()
+
+  const result = await db
+    .updateTable('invitaciones_sobres')
+    .set({
+      invitado_user_id: userId,
+      updated_at: new Date(),
+    })
+    .where('invitado_email_o_telefono', '=', contact)
+    .where('estado', '=', 'PENDIENTE')
+    .where('invitado_user_id', 'is', null)
+    .execute()
+
+  return result.length
+}

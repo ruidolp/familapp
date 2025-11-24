@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
+import { useSession } from 'next-auth/react'
 import {
   Drawer,
   DrawerClose,
@@ -16,12 +17,15 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useCurrency } from '@/presentation/providers/currency-provider'
+import { TransactionItemWithUser } from '@/components/sobres/transaction-item-with-user'
 
 interface Transaccion {
   id: string
   fecha: string
   monto: number
   descripcion?: string
+  tipo: string
+  usuario_id: string
   categoria?: {
     id: string
     nombre: string
@@ -31,6 +35,12 @@ interface Transaccion {
     id: string
     nombre: string
     emoji?: string
+  }
+  usuario: {
+    id: string
+    nombre?: string
+    email?: string
+    avatar?: string
   }
 }
 
@@ -53,6 +63,7 @@ export function VerDetalleCategoriaTransaccionesDrawer({
   categoriaName,
   onTransactionsUpdated,
 }: Props) {
+  const { data: session } = useSession()
   const t = useTranslations('sobres.transactions')
   const { formatNumber } = useCurrency()
   const [loading, setLoading] = useState(false)
@@ -187,48 +198,16 @@ export function VerDetalleCategoriaTransaccionesDrawer({
 
                     <div className="space-y-2">
                       {transaccionesAgrupadas[fecha].map((transaccion) => (
-                        <Card
+                        <TransactionItemWithUser
                           key={transaccion.id}
-                          className="p-3 flex justify-between items-center border border-border bg-card hover:bg-muted/50 transition cursor-pointer"
+                          transaction={transaccion}
+                          currentUserId={session?.user?.id}
                           onClick={() => {
                             setSelectedTransaccion(transaccion)
                             setConfirmOpen(true)
                           }}
-                        >
-                          <div className="flex items-center gap-3 flex-1">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              {transaccion.categoria?.emoji ? (
-                                <span className="typography-body">{transaccion.categoria.emoji}</span>
-                              ) : (
-                                <span className="typography-body">💰</span>
-                              )}
-                            </div>
-
-                            <div className="flex-1 min-w-0">
-                              <p className="typography-body font-medium text-foreground">
-                                {transaccion.categoria?.nombre ||
-                                  transaccion.subcategoria?.nombre ||
-                                  t('noCategory')}
-                              </p>
-                              {(transaccion.subcategoria?.nombre || transaccion.descripcion) && (
-                                <p className="typography-body-sm text-muted-foreground truncate">
-                                  {transaccion.subcategoria?.nombre || ''}
-                                  {transaccion.subcategoria?.nombre && transaccion.descripcion ? ' • ' : ''}
-                                  {transaccion.descripcion || ''}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <p className="typography-label-lg text-destructive ml-2">
-                              {formatNumber(-Number(transaccion.monto))}
-                            </p>
-                            {deletingId === transaccion.id && (
-                              <span className="typography-metadata">{t('deleting')}</span>
-                            )}
-                          </div>
-                        </Card>
+                          showDate={false}
+                        />
                       ))}
                     </div>
                   </div>

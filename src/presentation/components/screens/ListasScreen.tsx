@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2 } from 'lucide-react'
+import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, ChevronDown } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,6 +18,7 @@ import { notify } from '@/infrastructure/lib/notifications'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import type { LocalShoppingExecution } from '@/domain/types/shopping-execution'
 import { useCurrency } from '@/presentation/providers/currency-provider'
+import { cn } from '@/infrastructure/lib/utils'
 
 interface ShoppingList {
   id: string
@@ -58,6 +59,8 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const [historyDrawerOpen, setHistoryDrawerOpen] = useState(false)
   const [selectedExecution, setSelectedExecution] = useState<ExecutionDisplay | null>(null)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
+  const [showActiveExecutions, setShowActiveExecutions] = useState(false)
+  const [showCompletedExecutions, setShowCompletedExecutions] = useState(false)
   const [editingList, setEditingList] = useState<ShoppingList | null>(null)
 
   // Cargar listas y ejecuciones al montar
@@ -655,25 +658,55 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
 
             {/* Active Executions Section */}
             {activeExecutions.length > 0 && (
-              <div>
-                <h3 className="font-semibold typography-body text-foreground mb-3 pl-1">
-                  ⏱️ Compras en curso ({activeExecutions.length})
-                </h3>
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {activeExecutions.map(renderExecutionCard)}
-                </div>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setShowActiveExecutions(prev => !prev)}
+                  aria-expanded={showActiveExecutions}
+                  className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
+                >
+                  <span className="font-semibold typography-body text-foreground">
+                    ⏱️ Compras en curso ({activeExecutions.length})
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      'h-5 w-5 text-muted-foreground transition-transform',
+                      showActiveExecutions ? 'rotate-180' : ''
+                    )}
+                  />
+                </button>
+                {showActiveExecutions && (
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {activeExecutions.map(renderExecutionCard)}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Completed Executions Section */}
             {completedExecutions.length > 0 && (
-              <div>
-                <h3 className="font-semibold typography-body text-foreground mb-3 pl-1">
-                  ✓ Compras Finalizadas ({completedExecutions.length})
-                </h3>
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {completedExecutions.map(renderCompletedExecutionCard)}
-                </div>
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCompletedExecutions(prev => !prev)}
+                  aria-expanded={showCompletedExecutions}
+                  className="flex w-full items-center justify-between rounded-2xl border border-border bg-card px-4 py-3 text-left shadow-sm"
+                >
+                  <span className="font-semibold typography-body text-foreground">
+                    ✓ Compras Finalizadas ({completedExecutions.length})
+                  </span>
+                  <ChevronDown
+                    className={cn(
+                      'h-5 w-5 text-muted-foreground transition-transform',
+                      showCompletedExecutions ? 'rotate-180' : ''
+                    )}
+                  />
+                </button>
+                {showCompletedExecutions && (
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {completedExecutions.map(renderCompletedExecutionCard)}
+                  </div>
+                )}
               </div>
             )}
           </div>

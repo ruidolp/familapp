@@ -10,6 +10,9 @@ import {
   createSobre,
   addParticipanteToSobre,
   findSobresByUser,
+  findInvitacionesPendientesByContact,
+  associateInvitacionesToNewUser,
+  findInvitacionesPendientesByUser,
 } from '@/infrastructure/database/queries/sobres.queries'
 import {
   createCategoria,
@@ -25,12 +28,15 @@ import {
 import {
   findUserConfig,
 } from '@/infrastructure/database/queries/user-config.queries'
+import { findUserById } from '@/infrastructure/database/queries/user.queries'
 
 export interface InitializeProfileResult {
   success: boolean
   data?: {
     billetera: any
     sobres: any[]
+    invitacionesPendientes?: number
+    invitaciones?: any[]
   }
   error?: string
 }
@@ -63,7 +69,32 @@ export async function initializeUserProfile(
       }
     }
 
-    // 2. Get user config to determine country
+    // 2. Get user info to check for pending invitations
+    const user = await findUserById(userId)
+    if (!user) {
+      return {
+        success: false,
+        error: 'User not found'
+      }
+    }
+
+    // 3. Check for pending invitations by email/phone
+    const contacto = user.email || user.phone
+    let invitacionesPendientes: any[] = []
+    let sobresInvitados: string[] = []
+
+    if (contacto) {
+      // Associate any pending invitations to this user
+      await associateInvitacionesToNewUser(contacto, userId)
+
+      // Get pending invitations
+      invitacionesPendientes = await findInvitacionesPendientesByUser(userId)
+      sobresInvitados = invitacionesPendientes.map(inv =>
+        inv.sobre_nombre.toUpperCase()
+      )
+    }
+
+    // 4. Get user config to determine country
     const userConfig = await findUserConfig(userId)
     if (!userConfig) {
       return {
@@ -94,15 +125,22 @@ export async function initializeUserProfile(
       billetera = existingBilleteras[0]
     }
 
-    // 4. Build template for user's country
+    // 5. Build template for user's country
     const template = buildOnboardingTemplate(pais)
 
-    // 5. Create envelopes in order: PERSONAL first, then HOGAR (HOGAR appears first in carousel)
+    // 6. Create envelopes in order: PERSONAL first, then HOGAR (HOGAR appears first in carousel)
+    // Skip sobres that have pending invitations
     const createdSobres: any[] = []
 
     for (const sobreTemplate of template) {
       // Translate sobre name
       const sobreNombre = t(`onboarding.sobres.${sobreTemplate.key}`)
+
+      // Skip if user has a pending invitation for this sobre
+      if (sobresInvitados.includes(sobreNombre.toUpperCase())) {
+        console.log(`⏭️ Skipping sobre "${sobreNombre}" - user has pending invitation`)
+        continue
+      }
 
       // Create sobre
       const sobre = await createSobre({
@@ -166,7 +204,9 @@ export async function initializeUserProfile(
       success: true,
       data: {
         billetera,
-        sobres: createdSobres
+        sobres: createdSobres,
+        invitacionesPendientes: invitacionesPendientes.length,
+        invitaciones: invitacionesPendientes
       }
     }
   } catch (error: any) {

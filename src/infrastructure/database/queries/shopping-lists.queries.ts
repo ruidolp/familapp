@@ -1,5 +1,6 @@
 import { db } from '../kysely'
 import { sql } from 'kysely'
+import type { RolListaUsuario } from '../custom-enums'
 
 /**
  * SHOPPING LISTS - Queries
@@ -853,5 +854,331 @@ export async function getGlobalProductCategoryById(id: string) {
     .where('id', '=', id)
     .where('deleted_at', 'is', null)
     .executeTakeFirst()
+}
+
+// ============================================
+// INVITACIONES DE LISTAS
+// ============================================
+
+/**
+ * Crear invitación para compartir lista
+ */
+export async function createInvitacionLista(data: {
+  lista_id: string
+  invitado_por_id: string
+  invitado_email_o_telefono: string
+  invitado_user_id?: string | null
+  codigo_invitacion?: string | null
+  rol: RolListaUsuario
+}) {
+  return await db
+    .insertInto('invitaciones_listas')
+    .values({
+      ...data,
+      estado: 'PENDIENTE',
+      expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 días
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+/**
+ * Buscar invitación por código único
+ */
+export async function findInvitacionListaByCodigo(codigo: string) {
+  return await db
+    .selectFrom('invitaciones_listas as inv')
+    .innerJoin('shopping_lists as lista', 'lista.id', 'inv.lista_id')
+    .innerJoin('users as inviter', 'inviter.id', 'inv.invitado_por_id')
+    .select([
+      'inv.id',
+      'inv.lista_id',
+      'inv.rol',
+      'inv.estado',
+      'inv.expires_at',
+      'lista.nombre as lista_nombre',
+      'lista.descripcion as lista_descripcion',
+      'inviter.name as inviter_name',
+      'inviter.email as inviter_email',
+      'inviter.image as inviter_image',
+    ])
+    .where('inv.codigo_invitacion', '=', codigo)
+    .where('inv.estado', '=', 'PENDIENTE')
+    .where('inv.expires_at', '>', new Date())
+    .executeTakeFirst()
+}
+
+/**
+ * Buscar invitaciones pendientes por email/teléfono
+ */
+export async function findInvitacionesListasPendientesByContact(
+  emailOrPhone: string
+): Promise<Array<{ lista_nombre: string; lista_id: string; invitacion_id: string }>> {
+  const contact = emailOrPhone.toLowerCase().trim()
+
+  return await db
+    .selectFrom('invitaciones_listas as inv')
+    .innerJoin('shopping_lists as lista', 'lista.id', 'inv.lista_id')
+    .select([
+      'lista.nombre as lista_nombre',
+      'lista.id as lista_id',
+      'inv.id as invitacion_id',
+    ])
+    .where('inv.invitado_email_o_telefono', '=', contact)
+    .where('inv.estado', '=', 'PENDIENTE')
+    .where('inv.expires_at', '>', new Date())
+    .where('lista.deleted_at', 'is', null)
+    .execute()
+}
+
+/**
+ * Buscar invitaciones pendientes de un usuario (ya registrado)
+ */
+export async function findInvitacionesListasPendientesByUser(userId: string) {
+  return await db
+    .selectFrom('invitaciones_listas as inv')
+    .innerJoin('shopping_lists as lista', 'lista.id', 'inv.lista_id')
+    .innerJoin('users as inviter', 'inviter.id', 'inv.invitado_por_id')
+    .select([
+      'inv.id',
+      'inv.lista_id',
+      'inv.rol',
+      'inv.created_at',
+      'inv.expires_at',
+      'lista.nombre as lista_nombre',
+      'lista.descripcion as lista_descripcion',
+      'inviter.name as inviter_name',
+      'inviter.email as inviter_email',
+      'inviter.image as inviter_image',
+    ])
+    .where('inv.invitado_user_id', '=', userId)
+    .where('inv.estado', '=', 'PENDIENTE')
+    .where('inv.expires_at', '>', new Date())
+    .orderBy('inv.created_at', 'desc')
+    .execute()
+}
+
+/**
+ * Buscar invitaciones enviadas por un usuario (todas sus invitaciones)
+ */
+export async function findInvitacionesListasEnviadasByUser(userId: string) {
+  return await db
+    .selectFrom('invitaciones_listas as inv')
+    .innerJoin('shopping_lists as lista', 'lista.id', 'inv.lista_id')
+    .leftJoin('users', 'users.id', 'inv.invitado_user_id')
+    .select([
+      'inv.id',
+      'inv.lista_id',
+      'inv.invitado_email_o_telefono',
+      'inv.estado',
+      'inv.rol',
+      'inv.created_at',
+      'inv.expires_at',
+      'inv.codigo_invitacion',
+      'inv.invitado_user_id',
+      'lista.nombre as lista_nombre',
+      'lista.descripcion as lista_descripcion',
+      'users.name as invitado_name',
+      'users.email as invitado_email',
+      'users.image as invitado_image',
+    ])
+    .where('inv.invitado_por_id', '=', userId)
+    .where('lista.deleted_at', 'is', null)
+    .orderBy('inv.created_at', 'desc')
+    .execute()
+}
+
+/**
+ * Obtener invitación por ID
+ */
+export async function findInvitacionListaById(invitacionId: string) {
+  return await db
+    .selectFrom('invitaciones_listas')
+    .select([
+      'id',
+      'lista_id',
+      'invitado_por_id',
+      'invitado_user_id',
+      'estado',
+    ])
+    .where('id', '=', invitacionId)
+    .executeTakeFirst()
+}
+
+/**
+ * Aceptar invitación y agregar como colaborador
+ */
+export async function acceptInvitacionLista(invitacionId: string, userId: string) {
+  // 1. Obtener datos de invitación
+  const inv = await db
+    .selectFrom('invitaciones_listas')
+    .selectAll()
+    .where('id', '=', invitacionId)
+    .executeTakeFirstOrThrow()
+
+  // 2. Obtener lista
+  const lista = await getShoppingListById(inv.lista_id)
+  if (!lista) throw new Error('Lista no encontrada')
+
+  // 3. Actualizar estado de invitación
+  await db
+    .updateTable('invitaciones_listas')
+    .set({
+      estado: 'ACEPTADA',
+      invitado_user_id: userId,
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+
+  // 4. Agregar como colaborador
+  const colaborador = await addCollaborator(
+    inv.lista_id,
+    userId,
+    inv.rol as any,
+    inv.invitado_por_id
+  )
+
+  return {
+    invitacion: inv,
+    lista,
+    colaborador,
+  }
+}
+
+/**
+ * Rechazar invitación
+ */
+export async function rejectInvitacionLista(invitacionId: string) {
+  // Obtener datos antes de rechazar
+  const invitacion = await db
+    .selectFrom('invitaciones_listas as inv')
+    .innerJoin('shopping_lists as lista', 'lista.id', 'inv.lista_id')
+    .select([
+      'inv.id',
+      'inv.invitado_user_id',
+      'inv.invitado_email_o_telefono',
+      'lista.nombre as lista_nombre',
+    ])
+    .where('inv.id', '=', invitacionId)
+    .executeTakeFirst()
+
+  // Marcar como rechazada
+  await db
+    .updateTable('invitaciones_listas')
+    .set({
+      estado: 'RECHAZADA',
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+
+  return invitacion
+}
+
+/**
+ * Cancelar invitación (por el que invitó)
+ */
+export async function cancelInvitacionLista(invitacionId: string, userId: string) {
+  // Verificar que sea el owner de la lista
+  const inv = await db
+    .selectFrom('invitaciones_listas as inv')
+    .innerJoin('shopping_lists as lista', 'lista.id', 'inv.lista_id')
+    .select(['inv.id', 'lista.user_id'])
+    .where('inv.id', '=', invitacionId)
+    .executeTakeFirst()
+
+  if (!inv) throw new Error('Invitación no encontrada')
+  if (inv.user_id !== userId) throw new Error('No tienes permiso para cancelar esta invitación')
+
+  return await db
+    .updateTable('invitaciones_listas')
+    .set({
+      estado: 'CANCELADA',
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+}
+
+/**
+ * Actualizar rol de invitación
+ */
+export async function updateInvitacionListaRole(
+  invitacionId: string,
+  newRole: string,
+  invitadoUserId?: string | null
+) {
+  // 1. Actualizar rol en invitaciones_listas
+  await db
+    .updateTable('invitaciones_listas')
+    .set({
+      rol: newRole as any,
+      updated_at: new Date(),
+    })
+    .where('id', '=', invitacionId)
+    .execute()
+
+  // 2. Si la invitación fue aceptada y existe usuario, actualizar también en shopping_list_collaborators
+  if (invitadoUserId) {
+    const invitacion = await db
+      .selectFrom('invitaciones_listas')
+      .select(['lista_id', 'estado'])
+      .where('id', '=', invitacionId)
+      .executeTakeFirst()
+
+    if (invitacion && invitacion.estado === 'ACEPTADA') {
+      await db
+        .updateTable('shopping_list_collaborators')
+        .set({
+          permission_level: newRole as any,
+        })
+        .where('shopping_list_id', '=', invitacion.lista_id)
+        .where('user_id', '=', invitadoUserId)
+        .execute()
+    }
+  }
+}
+
+/**
+ * Obtener participantes de una lista (colaboradores)
+ */
+export async function findParticipantesByLista(listaId: string) {
+  return await db
+    .selectFrom('shopping_list_collaborators as slc')
+    .innerJoin('users', 'users.id', 'slc.user_id')
+    .select([
+      'slc.id',
+      'slc.shopping_list_id',
+      'slc.user_id as usuario_id',
+      'slc.permission_level as rol',
+      'slc.created_at',
+      'users.name as usuario_nombre',
+      'users.email as usuario_email',
+      'users.image as usuario_image',
+    ])
+    .where('slc.shopping_list_id', '=', listaId)
+    .where('slc.deleted_at', 'is', null)
+    .execute()
+}
+
+/**
+ * Actualizar rol de participante
+ */
+export async function updateParticipanteListaRole(
+  listaId: string,
+  userId: string,
+  newRole: string
+) {
+  return await db
+    .updateTable('shopping_list_collaborators')
+    .set({
+      permission_level: newRole as any,
+    })
+    .where('shopping_list_id', '=', listaId)
+    .where('user_id', '=', userId)
+    .execute()
 }
 

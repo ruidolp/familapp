@@ -141,7 +141,13 @@ export const appConfig = {
    */
   email: {
     // Habilitar envío de emails
-    enabled: !!process.env.SMTP_HOST,
+    enabled: !!process.env.MAILERSEND_API_KEY || !!process.env.SMTP_HOST,
+
+    // Proveedor activo (mailersend, smtp, etc)
+    provider: process.env.EMAIL_PROVIDER || (process.env.MAILERSEND_API_KEY ? 'mailersend' : 'smtp'),
+
+    // Nombre de marca para plantillas
+    brandName: process.env.EMAIL_BRAND_NAME || 'Familapp',
 
     // Configuración SMTP
     smtp: {
@@ -155,7 +161,15 @@ export const appConfig = {
     },
 
     // Remitente por defecto
-    from: process.env.SMTP_FROM || 'noreply@wapp.com',
+    from: process.env.SMTP_FROM || process.env.MAILERSEND_SENDER_EMAIL || 'noreply@wapp.com',
+
+    // Configuración MailerSend
+    mailersend: {
+      apiKey: process.env.MAILERSEND_API_KEY || '',
+      senderEmail: process.env.MAILERSEND_SENDER_EMAIL || process.env.SMTP_FROM || 'noreply@wapp.com',
+      senderName: process.env.MAILERSEND_SENDER_NAME || process.env.EMAIL_BRAND_NAME || 'Familapp',
+      replyTo: process.env.MAILERSEND_REPLY_TO || '',
+    },
 
     // Templates
     templates: {
@@ -164,6 +178,9 @@ export const appConfig = {
       },
       recovery: {
         subject: 'Recupera tu contraseña',
+      },
+      invitation: {
+        subject: 'Te invitaron a un sobre compartido',
       },
     },
   },

@@ -12,6 +12,7 @@ import {
   removeCategoriasFromSobre,
   findCategoriasWithGastosBySobre,
   findSobreById,
+  findParticipanteInSobre,
 } from '@/infrastructure/database/queries/sobres.queries'
 import {
   obtenerCategoria,
@@ -41,8 +42,15 @@ export async function agregarCategoriaToSobre(
       }
     }
 
-    // Validar que el usuario es propietario del sobre
-    if (sobre.usuario_id !== userId) {
+    // Validar que el usuario puede modificar el sobre
+    // (propietario o participante CONTRIBUTOR en sobre compartido)
+    const isOwner = sobre.usuario_id === userId
+    const participante = sobre.is_compartido
+      ? await findParticipanteInSobre(sobreId, userId)
+      : null
+    const canModify = isOwner || (participante && participante.rol === 'CONTRIBUTOR')
+
+    if (!canModify) {
       return {
         success: false,
         error: 'No tienes permiso para agregar categorías a este sobre',
@@ -92,7 +100,13 @@ export async function obtenerCategoriasBySobre(
     }
 
     // Validar que el usuario puede acceder al sobre
-    if (sobre.usuario_id !== userId) {
+    // (propietario o participante en sobre compartido)
+    const isOwner = sobre.usuario_id === userId
+    const isParticipant = sobre.is_compartido
+      ? await findParticipanteInSobre(sobreId, userId)
+      : null
+
+    if (!isOwner && !isParticipant) {
       return {
         success: false,
         error: 'No tienes permiso para acceder a este sobre',
@@ -133,8 +147,15 @@ export async function eliminarCategoriaFromSobre(
       }
     }
 
-    // Validar que el usuario es propietario del sobre
-    if (sobre.usuario_id !== userId) {
+    // Validar que el usuario puede modificar el sobre
+    // (propietario o participante CONTRIBUTOR en sobre compartido)
+    const isOwner = sobre.usuario_id === userId
+    const participante = sobre.is_compartido
+      ? await findParticipanteInSobre(sobreId, userId)
+      : null
+    const canModify = isOwner || (participante && participante.rol === 'CONTRIBUTOR')
+
+    if (!canModify) {
       return {
         success: false,
         error: 'No tienes permiso para eliminar categorías de este sobre',

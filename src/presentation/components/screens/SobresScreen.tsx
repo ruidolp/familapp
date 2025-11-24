@@ -28,6 +28,8 @@ interface Sobre {
   asignaciones: any[]
   miAsignacion?: any[]
   resumen?: any[]
+  is_compartido?: boolean
+  usuario_id?: string
 }
 
 interface WarningType {
@@ -361,12 +363,14 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                     emoji={sobre.emoji}
                     color={sobre.color}
                     presupuestoAsignado={sobre.presupuesto_asignado}
-                  gastado={sobre.gastado || 0}
-                  asignaciones={sobre.asignaciones || []}
+                    gastado={sobre.gastado || 0}
+                    asignaciones={sobre.asignaciones || []}
                     diaInicioPeriodo={diaInicioPeriodo}
-                  onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
-                  onVerDetalle={() => handleDetalleSobre(sobre)}
-                  onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
+                    isCompartido={Boolean(sobre.is_compartido)}
+                    isOwner={sobre.usuario_id === userId}
+                    onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
+                    onVerDetalle={() => handleDetalleSobre(sobre)}
+                    onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
                     onEditarCategorias={() => handleEditarCategorias(sobre)}
                     onAgregarCategoria={() => handleAgregarCategoria(sobre)}
                     onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}

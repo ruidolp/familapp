@@ -17,8 +17,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Obtener balance total de todos los sobres activos
-    const balance = await db
+    const { searchParams } = new URL(req.url)
+    const sobreId = searchParams.get('sobreId')
+
+    // Obtener balance total de todos los sobres activos (o uno en particular)
+    let balanceQuery = db
       .selectFrom('sobres as s')
       .select([
         sql<number>`SUM(s.presupuesto_asignado)::numeric`.as('total_disponible'),
@@ -26,7 +29,12 @@ export async function GET(req: NextRequest) {
       ])
       .where('s.usuario_id', '=', session.user.id)
       .where('s.deleted_at', 'is', null)
-      .executeTakeFirst()
+
+    if (sobreId) {
+      balanceQuery = balanceQuery.where('s.id', '=', sobreId)
+    }
+
+    const balance = await balanceQuery.executeTakeFirst()
 
     const totalDisponible = Number(balance?.total_disponible || 0)
     const totalGastado = Number(balance?.total_gastado || 0)

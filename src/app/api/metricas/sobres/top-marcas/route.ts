@@ -30,9 +30,10 @@ export async function GET(req: NextRequest) {
 
     const startDate = new Date(startDateStr)
     const endDate = new Date(endDateStr)
+    const sobreId = searchParams.get('sobreId')
 
     // Obtener top marcas (subcategorías) con más gastos
-    const topMarcas = await db
+    let topMarcasQuery = db
       .selectFrom('transacciones as t')
       .innerJoin('billeteras as b', 'b.id', 't.billetera_id')
       .innerJoin('subcategorias as sc', 'sc.id', 't.subcategoria_id')
@@ -47,6 +48,12 @@ export async function GET(req: NextRequest) {
       .where('t.deleted_at', 'is', null)
       .where('t.fecha', '>=', startDate)
       .where('t.fecha', '<=', endDate)
+
+    if (sobreId) {
+      topMarcasQuery = topMarcasQuery.where('t.sobre_id', '=', sobreId)
+    }
+
+    const topMarcas = await topMarcasQuery
       .groupBy('sc.nombre')
       .orderBy('total', 'desc')
       .limit(10)

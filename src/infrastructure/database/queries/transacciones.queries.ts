@@ -118,6 +118,7 @@ export async function findTransaccionesBySobre(
     .selectFrom('transacciones')
     .leftJoin('categorias', 'categorias.id', 'transacciones.categoria_id')
     .leftJoin('subcategorias', 'subcategorias.id', 'transacciones.subcategoria_id')
+    .leftJoin('users', 'users.id', 'transacciones.usuario_id')
     .select([
       'transacciones.id',
       'transacciones.monto',
@@ -126,12 +127,16 @@ export async function findTransaccionesBySobre(
       'transacciones.tipo',
       'transacciones.categoria_id',
       'transacciones.subcategoria_id',
+      'transacciones.usuario_id',
       'categorias.id as categoria_id_obj',
       'categorias.nombre as categoria_nombre',
       'categorias.emoji as categoria_emoji',
       'subcategorias.id as subcategoria_id_obj',
       'subcategorias.nombre as subcategoria_nombre',
       'subcategorias.emoji as subcategoria_emoji',
+      'users.name as usuario_nombre',
+      'users.email as usuario_email',
+      'users.image as usuario_avatar',
     ])
     .where('transacciones.sobre_id', '=', sobreId)
     .where('transacciones.deleted_at', 'is', null)
@@ -158,6 +163,7 @@ export async function findTransaccionesBySobre(
     tipo: row.tipo,
     categoria_id: row.categoria_id,
     subcategoria_id: row.subcategoria_id,
+    usuario_id: row.usuario_id,
     categoria: row.categoria_nombre ? {
       id: row.categoria_id_obj,
       nombre: row.categoria_nombre,
@@ -168,6 +174,12 @@ export async function findTransaccionesBySobre(
       nombre: row.subcategoria_nombre,
       emoji: row.subcategoria_emoji,
     } : null,
+    usuario: {
+      id: row.usuario_id,
+      nombre: row.usuario_nombre,
+      email: row.usuario_email,
+      avatar: row.usuario_avatar,
+    },
   }))
 }
 

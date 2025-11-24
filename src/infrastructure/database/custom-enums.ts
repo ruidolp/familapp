@@ -43,5 +43,11 @@ export type EstadoInvitacionSobre = 'PENDIENTE' | 'ACEPTADA' | 'RECHAZADA' | 'CA
 // Rol de usuario en sobre
 export type RolSobreUsuario = 'OWNER' | 'ADMIN' | 'CONTRIBUTOR' | 'VIEWER'
 
+// Estado de invitación lista
+export type EstadoInvitacionLista = 'PENDIENTE' | 'ACEPTADA' | 'RECHAZADA' | 'CANCELADA'
+
+// Rol de usuario en lista de compras
+export type RolListaUsuario = 'OWNER' | 'EDITOR' | 'EXECUTION_ONLY'
+
 // Tipo de período
 export type TipoPeriodo = 'SEMANAL' | 'QUINCENAL' | 'MENSUAL' | 'CUSTOM'

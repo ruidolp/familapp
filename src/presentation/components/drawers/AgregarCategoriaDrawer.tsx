@@ -497,12 +497,12 @@ export function AgregarCategoriaDrawer({
                     <button
                       key={cat.id}
                       onClick={() => handleSelectCategoria(cat)}
-                      className="h-10 w-full rounded-lg px-3 typography-label flex items-center gap-2 border border-tertiary/40 bg-tertiary/10 text-tertiary hover:bg-tertiary/15 transition-colors"
+                      className="h-10 w-full rounded-lg px-3 typography-label flex items-center gap-2 border border-border bg-muted/60 text-foreground hover:bg-muted transition-colors"
                       type="button"
                     >
                       <span>{renderEmojiBox(cat.emoji, 'sm')}</span>
                       <span className="truncate">{cat.nombre}</span>
-                      <span className="ml-auto text-[11px] uppercase tracking-wide text-tertiary-foreground/80">
+                      <span className="ml-auto text-[11px] uppercase tracking-wide text-muted-foreground">
                         ✕
                       </span>
                     </button>
@@ -526,10 +526,10 @@ export function AgregarCategoriaDrawer({
                     return (
                       <Card
                         key={categoria.id}
-                        className="p-3 space-y-3 border-tertiary/40 bg-tertiary/10"
+                        className="p-3 space-y-3 border border-border bg-muted/40"
                       >
                         <div className="flex items-center gap-2">
-                          <p className="typography-label-lg text-tertiary flex items-center gap-2">
+                          <p className="typography-label-lg text-foreground flex items-center gap-2">
                             {renderEmojiBox(categoria.emoji, 'sm')}
                             <span>{categoria.nombre}</span>
                           </p>
@@ -538,13 +538,13 @@ export function AgregarCategoriaDrawer({
                         {/* Empresas agregadas */}
                         {marcasDelCategoria.length > 0 && (
                           <div className="space-y-2">
-                            <Label className="typography-body-sm text-tertiary">{t('categorias.add.added')}</Label>
+                            <Label className="typography-body-sm text-muted-foreground">{t('categorias.add.added')}</Label>
                             <div className="grid grid-cols-2 gap-2">
                               {marcasDelCategoria.map((marca) => (
                               <button
                                 key={marca.id}
                                 type="button"
-                                className="h-9 w-full rounded-lg px-3 typography-caption flex items-center gap-2 border border-tertiary/40 bg-tertiary/20 text-tertiary"
+                                className="h-9 w-full rounded-lg px-3 typography-caption flex items-center gap-2 border border-border bg-background text-foreground"
                               >
                                 <span>{renderEmojiBox(marca.emoji, 'sm')}</span>
                                 <span className="truncate">{marca.nombre}</span>

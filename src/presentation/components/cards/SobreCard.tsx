@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useEffect, useState, useRef, useCallback, type CSSProperties } from 'react'
-import { Plus, MoreVertical, Wallet, ArrowUpRight, ArrowDownRight, List } from 'lucide-react'
+import { Plus, MoreVertical, Wallet, ArrowUpRight, ArrowDownRight, List, UserPlus, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -20,6 +20,9 @@ import { CategoriaCard } from '@/components/cards/CategoriaCard'
 import { useSobreCategories } from '@/presentation/hooks/useSobres'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 import { getCurrentBudgetCycle, formatBudgetCycle } from '@/infrastructure/utils/budget-cycle'
+import { InviteUserDialog } from '@/components/sobres/invite-user-dialog'
+import { SharedBadge } from '@/components/sobres/shared-badge'
+import { ManageInvitationsDrawer } from '@/components/sobres/manage-invitations-drawer'
 
 interface Billetera {
   id: string
@@ -43,6 +46,8 @@ interface SobreCardProps {
   gastado?: number
   asignaciones: Asignacion[]
   diaInicioPeriodo?: number
+  isCompartido?: boolean
+  isOwner?: boolean
   onAgregarPresupuesto?: () => void
   onDevolverPresupuesto?: () => void
   onEditarCategorias?: () => void
@@ -105,6 +110,8 @@ export function SobreCard({
   gastado = 0,
   asignaciones,
   diaInicioPeriodo = 1,
+  isCompartido = false,
+  isOwner = false,
   onAgregarPresupuesto,
   onDevolverPresupuesto,
   onEditarCategorias,
@@ -117,6 +124,8 @@ export function SobreCard({
   const t = useTranslations('sobres')
   const [categoriasLoading, setCategoriasLoading] = useState(false)
   const [accionesOpen, setAccionesOpen] = useState(false)
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
+  const [manageInvitesOpen, setManageInvitesOpen] = useState(false)
 
   // Calcular ciclo de presupuesto actual
   const budgetCycle = useMemo(
@@ -196,36 +205,45 @@ export function SobreCard({
         />
         <div className="relative z-10 space-y-6">
           <div className="flex items-start justify-between gap-3">
-            <div className="space-y-1">
-              <p className="typography-caption uppercase tracking-wide text-white/60">
-                Ciclo <span className="font-bold">{cycleLabel}</span>
-              </p>
-              <h2 className="typography-h1 leading-tight">{nombre}</h2>
-              <p className="typography-caption font-semibold text-white/80">
-                {formatNumber(presupuesto)} {t('total')}
-              </p>
+            <div className="space-y-3">
+              <div className="inline-flex flex-col rounded-2xl border border-white/10 bg-white/10 px-3 py-2 text-white/80">
+                <span className="text-[0.65rem] font-semibold uppercase tracking-[0.3em] text-white/60">
+                  Periodo
+                </span>
+                <span className="text-sm font-semibold text-white">{`"${cycleLabel}"`}</span>
+              </div>
+              <div className="space-y-1">
+                <h2 className="typography-h1 leading-tight">{nombre}</h2>
+                <p className="typography-caption font-semibold text-white/80">
+                  {formatNumber(presupuesto)} {t('total')}
+                </p>
+              </div>
             </div>
-            <Drawer open={accionesOpen} onOpenChange={setAccionesOpen}>
-              <DrawerTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-white/80"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setAccionesOpen(true)
-                  }}
-                >
-                  <MoreVertical className="h-5 w-5" />
-                  <span className="sr-only">{t('card.accessibility.actions')}</span>
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>{t('card.actions.title', { name: nombre })}</DrawerTitle>
-                  <DrawerDescription>{t('card.actions.description')}</DrawerDescription>
-                </DrawerHeader>
-                <DrawerBody className="space-y-4">
+            <div className="flex flex-col items-end gap-2">
+              {isCompartido && (
+                <SharedBadge className="border border-white/30 bg-white/15 text-white hover:bg-white/20" />
+              )}
+              <Drawer open={accionesOpen} onOpenChange={setAccionesOpen}>
+                <DrawerTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-white/80"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setAccionesOpen(true)
+                    }}
+                  >
+                    <MoreVertical className="h-5 w-5" />
+                    <span className="sr-only">{t('card.accessibility.actions')}</span>
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerHeader>
+                    <DrawerTitle>{t('card.actions.title', { name: nombre })}</DrawerTitle>
+                    <DrawerDescription>{t('card.actions.description')}</DrawerDescription>
+                  </DrawerHeader>
+                  <DrawerBody className="space-y-4">
                   <Card className="p-3 space-y-3 bg-muted/40">
                     <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
                       {t('card.actions.budgetSection')}
@@ -300,6 +318,34 @@ export function SobreCard({
                         <Plus className="h-4 w-4" />
                         {t('card.actions.newCategory')}
                       </Button>
+                      {isOwner && (
+                        <Button
+                          variant="secondary"
+                          className="h-12 justify-start gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setAccionesOpen(false)
+                            setManageInvitesOpen(true)
+                          }}
+                        >
+                          <Users className="h-4 w-4" />
+                          Gestión de invitaciones
+                        </Button>
+                      )}
+                      {isOwner && (
+                        <Button
+                          variant="secondary"
+                          className="h-12 justify-start gap-2"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setAccionesOpen(false)
+                            setInviteDialogOpen(true)
+                          }}
+                        >
+                          <UserPlus className="h-4 w-4" />
+                          Invitar
+                        </Button>
+                      )}
                     </div>
                   </Card>
                 </DrawerBody>
@@ -313,8 +359,9 @@ export function SobreCard({
               </DrawerContent>
             </Drawer>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-4 text-white">
+        <div className="grid grid-cols-2 gap-4 text-white">
             <div className="space-y-1">
               <p className="typography-caption font-semibold uppercase tracking-wide text-white/70">
                 {t('usado')}
@@ -435,6 +482,25 @@ export function SobreCard({
           )}
         </div>
       </div>
+
+      {/* Invite Dialog */}
+      {isOwner && (
+        <InviteUserDialog
+          open={inviteDialogOpen}
+          onOpenChange={setInviteDialogOpen}
+          sobreId={id}
+          sobreNombre={nombre}
+          sobreEmoji={emoji}
+        />
+      )}
+      {isOwner && (
+        <ManageInvitationsDrawer
+          open={manageInvitesOpen}
+          onOpenChange={setManageInvitesOpen}
+          sobreId={id}
+          sobreNombre={nombre}
+        />
+      )}
     </div>
   )
 }

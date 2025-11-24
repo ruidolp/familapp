@@ -30,16 +30,17 @@ export async function GET(req: NextRequest) {
 
     const startDate = new Date(startDateStr)
     const endDate = new Date(endDateStr)
+    const sobreId = searchParams.get('sobreId')
 
     // Obtener distribución de gastos por categoría
-    const distribucion = await db
+    const categoriaExpr = sql<string>`COALESCE(c.nombre, 'Sin categoría')`
+
+    let distribucionQuery = db
       .selectFrom('transacciones as t')
-      .innerJoin('sobres as s', 's.id', 't.sobre_id')
-      .innerJoin('sobres_categorias as sc', 'sc.sobre_id', 's.id')
-      .innerJoin('categorias as c', 'c.id', 'sc.categoria_id')
       .innerJoin('billeteras as b', 'b.id', 't.billetera_id')
+      .leftJoin('categorias as c', 'c.id', 't.categoria_id')
       .select([
-        'c.nombre as categoria',
+        categoriaExpr.as('categoria'),
         sql<number>`SUM(ABS(t.monto))::numeric`.as('total'),
       ])
       .where('b.usuario_id', '=', session.user.id)
@@ -48,7 +49,13 @@ export async function GET(req: NextRequest) {
       .where('t.deleted_at', 'is', null)
       .where('t.fecha', '>=', startDate)
       .where('t.fecha', '<=', endDate)
-      .groupBy('c.nombre')
+
+    if (sobreId) {
+      distribucionQuery = distribucionQuery.where('t.sobre_id', '=', sobreId)
+    }
+
+    const distribucion = await distribucionQuery
+      .groupBy(categoriaExpr)
       .orderBy('total', 'desc')
       .execute()
 

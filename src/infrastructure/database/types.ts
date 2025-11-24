@@ -158,11 +158,14 @@ export interface InvalidatedSessions {
 }
 
 export interface InvitacionesSobres {
+  codigo_invitacion: string | null;
   created_at: Generated<Timestamp>;
   estado: Generated<string>;
+  expires_at: Timestamp | null;
   id: Generated<string>;
+  invitado_email_o_telefono: string | null;
   invitado_por_id: string;
-  invitado_user_id: string;
+  invitado_user_id: string | null;
   rol: Generated<string>;
   sobre_id: string;
   updated_at: Generated<Timestamp>;

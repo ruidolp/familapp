@@ -9,6 +9,7 @@ import { SobresScreen } from '@/presentation/components/screens/SobresScreen'
 import { MetricasScreen } from '@/presentation/components/screens/MetricasScreen'
 import { ConfigScreen } from '@/presentation/components/screens/ConfigScreen'
 import { OnboardingDrawer } from '@/components/drawers/OnboardingDrawer'
+import { PostOnboardingInvitationsDialog } from '@/components/sobres/post-onboarding-invitations-dialog'
 
 interface User {
   id: string
@@ -30,6 +31,8 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [needsOnboarding, setNeedsOnboarding] = useState(false)
+  const [invitationsDialogOpen, setInvitationsDialogOpen] = useState(false)
+  const [pendingInvitations, setPendingInvitations] = useState<any[]>([])
   const [sobreCarouselIndex, setSobreCarouselIndex] = useState(0)
   const [sobreCarouselTotal, setSobreCarouselTotal] = useState(0)
   const [sobreActual, setSobreActual] = useState<{
@@ -63,14 +66,38 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
         if (!data.success || !data.config) {
           setNeedsOnboarding(true)
           setOnboardingOpen(true)
+        } else {
+          // Si no necesita onboarding, verificar invitaciones pendientes
+          await checkPendingInvitations()
         }
       } else if (response.status === 404) {
         // No existe configuración
         setNeedsOnboarding(true)
         setOnboardingOpen(true)
+      } else {
+        // Si hay error, aún así verificar invitaciones
+        await checkPendingInvitations()
       }
     } catch (error) {
       console.error('Error checking onboarding status:', error)
+      // En caso de error, aún así verificar invitaciones
+      await checkPendingInvitations()
+    }
+  }
+
+  const checkPendingInvitations = async () => {
+    try {
+      const response = await fetch('/api/sobres/invitations')
+      if (response.ok) {
+        const data = await response.json()
+        const pendientes = data.recibidas || []
+        if (pendientes.length > 0) {
+          setPendingInvitations(pendientes)
+          setInvitationsDialogOpen(true)
+        }
+      }
+    } catch (error) {
+      console.error('Error checking pending invitations:', error)
     }
   }
 
@@ -162,7 +189,20 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
       {/* OnboardingDrawer para usuarios nuevos */}
       <OnboardingDrawer
         open={onboardingOpen}
-        onOpenChange={setOnboardingOpen}
+        onOpenChange={(open) => {
+          setOnboardingOpen(open)
+          // Si se cierra el onboarding, verificar invitaciones
+          if (!open && needsOnboarding) {
+            checkPendingInvitations()
+          }
+        }}
+      />
+
+      {/* Dialog de invitaciones pendientes */}
+      <PostOnboardingInvitationsDialog
+        invitaciones={pendingInvitations}
+        open={invitationsDialogOpen}
+        onOpenChange={setInvitationsDialogOpen}
       />
     </>
   )

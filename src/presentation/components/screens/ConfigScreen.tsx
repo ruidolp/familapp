@@ -4,15 +4,37 @@
 
 'use client'
 
-import { useState } from 'react'
-import { LogOut, Palette, Check } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { LogOut, Palette, Check, Mail, FlaskConical } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { useTheme } from '@/presentation/providers/theme-provider'
 
 export function ConfigScreen() {
+  const router = useRouter()
+  const params = useParams<{ locale: string }>()
   const { theme: currentTheme, themes, setTheme, isLoading } = useTheme()
   const [showThemes, setShowThemes] = useState(false)
+  const [invitacionesPendientes, setInvitacionesPendientes] = useState(0)
+
+  // Obtener invitaciones pendientes
+  useEffect(() => {
+    const fetchInvitaciones = async () => {
+      try {
+        const res = await fetch('/api/sobres/invitations')
+        if (res.ok) {
+          const data = await res.json()
+          setInvitacionesPendientes(data.total || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching invitations:', error)
+      }
+    }
+
+    fetchInvitaciones()
+  }, [])
 
   const getThemePreviewColor = (slug: string, fallback: string) => {
     switch (slug) {
@@ -106,6 +128,41 @@ export function ConfigScreen() {
             )}
           </div>
         )}
+      </div>
+
+      {/* Sección de Invitaciones */}
+      <div className="rounded-lg border bg-card">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition"
+          onClick={() => router.push('/invitations')}
+        >
+          <div className="flex items-center gap-2 typography-body-sm font-semibold">
+            <Mail className="h-5 w-5" />
+            <span>Invitaciones</span>
+            {invitacionesPendientes > 0 && (
+              <Badge variant="destructive" className="ml-1">
+                {invitacionesPendientes}
+              </Badge>
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground">➜</span>
+        </button>
+      </div>
+
+      {/* Sección de pruebas */}
+      <div className="rounded-lg border bg-card">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-muted/50 transition"
+          onClick={() => router.push(`/${params?.locale || 'es'}/mail-test`)}
+        >
+          <div className="flex items-center gap-2 typography-body-sm font-semibold">
+            <FlaskConical className="h-5 w-5" />
+            <span>Prueba de Email</span>
+          </div>
+          <span className="text-xs text-muted-foreground">➜</span>
+        </button>
       </div>
 
       {/* Sección de Sesión */}
