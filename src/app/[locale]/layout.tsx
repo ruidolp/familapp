@@ -114,6 +114,13 @@ export default async function LocaleLayout({
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
+        {/* PWA - Apple iOS Support */}
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="FamilApp" />
       </head>
       <body className="bg-background text-foreground font-sans antialiased">
         <QueryProvider>

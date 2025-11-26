@@ -1008,5 +1008,20 @@
       "addBudget": "Add Budget",
       "recordAnyway": "Record Anyway"
     }
+  },
+  "pwa": {
+    "install": {
+      "title": "Install FamilApp",
+      "descriptionAndroid": "Install the app on your device for quick access",
+      "descriptionIOS": "Add FamilApp to your home screen",
+      "installButton": "Install",
+      "laterButton": "Later",
+      "iosInstructions": {
+        "step1": "Tap the share button",
+        "step2": "Scroll and select 'Add to Home Screen'",
+        "step3": "Tap 'Add' to confirm",
+        "shareIcon": "(the share icon in Safari)"
+      }
+    }
   }
 }

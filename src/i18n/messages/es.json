@@ -1011,5 +1011,20 @@
     "saving": "Guardando...",
     "submit": "Enviar",
     "submitting": "Enviando..."
+  },
+  "pwa": {
+    "install": {
+      "title": "Instalar FamilApp",
+      "descriptionAndroid": "Instala la app en tu dispositivo para acceso rápido",
+      "descriptionIOS": "Agrega FamilApp a tu pantalla de inicio",
+      "installButton": "Instalar",
+      "laterButton": "Después",
+      "iosInstructions": {
+        "step1": "Toca el botón de compartir",
+        "step2": "Desliza y selecciona 'Agregar a pantalla de inicio'",
+        "step3": "Toca 'Agregar' para confirmar",
+        "shareIcon": "(el ícono de compartir en Safari)"
+      }
+    }
   }
 }
