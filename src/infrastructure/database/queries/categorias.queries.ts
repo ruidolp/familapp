@@ -119,15 +119,36 @@ export async function softDeleteCategoria(categoriaId: string) {
  * Vincular categoría a sobre
  */
 export async function linkCategoriaToSobre(sobreId: string, categoriaId: string) {
-  return await db
-    .insertInto('sobres_categorias')
-    .values({
+  // ============ DEBUG MODE ============
+  console.log('🔍 [QUERY DEBUG] linkCategoriaToSobre iniciado')
+  console.log('🔍 [QUERY DEBUG] sobreId:', sobreId)
+  console.log('🔍 [QUERY DEBUG] categoriaId:', categoriaId)
+
+  try {
+    const valores = {
       sobre_id: sobreId,
       categoria_id: categoriaId,
       created_at: new Date(),
-    })
-    .returningAll()
-    .executeTakeFirstOrThrow()
+    }
+    console.log('🔍 [QUERY DEBUG] Valores a insertar:', JSON.stringify(valores, null, 2))
+
+    const resultado = await db
+      .insertInto('sobres_categorias')
+      .values(valores)
+      .returningAll()
+      .executeTakeFirstOrThrow()
+
+    console.log('✅ [QUERY DEBUG] Vinculación exitosa:', JSON.stringify(resultado, null, 2))
+    return resultado
+  } catch (error: any) {
+    console.error('❌ [QUERY DEBUG] Error en linkCategoriaToSobre:', error)
+    console.error('❌ [QUERY DEBUG] Error code:', error.code)
+    console.error('❌ [QUERY DEBUG] Error detail:', error.detail)
+    console.error('❌ [QUERY DEBUG] Error constraint:', error.constraint)
+    throw error
+  } finally {
+    console.log('🏁 [QUERY DEBUG] linkCategoriaToSobre finalizado')
+  }
 }
 
 /**

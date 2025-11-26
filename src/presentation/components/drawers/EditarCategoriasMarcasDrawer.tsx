@@ -368,38 +368,72 @@ export function EditarCategoriasMarcasDrawer({
   }
 
   const handleCreateCategoria = async () => {
+    // ============ DEBUG MODE ============
+    console.log('🔍 [DEBUG] handleCreateCategoria iniciado')
+    console.log('🔍 [DEBUG] canEdit:', canEdit)
+    console.log('🔍 [DEBUG] sobreId:', sobreId)
+    console.log('🔍 [DEBUG] newCategoriaNombre:', newCategoriaNombre)
+    console.log('🔍 [DEBUG] newCategoriaEmoji:', newCategoriaEmoji)
+
     if (!canEdit) {
+      console.error('❌ [DEBUG] No tiene permisos para crear')
       notify.error('No tienes permisos para crear categorías')
       return
     }
     if (!sobreId || !newCategoriaNombre.trim()) {
+      console.error('❌ [DEBUG] Falta sobreId o nombre')
       notify.error('Escribe un nombre para la categoría.')
       return
     }
 
+    const requestBody = {
+      nombre: newCategoriaNombre.trim(),
+      emoji: newCategoriaEmoji.trim() || undefined,
+      sobreId,
+    }
+
+    console.log('📤 [DEBUG] Request body:', JSON.stringify(requestBody, null, 2))
+
     setCreatingCategoria(true)
     try {
+      console.log('🌐 [DEBUG] Enviando POST a /api/categorias...')
+
       const response = await fetch('/api/categorias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: newCategoriaNombre.trim(),
-          emoji: newCategoriaEmoji.trim() || undefined,
-          sobreId,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
+      console.log('📥 [DEBUG] Response status:', response.status)
+      console.log('📥 [DEBUG] Response statusText:', response.statusText)
+      console.log('📥 [DEBUG] Response headers:', Object.fromEntries(response.headers.entries()))
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'No se pudo crear la categoría.')
+        const errorData = await response.json()
+        console.error('❌ [DEBUG] Error response:', JSON.stringify(errorData, null, 2))
+
+        // Mostrar error detallado en pantalla
+        const errorMessage = errorData.error || 'No se pudo crear la categoría.'
+        const errorDetails = `Status: ${response.status}\nError: ${errorMessage}\nDatos: ${JSON.stringify(requestBody)}`
+
+        console.error('❌ [DEBUG] Error completo:', errorDetails)
+        notify.error(`ERROR ${response.status}: ${errorMessage}`)
+
+        // Alert adicional con todos los detalles
+        alert(`🐛 DEBUG - Error al crear categoría:\n\n${errorDetails}`)
+
+        throw new Error(errorMessage)
       }
 
       const data = await response.json()
+      console.log('✅ [DEBUG] Success response:', JSON.stringify(data, null, 2))
+
       if (data.categoria) {
+        console.log('✅ [DEBUG] Categoría creada:', data.categoria)
         setCategorias((prev) => [...prev, data.categoria])
         setAllCategorias((prev) => [...prev, data.categoria])
       }
-      notify.success('Categoría creada y asignada al sobre.')
+      notify.success('✅ Categoría creada y asignada al sobre.')
       setNewCategoriaNombre('')
       setNewCategoriaEmoji(DEFAULT_CATEGORY_EMOJI)
       setCategoriaSuggestions([])
@@ -407,10 +441,12 @@ export function EditarCategoriasMarcasDrawer({
       setShowCreateCategoria(false)
       onSuccess?.()
     } catch (error: any) {
-      console.error(error)
+      console.error('❌ [DEBUG] Exception caught:', error)
+      console.error('❌ [DEBUG] Error stack:', error.stack)
       notify.error(error.message || 'No se pudo crear la categoría.')
     } finally {
       setCreatingCategoria(false)
+      console.log('🏁 [DEBUG] handleCreateCategoria finalizado')
     }
   }
 

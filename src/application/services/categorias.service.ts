@@ -84,18 +84,29 @@ export interface CategoriaResult {
 export async function crearCategoria(
   input: CreateCategoriaInput
 ): Promise<CategoriaResult> {
+  // ============ DEBUG MODE ============
+  console.log('🔍 [SERVICE DEBUG] crearCategoria iniciado')
+  console.log('🔍 [SERVICE DEBUG] Input:', JSON.stringify(input, null, 2))
+
   try {
     // Validar nombre (no vacío)
+    console.log('🔍 [SERVICE DEBUG] Validando nombre...')
     if (!input.nombre || input.nombre.trim().length === 0) {
+      console.error('❌ [SERVICE DEBUG] Nombre vacío o inválido')
       return {
         success: false,
         error: 'El nombre de la categoría es requerido',
       }
     }
+    console.log('✅ [SERVICE DEBUG] Nombre válido:', input.nombre.trim())
 
     // Verificar que no exista otra categoría con el mismo nombre
+    console.log('🔍 [SERVICE DEBUG] Verificando nombre duplicado...')
     const existente = await findCategoriaByNombre(input.userId, input.nombre.trim())
+    console.log('🔍 [SERVICE DEBUG] Categoría existente:', existente ? `Sí (id: ${existente.id})` : 'No')
+
     if (existente) {
+      console.error('❌ [SERVICE DEBUG] Ya existe categoría con nombre:', input.nombre.trim())
       return {
         success: false,
         error: 'Ya existe una categoría con ese nombre',
@@ -103,28 +114,55 @@ export async function crearCategoria(
     }
 
     // Crear categoría
-    const categoria = await createCategoria({
+    console.log('🔍 [SERVICE DEBUG] Creando categoría en BD...')
+    const categoriaData = {
       nombre: input.nombre.trim(),
       color: input.color,
       emoji: input.emoji,
       usuario_id: input.userId,
-    })
+    }
+    console.log('🔍 [SERVICE DEBUG] Datos para crear:', JSON.stringify(categoriaData, null, 2))
+
+    const categoria = await createCategoria(categoriaData)
+    console.log('✅ [SERVICE DEBUG] Categoría creada:', JSON.stringify({
+      id: categoria.id,
+      nombre: categoria.nombre,
+      emoji: categoria.emoji,
+      usuario_id: categoria.usuario_id
+    }, null, 2))
 
     // Si se proporciona un sobreId, vincular la categoría al sobre
     if (input.sobreId) {
-      await linkCategoriaToSobre(input.sobreId, categoria.id)
+      console.log('🔍 [SERVICE DEBUG] Vinculando categoría al sobre:', input.sobreId)
+      try {
+        await linkCategoriaToSobre(input.sobreId, categoria.id)
+        console.log('✅ [SERVICE DEBUG] Categoría vinculada al sobre exitosamente')
+      } catch (linkError: any) {
+        console.error('❌ [SERVICE DEBUG] Error al vincular al sobre:', linkError)
+        console.error('❌ [SERVICE DEBUG] Link error stack:', linkError.stack)
+        // No fallar todo el proceso si falla el linkeo
+        console.warn('⚠️ [SERVICE DEBUG] Categoría creada pero NO vinculada al sobre')
+      }
+    } else {
+      console.log('ℹ️ [SERVICE DEBUG] No hay sobreId, categoría no vinculada')
     }
 
+    console.log('✅ [SERVICE DEBUG] crearCategoria exitoso')
     return {
       success: true,
       data: categoria,
     }
-  } catch (error) {
-    console.error('Error al crear categoría:', error)
+  } catch (error: any) {
+    console.error('❌ [SERVICE DEBUG] Exception en crearCategoria:', error)
+    console.error('❌ [SERVICE DEBUG] Error stack:', error.stack)
+    console.error('❌ [SERVICE DEBUG] Error message:', error.message)
+
     return {
       success: false,
-      error: 'Error al crear la categoría',
+      error: `Error al crear la categoría: ${error.message}`,
     }
+  } finally {
+    console.log('🏁 [SERVICE DEBUG] crearCategoria finalizado')
   }
 }
 
