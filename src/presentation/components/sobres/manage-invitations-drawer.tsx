@@ -129,7 +129,7 @@ export function ManageInvitationsDrawer({
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[90vh] sm:max-w-xl">
-        <div className="mx-auto w-full max-w-xl">
+        <div className="mx-auto flex w-full max-w-xl flex-col">
           <DrawerHeader className="space-y-2">
             <DrawerTitle>Invitaciones activas</DrawerTitle>
             <DrawerDescription>

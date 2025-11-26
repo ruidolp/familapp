@@ -25,8 +25,10 @@ import { useLocale } from 'next-intl'
 
 interface Invitacion {
   id: string
-  sobre_nombre: string
-  sobre_emoji?: string
+  tipo: 'sobre' | 'lista'
+  nombre: string
+  emoji?: string
+  descripcion?: string | null
   inviter_name?: string
   inviter_image?: string
   rol: string
@@ -56,17 +58,23 @@ export function PostOnboardingInvitationsDialog({
   const handleAccept = async (invitacion: Invitacion) => {
     setProcessingId(invitacion.id)
     try {
-      const res = await fetch(`/api/sobres/invitations/${invitacion.id}/accept`, {
-        method: 'POST',
-      })
+      const endpoint =
+        invitacion.tipo === 'sobre'
+          ? `/api/sobres/invitations/${invitacion.id}/accept`
+          : `/api/shopping-lists/invitations/${invitacion.id}/accept`
+      const res = await fetch(endpoint, { method: 'POST' })
 
       if (!res.ok) throw new Error('Error al aceptar invitación')
 
       const data = await res.json()
 
       toast({
-        title: '¡Te uniste al sobre!',
-        description: `Ahora eres parte de "${invitacion.sobre_nombre}"`,
+        title: invitacion.tipo === 'sobre' ? '¡Te uniste al sobre!' : '¡Te uniste a la lista!',
+        description:
+          data.message ||
+          (invitacion.tipo === 'sobre'
+            ? `Ahora eres parte de "${invitacion.nombre}"`
+            : `Ya puedes colaborar en "${invitacion.nombre}"`),
       })
 
       // Marcar como procesada
@@ -93,9 +101,11 @@ export function PostOnboardingInvitationsDialog({
   const handleReject = async (invitacion: Invitacion) => {
     setProcessingId(invitacion.id)
     try {
-      const res = await fetch(`/api/sobres/invitations/${invitacion.id}/reject`, {
-        method: 'POST',
-      })
+      const endpoint =
+        invitacion.tipo === 'sobre'
+          ? `/api/sobres/invitations/${invitacion.id}/reject`
+          : `/api/shopping-lists/invitations/${invitacion.id}/reject`
+      const res = await fetch(endpoint, { method: 'POST' })
 
       if (!res.ok) throw new Error('Error al rechazar invitación')
 
@@ -103,7 +113,11 @@ export function PostOnboardingInvitationsDialog({
 
       toast({
         title: 'Invitación rechazada',
-        description: data.message,
+        description:
+          data.message ||
+          (invitacion.tipo === 'sobre'
+            ? `Rechazaste la invitación a "${invitacion.nombre}"`
+            : `Rechazaste la invitación a la lista "${invitacion.nombre}"`),
       })
 
       // Marcar como procesada
@@ -145,7 +159,7 @@ export function PostOnboardingInvitationsDialog({
             ¡Tienes invitaciones pendientes!
           </DialogTitle>
           <DialogDescription>
-            Te invitaron a colaborar en sobres compartidos. ¿Quieres aceptar?
+            Te invitaron a colaborar en sobres o listas compartidas. ¿Quieres aceptar?
           </DialogDescription>
         </DialogHeader>
 
@@ -166,40 +180,66 @@ export function PostOnboardingInvitationsDialog({
                         {inv.inviter_name || 'Usuario'}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        Te invitó a colaborar
+                        Te invitó a colaborar en {inv.tipo === 'sobre' ? 'un sobre' : 'una lista'}
                       </p>
                     </div>
                   </div>
                   <Badge variant="outline">
-                    {inv.rol === 'ADMIN' ? 'Administrador' : inv.rol === 'CONTRIBUTOR' ? 'Colaborador' : 'Visualizador'}
+                    {inv.tipo === 'sobre'
+                      ? inv.rol === 'ADMIN'
+                        ? 'Administrador'
+                        : inv.rol === 'CONTRIBUTOR'
+                          ? 'Colaborador'
+                          : 'Visualizador'
+                      : inv.rol === 'EDITOR'
+                        ? 'Editor'
+                        : 'Solo ejecutar'}
                   </Badge>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
-                  <span className="text-3xl">{inv.sobre_emoji || '📦'}</span>
+                  <span className="text-3xl">
+                    {inv.emoji || (inv.tipo === 'sobre' ? '📦' : '🛒')}
+                  </span>
                   <div>
-                    <p className="font-medium">Sobre: {inv.sobre_nombre}</p>
+                    <p className="font-medium">
+                      {inv.tipo === 'sobre' ? 'Sobre' : 'Lista'}: {inv.nombre}
+                    </p>
                     <p className="text-xs text-muted-foreground">
-                      Presupuesto compartido
+                      {inv.tipo === 'sobre'
+                        ? 'Presupuesto compartido'
+                        : inv.descripcion || 'Lista colaborativa'}
                     </p>
                   </div>
                 </div>
+                {inv.tipo === 'sobre' ? (
+                  <>
+                    <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+                      <p className="text-xs font-medium mb-1">Ventajas:</p>
+                      <ul className="text-xs space-y-0.5 text-muted-foreground">
+                        <li>✓ Presupuesto compartido en tiempo real</li>
+                        <li>✓ Todos ven los gastos</li>
+                        <li>✓ Sincronización automática</li>
+                      </ul>
+                    </div>
 
-                <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-                  <p className="text-xs font-medium mb-1">Ventajas:</p>
-                  <ul className="text-xs space-y-0.5 text-muted-foreground">
-                    <li>✓ Presupuesto compartido en tiempo real</li>
-                    <li>✓ Todos ven los gastos</li>
-                    <li>✓ Sincronización automática</li>
-                  </ul>
-                </div>
-
-                {inv.sobre_nombre.toUpperCase() === 'HOGAR' && (
-                  <p className="text-xs text-muted-foreground italic">
-                    💡 Si rechazas, crearemos tu propio sobre "HOGAR" con categorías básicas
-                  </p>
+                    {inv.nombre.toUpperCase() === 'HOGAR' && (
+                      <p className="text-xs text-muted-foreground italic">
+                        💡 Si rechazas, crearemos tu propio sobre "HOGAR" con categorías básicas
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <div className="bg-emerald-50 dark:bg-emerald-950/40 p-3 rounded-lg">
+                    <p className="text-xs font-medium mb-1">Ventajas:</p>
+                    <ul className="text-xs space-y-0.5 text-muted-foreground">
+                      <li>✓ Comparte y actualiza la lista en equipo</li>
+                      <li>✓ Marca compras y deja notas en tiempo real</li>
+                      <li>✓ Evita compras duplicadas</li>
+                    </ul>
+                  </div>
                 )}
               </CardContent>
 

@@ -45,7 +45,14 @@ export async function findUserByContact(contact: string) {
   return await db
     .selectFrom('users')
     .selectAll()
-    .where(type === 'email' ? 'email' : 'phone', '=', normalized)
+    .where((eb: any) => {
+      if (type === 'email') {
+        // Normalizamos en la comparación para evitar problemas con mayúsculas
+        return eb(eb.fn('LOWER', ['email']), '=', normalized)
+      }
+
+      return eb('phone', '=', normalized)
+    })
     .executeTakeFirst()
 }
 

@@ -80,6 +80,10 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   })
   const [selectedIndex, setSelectedIndex] = useState(0)
 
+  // Refs para preservar índice durante actualizaciones
+  const targetIndexRef = useRef<number | null>(null)
+  const isRestoringRef = useRef(false)
+
   // Hook para devolver presupuesto
   const { devolverPresupuesto, loading: devolverLoading } = useDevolverPresupuesto(
     sobreSeleccionado?.id || ''
@@ -113,6 +117,8 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     if (!emblaApi) return
 
     const onSelect = () => {
+      // NO actualizar selectedIndex si estamos restaurando posición
+      if (isRestoringRef.current) return
       setSelectedIndex(emblaApi.selectedScrollSnap())
     }
 
@@ -123,6 +129,30 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
       emblaApi.off('select', onSelect)
     }
   }, [emblaApi])
+
+  // Effect para restaurar posición del carousel después de actualizar datos
+  useEffect(() => {
+    if (!emblaApi || targetIndexRef.current === null) return
+
+    const restorePosition = () => {
+      const targetIndex = targetIndexRef.current!
+
+      // Scroll a la posición guardada
+      emblaApi.scrollTo(targetIndex, false) // false = con animación suave
+
+      // Actualizar selectedIndex
+      setSelectedIndex(targetIndex)
+
+      // Limpiar refs
+      targetIndexRef.current = null
+      isRestoringRef.current = false
+    }
+
+    // Pequeño delay para asegurar que el DOM está actualizado
+    const timer = setTimeout(restorePosition, 50)
+
+    return () => clearTimeout(timer)
+  }, [emblaApi, sobres])
 
   // Notificar al padre sobre cambios en el carousel
   useEffect(() => {
@@ -181,17 +211,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     }
   }, [t])
 
-  // Refresh sobres preservando el índice del carrusel
-  const refreshSobres = useCallback(async () => {
-    const previousIndex = selectedIndex
-    await fetchSobres()
-    setTimeout(() => {
-      if (emblaApi && previousIndex >= 0) {
-        emblaApi.scrollTo(previousIndex)
-      }
-    }, 100)
-  }, [selectedIndex, emblaApi, fetchSobres])
-
   const handleAgregarPresupuesto = (sobre: Sobre) => {
     setSobreSeleccionado(sobre)
     setAgregarPresupuestoOpen(true)
@@ -202,7 +221,12 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     try {
       const result = await devolverPresupuesto()
       notify.success(result.message)
-      refreshSobres()
+
+      // Guardar índice actual para restaurar después
+      targetIndexRef.current = selectedIndex
+      isRestoringRef.current = true
+
+      await fetchSobres()
     } catch (error) {
       notify.error(t('list.returnError'))
     }
@@ -214,15 +238,11 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   }
 
   const handleReducirPresupuestoSuccess = async () => {
-    const previousIndex = selectedIndex
+    // Guardar índice actual para restaurar después
+    targetIndexRef.current = selectedIndex
+    isRestoringRef.current = true
 
     await fetchSobres()
-
-    setTimeout(() => {
-      if (emblaApi && previousIndex >= 0) {
-        emblaApi.scrollTo(previousIndex)
-      }
-    }, 100)
 
     setReducirPresupuestoOpen(false)
   }
@@ -251,15 +271,11 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   }
 
   const handleAgregarPresupuestoSuccess = async () => {
-    const previousIndex = selectedIndex
+    // Guardar índice actual para restaurar después
+    targetIndexRef.current = selectedIndex
+    isRestoringRef.current = true
 
     await fetchSobres()
-
-    setTimeout(() => {
-      if (emblaApi && previousIndex >= 0) {
-        emblaApi.scrollTo(previousIndex)
-      }
-    }, 100)
 
     setAgregarPresupuestoOpen(false)
   }
@@ -281,50 +297,29 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   }
 
   const handleEditarCategoriasSuccess = async () => {
-    // Guardar índice actual antes de actualizar
-    const previousIndex = selectedIndex
+    // Guardar índice actual para restaurar después
+    targetIndexRef.current = selectedIndex
+    isRestoringRef.current = true
 
-    // Actualizar lista de sobres
     await fetchSobres()
-
-    // Restaurar posición del carousel después de actualizar
-    setTimeout(() => {
-      if (emblaApi && previousIndex >= 0) {
-        emblaApi.scrollTo(previousIndex)
-      }
-    }, 100)
 
     setEditarCategoriasOpen(false)
   }
 
   const handleTransaccionesUpdated = async () => {
-    // Guardar índice actual antes de actualizar
-    const previousIndex = selectedIndex
+    // Guardar índice actual para restaurar después
+    targetIndexRef.current = selectedIndex
+    isRestoringRef.current = true
 
-    // Actualizar lista de sobres
     await fetchSobres()
-
-    // Restaurar posición del carousel después de actualizar
-    setTimeout(() => {
-      if (emblaApi && previousIndex >= 0) {
-        emblaApi.scrollTo(previousIndex)
-      }
-    }, 100)
   }
 
   const handleCrearGastoSuccess = async () => {
-    // Guardar índice actual antes de actualizar
-    const previousIndex = selectedIndex
+    // Guardar índice actual para restaurar después
+    targetIndexRef.current = selectedIndex
+    isRestoringRef.current = true
 
-    // Actualizar lista de sobres
     await fetchSobres()
-
-    // Restaurar posición del carousel después de actualizar
-    setTimeout(() => {
-      if (emblaApi && previousIndex >= 0) {
-        emblaApi.scrollTo(previousIndex)
-      }
-    }, 100)
 
     setCrearGastoOpen(false)
     setSobreSeleccionadoParaGasto('')

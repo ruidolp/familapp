@@ -24,6 +24,17 @@ interface DashboardClientProps {
   user: User
 }
 
+interface PendingInvitation {
+  id: string
+  tipo: 'sobre' | 'lista'
+  nombre: string
+  emoji?: string
+  descripcion?: string | null
+  rol: string
+  inviter_name?: string
+  inviter_image?: string
+}
+
 export function DashboardClient({ locale, user }: DashboardClientProps) {
   const { requiresOnboarding, isLoading: configLoading } = useUserConfig()
   const [activeTab, setActiveTab] = useState<TabType>('sobres')
@@ -33,7 +44,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
   const [mounted, setMounted] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
   const [invitationsDialogOpen, setInvitationsDialogOpen] = useState(false)
-  const [pendingInvitations, setPendingInvitations] = useState<any[]>([])
+  const [pendingInvitations, setPendingInvitations] = useState<PendingInvitation[]>([])
   const [sobreCarouselIndex, setSobreCarouselIndex] = useState(0)
   const [sobreCarouselTotal, setSobreCarouselTotal] = useState(0)
   const [sobreActual, setSobreActual] = useState<{
@@ -69,15 +80,49 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
 
   const checkPendingInvitations = async () => {
     try {
-      const response = await fetch('/api/sobres/invitations')
-      if (response.ok) {
-        const data = await response.json()
-        const pendientes = data.recibidas || []
-        if (pendientes.length > 0) {
-          setPendingInvitations(pendientes)
-          setInvitationsDialogOpen(true)
-        }
+      const [sobresRes, listasRes] = await Promise.all([
+        fetch('/api/sobres/invitations'),
+        fetch('/api/shopping-lists/invitations'),
+      ])
+
+      const sobresPendientes: PendingInvitation[] = []
+      const listasPendientes: PendingInvitation[] = []
+
+      if (sobresRes.ok) {
+        const sobresData = await sobresRes.json()
+        const recibidas = sobresData.recibidas || []
+        recibidas.forEach((inv: any) => {
+          sobresPendientes.push({
+            id: inv.id,
+            tipo: 'sobre',
+            nombre: inv.sobre_nombre,
+            emoji: inv.sobre_emoji,
+            rol: inv.rol,
+            inviter_name: inv.inviter_name,
+            inviter_image: inv.inviter_image,
+          })
+        })
       }
+
+      if (listasRes.ok) {
+        const listasData = await listasRes.json()
+        const recibidas = listasData.recibidas || []
+        recibidas.forEach((inv: any) => {
+          listasPendientes.push({
+            id: inv.id,
+            tipo: 'lista',
+            nombre: inv.lista_nombre,
+            descripcion: inv.lista_descripcion,
+            rol: inv.rol,
+            inviter_name: inv.inviter_name,
+            inviter_image: inv.inviter_image,
+          })
+        })
+      }
+
+      const combined = [...sobresPendientes, ...listasPendientes]
+      setPendingInvitations(combined)
+      setInvitationsDialogOpen(combined.length > 0)
     } catch (error) {
       console.error('Error checking pending invitations:', error)
     }

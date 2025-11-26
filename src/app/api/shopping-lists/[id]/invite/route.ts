@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/infrastructure/lib/auth'
-import { nanoid } from 'nanoid'
+import { db } from '@/infrastructure/database/kysely'
 import {
   getShoppingListById,
   createInvitacionLista,
   findParticipantesByLista,
   findInvitacionesListasByLista,
 } from '@/infrastructure/database/queries/shopping-lists.queries'
+import {
+  parseContact,
+  findUserByContact,
+  generateInvitationCode,
+  isValidEmail,
+  isValidPhone,
+} from '@/infrastructure/utils/invitation.utils'
 
 export async function GET(
   req: NextRequest,
@@ -99,14 +106,84 @@ export async function POST(
       )
     }
 
-    // Generar código único
-    const codigoInvitacion = nanoid(12)
+    const { type, normalized } = parseContact(contact)
+    if (type === 'email' && !isValidEmail(normalized)) {
+      return NextResponse.json(
+        { error: 'Formato de email inválido' },
+        { status: 400 }
+      )
+    }
+    if (type === 'phone' && !isValidPhone(normalized)) {
+      return NextResponse.json(
+        { error: 'Formato de teléfono inválido' },
+        { status: 400 }
+      )
+    }
 
-    // Crear invitación
+    const sessionEmail = session.user.email?.toLowerCase()
+    const sessionPhoneRaw = (session.user as any)?.phone as string | undefined
+    const sessionPhone = sessionPhoneRaw?.replace(/[\s\-\(\)]/g, '')
+    if (
+      (type === 'email' && sessionEmail && sessionEmail === normalized) ||
+      (type === 'phone' && sessionPhone && sessionPhone === normalized)
+    ) {
+      return NextResponse.json(
+        { error: 'No puedes invitarte a ti mismo' },
+        { status: 400 }
+      )
+    }
+
+    const existingUser = await findUserByContact(normalized)
+
+    if (existingUser) {
+      const alreadyParticipant = participantes.some(
+        (p: any) => p.usuario_id === existingUser.id
+      )
+      if (alreadyParticipant) {
+        return NextResponse.json(
+          { error: 'Este usuario ya es participante de la lista' },
+          { status: 400 }
+        )
+      }
+
+      const invitacionExistente = await db
+        .selectFrom('invitaciones_listas')
+        .select(['id'])
+        .where('lista_id', '=', listaId)
+        .where('invitado_user_id', '=', existingUser.id)
+        .where('estado', '=', 'PENDIENTE')
+        .executeTakeFirst()
+
+      if (invitacionExistente) {
+        return NextResponse.json(
+          { error: 'Ya existe una invitación pendiente para este usuario' },
+          { status: 400 }
+        )
+      }
+    } else {
+      const invitacionPorContacto = await db
+        .selectFrom('invitaciones_listas')
+        .select(['id'])
+        .where('lista_id', '=', listaId)
+        .where('invitado_email_o_telefono', '=', normalized)
+        .where('estado', '=', 'PENDIENTE')
+        .executeTakeFirst()
+
+      if (invitacionPorContacto) {
+        return NextResponse.json(
+          { error: 'Ya enviaste una invitación pendiente a este contacto' },
+          { status: 400 }
+        )
+      }
+    }
+
+    const codigoInvitacion = existingUser ? null : generateInvitationCode()
+
     const invitacion = await createInvitacionLista({
       lista_id: listaId,
       invitado_por_id: session.user.id,
-      invitado_email_o_telefono: contact.toLowerCase().trim(),
+      invitado_email_o_telefono: normalized,
+      invitado_user_id: existingUser?.id || null,
       codigo_invitacion: codigoInvitacion,
       rol,
     })

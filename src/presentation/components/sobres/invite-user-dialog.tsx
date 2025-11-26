@@ -14,7 +14,7 @@ import { Button } from '@/presentation/components/ui/button'
 import { Input } from '@/presentation/components/ui/input'
 import { Label } from '@/presentation/components/ui/label'
 import { Card, CardContent } from '@/presentation/components/ui/card'
-import { Alert, AlertDescription } from '@/presentation/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/presentation/components/ui/alert'
 import { useToast } from '@/presentation/hooks/use-toast'
 import { Loader2, Mail, Phone, Shield, Users, Eye, Check, MessageCircle } from 'lucide-react'
 import { cn } from '@/infrastructure/lib/utils'
@@ -60,6 +60,8 @@ export function InviteUserDialog({
   const [rol, setRol] = useState<RolOption>(tipo === 'sobre' ? 'CONTRIBUTOR' : 'EDITOR')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [successInfo, setSuccessInfo] = useState<{ contact: string; inviteLink?: string | null } | null>(null)
+  const [copiedLink, setCopiedLink] = useState(false)
   const { toast } = useToast()
 
   const baseSobreRoleConfig: Record<'ADMIN' | 'CONTRIBUTOR' | 'VIEWER', RoleInfo> = {
@@ -211,6 +213,9 @@ export function InviteUserDialog({
       const data = await res.json()
 
       const itemType = tipo === 'sobre' ? 'sobre' : 'lista'
+      const inviteLink = data.invitacion?.codigo_invitacion
+        ? buildInvitationLink(data.invitacion.codigo_invitacion)
+        : null
       toast({
         title: '¡Invitación creada!',
         description:
@@ -220,12 +225,21 @@ export function InviteUserDialog({
       })
 
       if (methodUsed === 'whatsapp') {
-        const inviteLink = buildInvitationLink(data.invitacion?.codigo_invitacion)
+        const shareLink = inviteLink ?? buildInvitationLink(data.invitacion?.codigo_invitacion)
         const verb = tipo === 'sobre' ? 'administrar el sobre' : 'colaborar en la lista'
-        const message = `Hola, te invito a ${verb} ${itemEmoji || ''} ${itemNombre} en Familapp. Ingresa aquí: ${inviteLink}`
+        const message = `Hola, te invito a ${verb} ${itemEmoji || ''} ${itemNombre} en Familapp. Ingresa aquí: ${shareLink}`
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
         window.open(whatsappUrl, '_blank', 'noreferrer')
         handleClose()
+        setSuccessInfo(null)
+        setCopiedLink(false)
+      } else {
+        setSuccessInfo({
+          contact: trimmed,
+          inviteLink,
+        })
+        setCopiedLink(false)
+        setContact('')
       }
 
       onSuccess?.(methodUsed)
@@ -242,6 +256,8 @@ export function InviteUserDialog({
     setRol(tipo === 'sobre' ? 'CONTRIBUTOR' : 'EDITOR')
     setContactMethod('email')
     setErrorMessage(null)
+    setSuccessInfo(null)
+    setCopiedLink(false)
     onOpenChange(false)
   }
 
@@ -250,6 +266,24 @@ export function InviteUserDialog({
       handleClose()
     } else {
       onOpenChange(true)
+    }
+  }
+
+  const handleCopyInviteLink = async () => {
+    if (!successInfo?.inviteLink) return
+    try {
+      if (typeof navigator === 'undefined' || !navigator.clipboard) {
+        throw new Error('Clipboard not available')
+      }
+      await navigator.clipboard.writeText(successInfo.inviteLink)
+      setCopiedLink(true)
+      setTimeout(() => setCopiedLink(false), 2000)
+    } catch (error) {
+      toast({
+        title: 'No se pudo copiar el enlace',
+        description: 'Cópialo manualmente y compártelo con tu invitado.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -317,6 +351,38 @@ export function InviteUserDialog({
           </CardContent>
         </Card>
 
+        {successInfo && (
+          <Alert className="border-emerald-200 bg-emerald-50 text-emerald-900">
+            <AlertTitle>Invitación enviada</AlertTitle>
+            <AlertDescription className="space-y-3 text-sm">
+              <p>
+                Invitamos a <span className="font-semibold text-foreground">{successInfo.contact}</span> a{' '}
+                {tipo === 'sobre' ? 'este sobre' : 'esta lista'}.{' '}
+                {successInfo.inviteLink
+                  ? 'Si necesita el acceso directo, comparte este enlace.'
+                  : 'Recibirá un correo con los pasos para unirse.'}
+              </p>
+              {successInfo.inviteLink && (
+                <div className="flex flex-col gap-2">
+                  <div className="break-all rounded-lg border border-emerald-200 bg-white/80 px-3 py-2 text-xs text-muted-foreground">
+                    {successInfo.inviteLink}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="self-start"
+                    onClick={handleCopyInviteLink}
+                    disabled={copiedLink}
+                  >
+                    {copiedLink ? 'Link copiado' : 'Copiar link'}
+                  </Button>
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-5">
           <div className="space-y-3">
             <Label>Método de invitación</Label>
@@ -331,6 +397,8 @@ export function InviteUserDialog({
                     onClick={() => {
                       if (contactMethod !== option.key) {
                         setContact('')
+                        setSuccessInfo(null)
+                        setCopiedLink(false)
                       }
                       setContactMethod(option.key)
                     }}
