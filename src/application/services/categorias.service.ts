@@ -100,48 +100,67 @@ export async function crearCategoria(
     }
     console.log('✅ [SERVICE DEBUG] Nombre válido:', input.nombre.trim())
 
-    // Verificar que no exista otra categoría con el mismo nombre
-    console.log('🔍 [SERVICE DEBUG] Verificando nombre duplicado...')
+    // Verificar si ya existe una categoría con el mismo nombre
+    console.log('🔍 [SERVICE DEBUG] Verificando si existe categoría con ese nombre...')
     const existente = await findCategoriaByNombre(input.userId, input.nombre.trim())
     console.log('🔍 [SERVICE DEBUG] Categoría existente:', existente ? `Sí (id: ${existente.id})` : 'No')
 
+    let categoria: any
+
     if (existente) {
-      console.error('❌ [SERVICE DEBUG] Ya existe categoría con nombre:', input.nombre.trim())
-      return {
-        success: false,
-        error: 'Ya existe una categoría con ese nombre',
+      console.log('✅ [SERVICE DEBUG] Reutilizando categoría existente:', existente.id)
+      categoria = existente
+    } else {
+      // Crear nueva categoría
+      console.log('🔍 [SERVICE DEBUG] Creando nueva categoría en BD...')
+      const categoriaData = {
+        nombre: input.nombre.trim(),
+        color: input.color,
+        emoji: input.emoji,
+        usuario_id: input.userId,
       }
-    }
+      console.log('🔍 [SERVICE DEBUG] Datos para crear:', JSON.stringify(categoriaData, null, 2))
 
-    // Crear categoría
-    console.log('🔍 [SERVICE DEBUG] Creando categoría en BD...')
-    const categoriaData = {
-      nombre: input.nombre.trim(),
-      color: input.color,
-      emoji: input.emoji,
-      usuario_id: input.userId,
+      categoria = await createCategoria(categoriaData)
+      console.log('✅ [SERVICE DEBUG] Categoría creada:', JSON.stringify({
+        id: categoria.id,
+        nombre: categoria.nombre,
+        emoji: categoria.emoji,
+        usuario_id: categoria.usuario_id
+      }, null, 2))
     }
-    console.log('🔍 [SERVICE DEBUG] Datos para crear:', JSON.stringify(categoriaData, null, 2))
-
-    const categoria = await createCategoria(categoriaData)
-    console.log('✅ [SERVICE DEBUG] Categoría creada:', JSON.stringify({
-      id: categoria.id,
-      nombre: categoria.nombre,
-      emoji: categoria.emoji,
-      usuario_id: categoria.usuario_id
-    }, null, 2))
 
     // Si se proporciona un sobreId, vincular la categoría al sobre
     if (input.sobreId) {
       console.log('🔍 [SERVICE DEBUG] Vinculando categoría al sobre:', input.sobreId)
       try {
-        await linkCategoriaToSobre(input.sobreId, categoria.id)
-        console.log('✅ [SERVICE DEBUG] Categoría vinculada al sobre exitosamente')
+        // Verificar si ya está vinculada
+        const { db } = await import('@/infrastructure/database/kysely')
+        const yaVinculada = await db
+          .selectFrom('sobres_categorias')
+          .selectAll()
+          .where('sobre_id', '=', input.sobreId)
+          .where('categoria_id', '=', categoria.id)
+          .executeTakeFirst()
+
+        if (yaVinculada) {
+          console.log('ℹ️ [SERVICE DEBUG] Categoría ya estaba vinculada al sobre, omitiendo vinculación')
+        } else {
+          await linkCategoriaToSobre(input.sobreId, categoria.id)
+          console.log('✅ [SERVICE DEBUG] Categoría vinculada al sobre exitosamente')
+        }
       } catch (linkError: any) {
         console.error('❌ [SERVICE DEBUG] Error al vincular al sobre:', linkError)
         console.error('❌ [SERVICE DEBUG] Link error stack:', linkError.stack)
-        // No fallar todo el proceso si falla el linkeo
-        console.warn('⚠️ [SERVICE DEBUG] Categoría creada pero NO vinculada al sobre')
+        console.error('❌ [SERVICE DEBUG] Link error code:', linkError.code)
+
+        // Si el error es de duplicate key (23505), es porque ya está vinculada - ignorar
+        if (linkError.code === '23505') {
+          console.log('ℹ️ [SERVICE DEBUG] Categoría ya estaba vinculada (duplicate key), continuando...')
+        } else {
+          // Para otros errores, advertir pero no fallar
+          console.warn('⚠️ [SERVICE DEBUG] Categoría creada/reutilizada pero error al vincular al sobre')
+        }
       }
     } else {
       console.log('ℹ️ [SERVICE DEBUG] No hay sobreId, categoría no vinculada')

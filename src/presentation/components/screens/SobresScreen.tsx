@@ -280,6 +280,38 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     setEditarCategoriasOpen(true)
   }
 
+  const handleEditarCategoriasSuccess = async () => {
+    // Guardar índice actual antes de actualizar
+    const previousIndex = selectedIndex
+
+    // Actualizar lista de sobres
+    await fetchSobres()
+
+    // Restaurar posición del carousel después de actualizar
+    setTimeout(() => {
+      if (emblaApi && previousIndex >= 0) {
+        emblaApi.scrollTo(previousIndex)
+      }
+    }, 100)
+
+    setEditarCategoriasOpen(false)
+  }
+
+  const handleTransaccionesUpdated = async () => {
+    // Guardar índice actual antes de actualizar
+    const previousIndex = selectedIndex
+
+    // Actualizar lista de sobres
+    await fetchSobres()
+
+    // Restaurar posición del carousel después de actualizar
+    setTimeout(() => {
+      if (emblaApi && previousIndex >= 0) {
+        emblaApi.scrollTo(previousIndex)
+      }
+    }, 100)
+  }
+
   const handleCrearGastoSuccess = async () => {
     // Guardar índice actual antes de actualizar
     const previousIndex = selectedIndex
@@ -405,7 +437,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
         userRole={sobreSeleccionado?.user_role || 'OWNER'}
-        onSuccess={refreshSobres}
+        onSuccess={handleEditarCategoriasSuccess}
       />
 
       <VerDetalleTransaccionesDrawer
@@ -413,7 +445,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         onOpenChange={setVerDetalleOpen}
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
-        onTransactionsUpdated={refreshSobres}
+        onTransactionsUpdated={handleTransaccionesUpdated}
       />
       <VerDetalleCategoriaTransaccionesDrawer
         open={detalleCategoriaOpen}
@@ -427,7 +459,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         sobreName={categoriaDetalle?.sobreName || ''}
         categoriaId={categoriaDetalle?.id || ''}
         categoriaName={categoriaDetalle?.nombre || ''}
-        onTransactionsUpdated={refreshSobres}
+        onTransactionsUpdated={handleTransaccionesUpdated}
       />
 
       {/* Warning Modal */}

@@ -429,11 +429,22 @@ export function EditarCategoriasMarcasDrawer({
       console.log('✅ [DEBUG] Success response:', JSON.stringify(data, null, 2))
 
       if (data.categoria) {
-        console.log('✅ [DEBUG] Categoría creada:', data.categoria)
-        setCategorias((prev) => [...prev, data.categoria])
-        setAllCategorias((prev) => [...prev, data.categoria])
+        console.log('✅ [DEBUG] Categoría agregada:', data.categoria)
+
+        // Verificar si la categoría ya existe en la lista local
+        const yaExiste = categorias.some(cat => cat.id === data.categoria.id)
+
+        if (!yaExiste) {
+          setCategorias((prev) => [...prev, data.categoria])
+        }
+
+        // Actualizar allCategorias si tampoco existe ahí
+        setAllCategorias((prev) => {
+          const existeEnAll = prev.some(cat => cat.id === data.categoria.id)
+          return existeEnAll ? prev : [...prev, data.categoria]
+        })
       }
-      notify.success('✅ Categoría creada y asignada al sobre.')
+      notify.success('✅ Categoría agregada al sobre.')
       setNewCategoriaNombre('')
       setNewCategoriaEmoji(DEFAULT_CATEGORY_EMOJI)
       setCategoriaSuggestions([])
@@ -443,7 +454,7 @@ export function EditarCategoriasMarcasDrawer({
     } catch (error: any) {
       console.error('❌ [DEBUG] Exception caught:', error)
       console.error('❌ [DEBUG] Error stack:', error.stack)
-      notify.error(error.message || 'No se pudo crear la categoría.')
+      notify.error(error.message || 'No se pudo agregar la categoría.')
     } finally {
       setCreatingCategoria(false)
       console.log('🏁 [DEBUG] handleCreateCategoria finalizado')
