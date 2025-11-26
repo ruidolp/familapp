@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { useSession } from 'next-auth/react'
 import {
   ArrowLeft,
   X,
@@ -121,7 +122,8 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
   // Execute purchase drawer state
   const [configureExecutionOpen, setConfigureExecutionOpen] = useState(false)
-  const [userId, setUserId] = useState<string>('')
+  const { data: session } = useSession()
+  const userId = session?.user?.id || ''
 
   // Save state per item
   const [itemSaveState, setItemSaveState] = useState<ItemSaveState>({})
@@ -728,23 +730,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
     }
   }
 
-  // Fetch current user ID
-  useEffect(() => {
-    const fetchUserId = async () => {
-      try {
-        const response = await fetch('/api/auth/session')
-        if (response.ok) {
-          const session = await response.json()
-          if (session?.user?.id) {
-            setUserId(session.user.id)
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching user ID:', error)
-      }
-    }
-    fetchUserId()
-  }, [])
+  // No longer needed - userId comes from useSession() hook
 
   const handleExecutePurchase = async (config: ExecutionConfig) => {
     if (!data || items.length === 0) {

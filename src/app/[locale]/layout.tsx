@@ -15,6 +15,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { routing } from '@/i18n/routing'
 import { SessionProvider } from '@/presentation/providers/session-provider'
+import { UserConfigProvider } from '@/presentation/providers/user-config-provider'
 import { CurrencyProvider } from '@/presentation/providers/currency-provider'
 import { ThemeProvider } from '@/presentation/providers/theme-provider'
 import { QueryProvider } from '@/presentation/providers/query-provider'
@@ -126,31 +127,33 @@ export default async function LocaleLayout({
         <QueryProvider>
           <ThemeProvider defaultTheme={defaultTheme} themes={themes}>
             <SessionProvider>
-              <CurrencyProvider>
-                <CategoryProvider>
-                  <NextIntlClientProvider messages={messages}>
-                    <PWAInstaller />
-                    {children}
-                    <Toaster />
-                    <SonnerToaster
-                      position="top-center"
-                      toastOptions={{
-                        classNames: {
-                          toast: 'bg-background text-foreground border-border',
-                          title: 'text-foreground',
-                          description: 'text-muted-foreground',
-                          actionButton: 'bg-primary text-primary-foreground',
-                          cancelButton: 'bg-muted text-muted-foreground',
-                          error: 'bg-destructive text-destructive-foreground border-destructive',
-                          success: 'bg-success text-success-foreground border-success',
-                          warning: 'bg-warning text-warning-foreground border-warning',
-                          info: 'bg-info text-info-foreground border-info',
-                        },
-                      }}
-                    />
-                  </NextIntlClientProvider>
-                </CategoryProvider>
-              </CurrencyProvider>
+              <UserConfigProvider>
+                <CurrencyProvider>
+                  <CategoryProvider>
+                    <NextIntlClientProvider messages={messages}>
+                      <PWAInstaller />
+                      {children}
+                      <Toaster />
+                      <SonnerToaster
+                        position="top-center"
+                        toastOptions={{
+                          classNames: {
+                            toast: 'bg-background text-foreground border-border',
+                            title: 'text-foreground',
+                            description: 'text-muted-foreground',
+                            actionButton: 'bg-primary text-primary-foreground',
+                            cancelButton: 'bg-muted text-muted-foreground',
+                            error: 'bg-destructive text-destructive-foreground border-destructive',
+                            success: 'bg-success text-success-foreground border-success',
+                            warning: 'bg-warning text-warning-foreground border-warning',
+                            info: 'bg-info text-info-foreground border-info',
+                          },
+                        }}
+                      />
+                    </NextIntlClientProvider>
+                  </CategoryProvider>
+                </CurrencyProvider>
+              </UserConfigProvider>
             </SessionProvider>
           </ThemeProvider>
         </QueryProvider>

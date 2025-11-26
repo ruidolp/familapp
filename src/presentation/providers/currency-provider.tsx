@@ -1,21 +1,19 @@
 /**
  * Currency Provider
  *
- * Carga la configuración de moneda del usuario una sola vez al iniciar sesión
- * y la mantiene en memoria para todo el app.
+ * Proporciona funciones de formateo de moneda basadas en la configuración del usuario.
+ * Ahora usa UserConfigProvider para obtener datos sin hacer llamadas adicionales.
  *
- * Flujo:
- * 1. Se obtiene la sesión del usuario (SessionProvider)
- * 2. Se carga user_config para obtener moneda_principal_id
- * 3. Se fetch los datos de la moneda (decimales, símbolo, etc.)
- * 4. Se guarda en contexto React
- * 5. Los componentes usan useCurrencyFormat para formatear números
+ * Flujo optimizado:
+ * 1. Obtiene datos de moneda del UserConfigProvider (ya cargados)
+ * 2. Crea función de formateo con esos datos
+ * 3. Los componentes usan useCurrency().formatNumber() para formatear números
  */
 
 'use client'
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { useSession } from 'next-auth/react'
+import { useUserConfig } from './user-config-provider'
 
 export interface CurrencyContextType {
   monedaId: string | null
@@ -30,138 +28,101 @@ export interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
-  const { data: session } = useSession()
+  const { config, moneda, isLoading: configLoading } = useUserConfig()
   const [currency, setCurrency] = useState<CurrencyContextType>({
     monedaId: null,
     nombre: null,
     simbolo: null,
-    decimales: 2, // default
+    decimales: 2,
     locale: 'es-CL',
     isLoading: true,
     formatNumber: (value: number) => value.toFixed(2),
   })
 
   useEffect(() => {
-    if (!session?.user) {
-      setCurrency(prev => ({ ...prev, isLoading: false }))
-      return
-    }
-
-    // Cargar configuración de moneda del usuario
-    const loadCurrencyConfig = async () => {
-      try {
-        const response = await fetch('/api/user/config')
-
-        // Si no hay configuración (404), usar defaults sin error
-        if (response.status === 404) {
-          const defaultDecimals = 0
-          const formatNumber = (value: number): string => {
-            if (typeof value !== 'number') return '0'
-            const formatter = new Intl.NumberFormat('es-CL', {
-              style: 'currency',
-              currency: 'CLP',
-              minimumFractionDigits: defaultDecimals,
-              maximumFractionDigits: defaultDecimals,
-            })
-            return formatter.format(value)
-          }
-
-          setCurrency({
-            monedaId: 'CLP',
-            nombre: 'Peso Chileno',
-            simbolo: '$',
-            decimales: defaultDecimals,
-            locale: 'es-CL',
-            isLoading: false,
-            formatNumber,
-          })
-          return
-        }
-
-        if (!response.ok) throw new Error('Failed to load user config')
-
-        const data = await response.json()
-        const monedaPrincipalId = data.config?.moneda_principal_id || 'CLP'
-
-        // Obtener datos de la moneda
-        const monedaResponse = await fetch(`/api/monedas/${monedaPrincipalId}`)
-        if (!monedaResponse.ok) throw new Error('Failed to load currency')
-
-        const monedaData = await monedaResponse.json()
-
-        // Determinar locale según moneda
-        const localeMap: Record<string, string> = {
-          CLP: 'es-CL',
-          USD: 'en-US',
-          EUR: 'es-ES',
-          ARS: 'es-AR',
-          COP: 'es-CO',
-          MXN: 'es-MX',
-          BRL: 'pt-BR',
-          PEN: 'es-PE',
-          BOB: 'es-BO',
-          PYG: 'es-PY',
-          UYU: 'es-UY',
-          VES: 'es-VE',
-          GBP: 'en-GB',
-          CAD: 'en-CA',
-        }
-
-        const selectedLocale = localeMap[monedaPrincipalId] || 'es-CL'
-        const decimales = monedaData.decimales ?? 2
-
-        // Crear función de formateo con los datos de la moneda
-        const formatNumber = (value: number): string => {
-          if (typeof value !== 'number') return '0'
-
-          const formatter = new Intl.NumberFormat(selectedLocale, {
-            style: 'currency',
-            currency: monedaPrincipalId,
-            minimumFractionDigits: decimales,
-            maximumFractionDigits: decimales,
-          })
-
-          return formatter.format(value)
-        }
-
-        setCurrency({
-          monedaId: monedaPrincipalId,
-          nombre: monedaData.nombre,
-          simbolo: monedaData.simbolo,
-          decimales,
-          locale: selectedLocale,
-          isLoading: false,
-          formatNumber,
+    // Defaults si no hay configuración
+    const createDefaultCurrency = () => {
+      const defaultDecimals = 0
+      const formatNumber = (value: number): string => {
+        if (typeof value !== 'number') return '0'
+        const formatter = new Intl.NumberFormat('es-CL', {
+          style: 'currency',
+          currency: 'CLP',
+          minimumFractionDigits: defaultDecimals,
+          maximumFractionDigits: defaultDecimals,
         })
-      } catch (error) {
-        console.error('Error loading currency config:', error)
-        // Fallback a CLP
-        const defaultDecimals = 0
-        const formatNumber = (value: number): string => {
-          if (typeof value !== 'number') return '0'
-          const formatter = new Intl.NumberFormat('es-CL', {
-            style: 'currency',
-            currency: 'CLP',
-            minimumFractionDigits: defaultDecimals,
-            maximumFractionDigits: defaultDecimals,
-          })
-          return formatter.format(value)
-        }
+        return formatter.format(value)
+      }
 
-        setCurrency({
-          monedaId: 'CLP',
-          nombre: 'Peso Chileno',
-          simbolo: '$',
-          decimales: defaultDecimals,
-          locale: 'es-CL',
-          isLoading: false,
-          formatNumber,
-        })
+      return {
+        monedaId: 'CLP',
+        nombre: 'Peso Chileno',
+        simbolo: '$',
+        decimales: defaultDecimals,
+        locale: 'es-CL',
+        isLoading: false,
+        formatNumber,
       }
     }
 
-    loadCurrencyConfig()
-  }, [session])
+    // Si aún está cargando, esperar
+    if (configLoading) {
+      setCurrency(prev => ({ ...prev, isLoading: true }))
+      return
+    }
+
+    // Si no hay configuración o moneda, usar defaults
+    if (!config || !moneda) {
+      setCurrency(createDefaultCurrency())
+      return
+    }
+
+    // Determinar locale según moneda
+    const localeMap: Record<string, string> = {
+      CLP: 'es-CL',
+      USD: 'en-US',
+      EUR: 'es-ES',
+      ARS: 'es-AR',
+      COP: 'es-CO',
+      MXN: 'es-MX',
+      BRL: 'pt-BR',
+      PEN: 'es-PE',
+      BOB: 'es-BO',
+      PYG: 'es-PY',
+      UYU: 'es-UY',
+      VES: 'es-VE',
+      GBP: 'en-GB',
+      CAD: 'en-CA',
+    }
+
+    const monedaId = config.moneda_principal_id
+    const selectedLocale = localeMap[monedaId] || 'es-CL'
+    const decimales = moneda.decimales ?? 2
+
+    // Crear función de formateo con los datos de la moneda
+    const formatNumber = (value: number): string => {
+      if (typeof value !== 'number') return '0'
+
+      const formatter = new Intl.NumberFormat(selectedLocale, {
+        style: 'currency',
+        currency: monedaId,
+        minimumFractionDigits: decimales,
+        maximumFractionDigits: decimales,
+      })
+
+      return formatter.format(value)
+    }
+
+    setCurrency({
+      monedaId,
+      nombre: moneda.nombre,
+      simbolo: moneda.simbolo,
+      decimales,
+      locale: selectedLocale,
+      isLoading: false,
+      formatNumber,
+    })
+  }, [config, moneda, configLoading])
 
   return (
     <CurrencyContext.Provider value={currency}>

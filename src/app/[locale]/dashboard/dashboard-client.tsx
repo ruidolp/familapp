@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useUserConfig } from '@/presentation/providers/user-config-provider'
 import { AppShell } from '@/presentation/components/layout/AppShell'
 import { BottomNav, type TabType } from '@/presentation/components/layout/BottomNav'
 import { DotIndicator } from '@/presentation/components/layout/DotIndicator'
@@ -24,13 +25,13 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ locale, user }: DashboardClientProps) {
+  const { requiresOnboarding, isLoading: configLoading } = useUserConfig()
   const [activeTab, setActiveTab] = useState<TabType>('sobres')
   const [contextualOpen, setContextualOpen] = useState(false)
   const [menuAction, setMenuAction] = useState<string | null>(null)
   const [listMenuAction, setListMenuAction] = useState<string | null>(null)
   const [mounted, setMounted] = useState(false)
   const [onboardingOpen, setOnboardingOpen] = useState(false)
-  const [needsOnboarding, setNeedsOnboarding] = useState(false)
   const [invitationsDialogOpen, setInvitationsDialogOpen] = useState(false)
   const [pendingInvitations, setPendingInvitations] = useState<any[]>([])
   const [sobreCarouselIndex, setSobreCarouselIndex] = useState(0)
@@ -52,38 +53,19 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
       setActiveTab('sobres')
       localStorage.setItem('dashboard-active-tab', 'sobres')
     }
-
-    // Detectar si el usuario necesita onboarding
-    checkNeedsOnboarding()
   }, [])
 
-  const checkNeedsOnboarding = async () => {
-    try {
-      const response = await fetch('/api/user/config')
-      if (response.ok) {
-        const data = await response.json()
-        // Si no existe configuración o viene vacía, necesita onboarding
-        if (!data.success || !data.config) {
-          setNeedsOnboarding(true)
-          setOnboardingOpen(true)
-        } else {
-          // Si no necesita onboarding, verificar invitaciones pendientes
-          await checkPendingInvitations()
-        }
-      } else if (response.status === 404) {
-        // No existe configuración
-        setNeedsOnboarding(true)
-        setOnboardingOpen(true)
-      } else {
-        // Si hay error, aún así verificar invitaciones
-        await checkPendingInvitations()
-      }
-    } catch (error) {
-      console.error('Error checking onboarding status:', error)
-      // En caso de error, aún así verificar invitaciones
-      await checkPendingInvitations()
+  // Detectar si el usuario necesita onboarding basado en UserConfigProvider
+  useEffect(() => {
+    if (configLoading) return // Esperar a que termine de cargar
+
+    if (requiresOnboarding) {
+      setOnboardingOpen(true)
+    } else {
+      // Si no necesita onboarding, verificar invitaciones pendientes
+      checkPendingInvitations()
     }
-  }
+  }, [requiresOnboarding, configLoading])
 
   const checkPendingInvitations = async () => {
     try {
@@ -152,7 +134,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
           />
         )
       case 'metricas':
-        return <MetricasScreen />
+        return <MetricasScreen userId={user.id} />
       case 'config':
         return <ConfigScreen />
       default:
@@ -192,7 +174,7 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
         onOpenChange={(open) => {
           setOnboardingOpen(open)
           // Si se cierra el onboarding, verificar invitaciones
-          if (!open && needsOnboarding) {
+          if (!open && requiresOnboarding) {
             checkPendingInvitations()
           }
         }}

@@ -57,13 +57,54 @@ export async function agregarCategoriaToSobre(
       }
     }
 
-    // Validar que la categoría existe y pertenece al usuario
-    const categoriaResult = await obtenerCategoria(categoriaId, userId)
-    if (!categoriaResult.success) {
+    // Validar que la categoría existe
+    const { findCategoriaById } = await import('@/infrastructure/database/queries/categorias.queries')
+    const categoria = await findCategoriaById(categoriaId)
+
+    if (!categoria) {
+      console.error(`[agregarCategoriaToSobre] Categoría ${categoriaId} no existe en la base de datos`)
       return {
         success: false,
         error: 'Categoría no encontrada',
       }
+    }
+
+    // NUEVA LÓGICA: Permitir agregar si:
+    // 1. La categoría pertenece al usuario Y el usuario puede modificar el sobre, O
+    // 2. El usuario es colaborador de otro sobre que ya tiene esta categoría
+    const categoriaDelUsuario = categoria.usuario_id === userId
+
+    if (!categoriaDelUsuario) {
+      // Si la categoría NO pertenece al usuario, validar que sea colaborador de un sobre que la tenga
+      console.log(`[agregarCategoriaToSobre] Categoría ${categoriaId} no pertenece al usuario ${userId}. Verificando colaboración...`)
+
+      const { db } = await import('@/infrastructure/database/kysely')
+      const colaborador = await db
+        .selectFrom('sobres_categorias as sc')
+        .innerJoin('sobres as s', 'sc.sobre_id', 's.id')
+        .innerJoin('sobres_usuarios as su', 's.id', 'su.sobre_id')
+        .select('su.rol')
+        .where('sc.categoria_id', '=', categoriaId)
+        .where('su.usuario_id', '=', userId)
+        .where('s.deleted_at', 'is', null)
+        .where((eb) => eb.or([
+          eb('su.rol', '=', 'CONTRIBUTOR'),
+          eb('su.rol', '=', 'ADMIN'),
+          eb('su.rol', '=', 'OWNER')
+        ]))
+        .executeTakeFirst()
+
+      if (!colaborador) {
+        console.error(`[agregarCategoriaToSobre] Usuario ${userId} no puede agregar categoría ${categoriaId} (no es dueño ni colaborador)`)
+        return {
+          success: false,
+          error: 'No tienes permiso para agregar esta categoría. Esta categoría pertenece a otro usuario y no eres colaborador de ningún sobre que la use.',
+        }
+      }
+
+      console.log(`[agregarCategoriaToSobre] Usuario ${userId} es ${colaborador.rol} de un sobre con categoría ${categoriaId} - Permitido`)
+    } else {
+      console.log(`[agregarCategoriaToSobre] Categoría ${categoriaId} pertenece al usuario ${userId} - Permitido`)
     }
 
     // Agregar categoría al sobre

@@ -14,6 +14,7 @@ import {
   getProductCatalogVersion,
   getProductCategoriesGlobalVersion,
 } from '@/infrastructure/database/queries/user-config.queries'
+import { findMonedaById } from '@/infrastructure/database/queries/monedas.queries'
 
 /**
  * GET /api/user/config
@@ -47,11 +48,12 @@ export async function GET() {
     // Extraer idioma del locale (ej: 'es-CL' → 'es')
     const idioma = config.locale?.split('-')[0] || 'es'
 
-    // Obtener versiones para caché (marcas, productos, categorías)
-    const [marcasGlobalesVersion, productCatalogVersion, productCategoriesVersion] = await Promise.all([
+    // Obtener versiones para caché (marcas, productos, categorías) y datos de moneda
+    const [marcasGlobalesVersion, productCatalogVersion, productCategoriesVersion, monedaData] = await Promise.all([
       getMarcasGlobalesVersion(pais),
       getProductCatalogVersion(idioma),
       getProductCategoriesGlobalVersion(idioma),
+      config.moneda_principal_id ? findMonedaById(config.moneda_principal_id) : Promise.resolve(null),
     ])
 
     return NextResponse.json({
@@ -60,6 +62,7 @@ export async function GET() {
       marcasGlobalesVersion,
       productCatalogVersion,
       productCategoriesVersion,
+      moneda: monedaData, // Incluir datos de moneda para evitar llamada adicional
     })
   } catch (error: any) {
     console.error('Error al obtener configuración:', error)

@@ -160,6 +160,7 @@ export async function obtenerCategoria(
     const categoria = await findCategoriaById(categoriaId)
 
     if (!categoria) {
+      console.error(`[obtenerCategoria] Categoría ${categoriaId} no existe en la base de datos`)
       return {
         success: false,
         error: 'Categoría no encontrada',
@@ -171,6 +172,8 @@ export async function obtenerCategoria(
     const isOwner = categoria.usuario_id === userId
 
     if (!isOwner) {
+      console.log(`[obtenerCategoria] Categoría ${categoriaId} no pertenece al usuario ${userId} (owner: ${categoria.usuario_id}). Verificando si es colaborador...`)
+
       // Verificar si el usuario es colaborador de un sobre con esta categoría
       const { db } = await import('@/infrastructure/database/kysely')
       const colaborador = await db
@@ -188,11 +191,14 @@ export async function obtenerCategoria(
         .executeTakeFirst()
 
       if (!colaborador) {
+        console.error(`[obtenerCategoria] Usuario ${userId} no es colaborador de ningún sobre que tenga la categoría ${categoriaId}`)
         return {
           success: false,
-          error: 'No tienes permiso para acceder a esta categoría',
+          error: 'No tienes permiso para acceder a esta categoría. Esta categoría pertenece a otro usuario y no eres colaborador de ningún sobre que la use.',
         }
       }
+
+      console.log(`[obtenerCategoria] Usuario ${userId} es ${colaborador.rol} de un sobre con categoría ${categoriaId}`)
     }
 
     return {

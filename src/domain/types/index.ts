@@ -6,3 +6,4 @@
 export * from './billeteras'
 export * from './sobres'
 export * from './transacciones'
+export * from './monitoring'

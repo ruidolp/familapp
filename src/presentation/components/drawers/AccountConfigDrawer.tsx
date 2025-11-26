@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useUserConfig } from '@/presentation/providers/user-config-provider'
 import {
   Drawer,
   DrawerBody,
@@ -37,6 +38,7 @@ const DAYS = Array.from({ length: 31 }, (_, index) => {
 
 export function AccountConfigDrawer({ open, onOpenChange }: AccountConfigDrawerProps) {
   const { toast } = useToast()
+  const { config, refreshConfig } = useUserConfig()
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [monedas, setMonedas] = useState<Moneda[]>([])
@@ -45,28 +47,25 @@ export function AccountConfigDrawer({ open, onOpenChange }: AccountConfigDrawerP
 
   const isReady = useMemo(() => Boolean(selectedCurrency && selectedDay), [selectedCurrency, selectedDay])
 
+  // Cargar datos iniciales desde UserConfigProvider y fetch de monedas
   useEffect(() => {
     if (!open) return
 
     const loadData = async () => {
       setLoading(true)
       try {
-        const [configRes, monedasRes] = await Promise.all([
-          fetch('/api/user/config'),
-          fetch('/api/monedas'),
-        ])
+        // Solo necesitamos cargar la lista de monedas, la config viene del provider
+        const monedasRes = await fetch('/api/monedas')
 
         if (monedasRes.ok) {
           const monedasData = await monedasRes.json()
           setMonedas(monedasData.monedas || [])
         }
 
-        if (configRes.ok) {
-          const configData = await configRes.json()
-          if (configData.config) {
-            setSelectedCurrency(configData.config.moneda_principal_id || '')
-            setSelectedDay(String(configData.config.dia_inicio_periodo || 1).padStart(2, '0'))
-          }
+        // Usar config del UserConfigProvider
+        if (config) {
+          setSelectedCurrency(config.moneda_principal_id || '')
+          setSelectedDay(String(config.dia_inicio_periodo || 1).padStart(2, '0'))
         }
       } catch (error) {
         toast({
@@ -80,7 +79,7 @@ export function AccountConfigDrawer({ open, onOpenChange }: AccountConfigDrawerP
     }
 
     loadData()
-  }, [open, toast])
+  }, [open, config, toast])
 
   const handleSave = async () => {
     if (!isReady) return
@@ -99,6 +98,9 @@ export function AccountConfigDrawer({ open, onOpenChange }: AccountConfigDrawerP
         const error = await response.json().catch(() => ({}))
         throw new Error(error.error || 'No se pudo actualizar tu configuración')
       }
+
+      // Refrescar config en el provider para actualizar todos los componentes
+      await refreshConfig()
 
       toast({
         title: 'Configuración actualizada',
