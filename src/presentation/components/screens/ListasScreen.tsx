@@ -791,8 +791,15 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
       {/* Lists Grid */}
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-8">
-          <div>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
             <h3 className="typography-h3 text-foreground">Listas de Compras</h3>
+            <Button
+              className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
+              onClick={handleOpenCreateDrawer}
+            >
+              <Plus size={16} />
+              Nueva lista
+            </Button>
           </div>
           {totalLists === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border bg-card px-6 py-10 text-muted-foreground">
@@ -916,23 +923,6 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
           </div>
         </div>
       </div>
-
-      {/* Footer action */}
-      <div className="border-t border-border bg-background/90 px-4 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <span className="typography-caption text-muted-foreground">
-            {totalLists === 1 ? '1 lista disponible' : `${totalLists} listas disponibles`}
-          </span>
-          <Button
-            className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
-            onClick={handleOpenCreateDrawer}
-          >
-            <Plus size={16} />
-            Nueva lista
-          </Button>
-        </div>
-      </div>
-
       {/* Create Shopping List Drawer */}
       <CreateShoppingListDrawer
         open={createDrawerOpen}

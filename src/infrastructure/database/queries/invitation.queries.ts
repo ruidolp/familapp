@@ -241,3 +241,50 @@ export async function expireOldInvitations() {
     .where('expires_at', '<=', new Date())
     .execute()
 }
+
+/**
+ * Obtener contactos del usuario (personas que aceptaron invitaciones a sobres o listas)
+ * Retorna usuarios únicos que son participantes de sobres o listas del usuario
+ */
+export async function getMyContacts(userId: string) {
+  // Usuarios en sobres del usuario
+  const sobresContacts = await db
+    .selectFrom('sobres_usuarios as su')
+    .innerJoin('users as u', 'su.usuario_id', 'u.id')
+    .innerJoin('sobres as s', 'su.sobre_id', 's.id')
+    .select([
+      'u.id',
+      'u.name',
+      'u.email',
+      'u.image',
+    ])
+    .where('s.usuario_id', '=', userId) // Sobres del usuario
+    .where('su.usuario_id', '!=', userId) // Excluir al usuario mismo
+    .where('s.deleted_at', 'is', null)
+    .execute()
+
+  // Usuarios en listas del usuario
+  const listasContacts = await db
+    .selectFrom('shopping_list_collaborators as slc')
+    .innerJoin('users as u', 'slc.user_id', 'u.id')
+    .innerJoin('shopping_lists as sl', 'slc.shopping_list_id', 'sl.id')
+    .select([
+      'u.id',
+      'u.name',
+      'u.email',
+      'u.image',
+    ])
+    .where('sl.user_id', '=', userId) // Listas del usuario
+    .where('slc.user_id', '!=', userId) // Excluir al usuario mismo
+    .where('sl.deleted_at', 'is', null)
+    .where('slc.deleted_at', 'is', null)
+    .execute()
+
+  // Combinar y eliminar duplicados
+  const allContacts = [...sobresContacts, ...listasContacts]
+  const uniqueContacts = Array.from(
+    new Map(allContacts.map(contact => [contact.id, contact])).values()
+  )
+
+  return uniqueContacts
+}

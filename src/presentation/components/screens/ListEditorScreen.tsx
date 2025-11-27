@@ -969,7 +969,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                                 )}
 
                                 {/* Quantity */}
-                                <div className="typography-label min-w-[2.6ch] px-0.5 text-center flex-shrink-0">
+                                <div className="typography-label w-[2.6ch] px-0.5 text-center flex-shrink-0">
                                   {decimalToFraction(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad) || Math.round(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad)}
                                 </div>
 
@@ -1075,7 +1075,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                       )}
 
                       {/* Quantity */}
-                      <div className="typography-label min-w-[2.6ch] px-0.5 text-center flex-shrink-0">
+                      <div className="typography-label w-[2.6ch] px-0.5 text-center flex-shrink-0">
                         {decimalToFraction(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad) || Math.round(typeof item.cantidad === 'string' ? parseFloat(item.cantidad) : item.cantidad)}
                       </div>
 

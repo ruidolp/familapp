@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLocale } from 'next-intl'
 import {
   Dialog,
@@ -16,8 +16,9 @@ import { Label } from '@/presentation/components/ui/label'
 import { Card, CardContent } from '@/presentation/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/presentation/components/ui/alert'
 import { useToast } from '@/presentation/hooks/use-toast'
-import { Loader2, Mail, Phone, Shield, Users, Eye, Check, MessageCircle } from 'lucide-react'
+import { Loader2, Mail, Phone, Shield, Users as UsersIcon, Eye, Check, MessageCircle, UserCircle, X } from 'lucide-react'
 import { cn } from '@/infrastructure/lib/utils'
+import Image from 'next/image'
 
 interface InviteUserDialogProps {
   open: boolean
@@ -33,7 +34,14 @@ type RolSobre = 'ADMIN' | 'CONTRIBUTOR' | 'VIEWER' | 'OWNER'
 type RolLista = 'EDITOR' | 'EXECUTION_ONLY' | 'OWNER'
 type RolOption = RolSobre | RolLista
 
-export type ContactMethod = 'email' | 'whatsapp'
+export type ContactMethod = 'email' | 'whatsapp' | 'contact'
+
+interface MyContact {
+  id: string
+  name: string | null
+  email: string | null
+  image: string | null
+}
 
 interface RoleInfo {
   icon: typeof Shield
@@ -64,6 +72,11 @@ export function InviteUserDialog({
   const [copiedLink, setCopiedLink] = useState(false)
   const { toast } = useToast()
 
+  // Estados para "Mis contactos"
+  const [myContacts, setMyContacts] = useState<MyContact[]>([])
+  const [loadingContacts, setLoadingContacts] = useState(false)
+  const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
+
   const baseSobreRoleConfig: Record<'ADMIN' | 'CONTRIBUTOR' | 'VIEWER', RoleInfo> = {
     ADMIN: {
       icon: Shield,
@@ -79,7 +92,7 @@ export function InviteUserDialog({
       ],
     },
     CONTRIBUTOR: {
-      icon: Users,
+      icon: UsersIcon,
       name: 'Colaborador',
       description: 'Crea gastos y organiza categorías sin modificar el presupuesto.',
       accentColor: 'text-blue-600',
@@ -109,7 +122,7 @@ export function InviteUserDialog({
 
   const baseListaRoleConfig: Record<'EDITOR' | 'EXECUTION_ONLY', RoleInfo> = {
     EDITOR: {
-      icon: Users,
+      icon: UsersIcon,
       name: 'Editor',
       description: 'Agrega y actualiza productos, además ejecuta compras.',
       accentColor: 'text-blue-600',
@@ -165,6 +178,28 @@ export function InviteUserDialog({
 
   const roleConfig = tipo === 'sobre' ? sobreRoleConfig : listaRoleConfig
 
+  // Cargar contactos cuando se abre el diálogo
+  useEffect(() => {
+    if (open) {
+      loadMyContacts()
+    }
+  }, [open])
+
+  const loadMyContacts = async () => {
+    setLoadingContacts(true)
+    try {
+      const res = await fetch('/api/my-contacts')
+      if (!res.ok) throw new Error('No se pudieron cargar los contactos')
+      const data = await res.json()
+      setMyContacts(data.contacts || [])
+    } catch (error) {
+      console.error('Error loading contacts:', error)
+      setMyContacts([])
+    } finally {
+      setLoadingContacts(false)
+    }
+  }
+
   const buildInvitationLink = (code?: string | null) => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '')
     if (code) {
@@ -175,22 +210,36 @@ export function InviteUserDialog({
   }
 
   const handleInvite = async () => {
-    const trimmed = contact.trim()
-    if (!trimmed) {
-      setErrorMessage('Ingresa un email o teléfono válido')
-      return
-    }
-
-    if (contactMethod === 'email' && !trimmed.includes('@')) {
-      setErrorMessage('Ingresa un correo electrónico válido')
-      return
-    }
-
-    if (contactMethod === 'whatsapp') {
-      const digits = trimmed.replace(/\D/g, '')
-      if (digits.length < 8) {
-        setErrorMessage('Ingresa un número de WhatsApp válido (código de país incluido)')
+    // Para "Mis contactos", validar que se seleccionó un contacto
+    if (contactMethod === 'contact') {
+      if (!selectedContactId) {
+        setErrorMessage('Selecciona un contacto de la lista')
         return
+      }
+      const selectedContact = myContacts.find(c => c.id === selectedContactId)
+      if (!selectedContact || !selectedContact.email) {
+        setErrorMessage('El contacto seleccionado no tiene email')
+        return
+      }
+    } else {
+      // Validaciones para email y whatsapp
+      const trimmed = contact.trim()
+      if (!trimmed) {
+        setErrorMessage('Ingresa un email o teléfono válido')
+        return
+      }
+
+      if (contactMethod === 'email' && !trimmed.includes('@')) {
+        setErrorMessage('Ingresa un correo electrónico válido')
+        return
+      }
+
+      if (contactMethod === 'whatsapp') {
+        const digits = trimmed.replace(/\D/g, '')
+        if (digits.length < 8) {
+          setErrorMessage('Ingresa un número de WhatsApp válido (código de país incluido)')
+          return
+        }
       }
     }
 
@@ -199,10 +248,18 @@ export function InviteUserDialog({
     try {
       const methodUsed = contactMethod
       const endpoint = tipo === 'sobre' ? `/api/sobres/${itemId}/invite` : `/api/shopping-lists/${itemId}/invite`
+
+      // Determinar el contacto a enviar
+      let contactToSend = contact.trim()
+      if (contactMethod === 'contact') {
+        const selectedContact = myContacts.find(c => c.id === selectedContactId)
+        contactToSend = selectedContact?.email || ''
+      }
+
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contact: trimmed, rol }),
+        body: JSON.stringify({ contact: contactToSend, rol }),
       })
 
       if (!res.ok) {
@@ -216,13 +273,13 @@ export function InviteUserDialog({
       const inviteLink = data.invitacion?.codigo_invitacion
         ? buildInvitationLink(data.invitacion.codigo_invitacion)
         : null
-      toast({
-        title: '¡Invitación creada!',
-        description:
-          contactMethod === 'email'
-            ? 'Enviamos un correo con la invitación.'
-            : `Comparte el enlace desde WhatsApp para que se unan a ${itemType === 'sobre' ? 'al sobre' : 'la lista'}.`,
-      })
+
+      // Obtener el nombre del contacto para mostrarlo en la notificación
+      let displayContact = contactToSend
+      if (methodUsed === 'contact' && selectedContactId) {
+        const selectedContact = myContacts.find(c => c.id === selectedContactId)
+        displayContact = selectedContact?.name || selectedContact?.email || contactToSend
+      }
 
       if (methodUsed === 'whatsapp') {
         const shareLink = inviteLink ?? buildInvitationLink(data.invitacion?.codigo_invitacion)
@@ -233,13 +290,19 @@ export function InviteUserDialog({
         handleClose()
         setSuccessInfo(null)
         setCopiedLink(false)
+        toast({
+          title: '¡Invitación creada!',
+          description: `Comparte el enlace desde WhatsApp para que se unan a ${itemType === 'sobre' ? 'al sobre' : 'la lista'}.`,
+        })
       } else {
+        // Para email y contact, mostrar la notificación en el diálogo
         setSuccessInfo({
-          contact: trimmed,
+          contact: displayContact,
           inviteLink,
         })
         setCopiedLink(false)
         setContact('')
+        setSelectedContactId(null)
       }
 
       onSuccess?.(methodUsed)
@@ -258,6 +321,7 @@ export function InviteUserDialog({
     setErrorMessage(null)
     setSuccessInfo(null)
     setCopiedLink(false)
+    setSelectedContactId(null)
     onOpenChange(false)
   }
 
@@ -288,6 +352,7 @@ export function InviteUserDialog({
   }
 
   const contactOptions: Array<{ key: ContactMethod; label: string; description: string; icon: typeof Mail }> = [
+    { key: 'contact', label: 'Mis contactos', description: 'Invita a personas que ya participan', icon: UsersIcon },
     { key: 'email', label: 'Mail', description: 'Enviamos un correo automático', icon: Mail },
     { key: 'whatsapp', label: 'WhatsApp', description: 'Comparte el link por chat', icon: MessageCircle },
   ]
@@ -351,45 +416,15 @@ export function InviteUserDialog({
           </CardContent>
         </Card>
 
-        {successInfo && (
-          <Alert className="border-emerald-200 bg-emerald-50 text-emerald-900">
-            <AlertTitle>Invitación enviada</AlertTitle>
-            <AlertDescription className="space-y-3 text-sm">
-              <p>
-                Invitamos a <span className="font-semibold text-foreground">{successInfo.contact}</span> a{' '}
-                {tipo === 'sobre' ? 'este sobre' : 'esta lista'}.{' '}
-                {successInfo.inviteLink
-                  ? 'Si necesita el acceso directo, comparte este enlace.'
-                  : 'Recibirá un correo con los pasos para unirse.'}
-              </p>
-              {successInfo.inviteLink && (
-                <div className="flex flex-col gap-2">
-                  <div className="break-all rounded-lg border border-emerald-200 bg-white/80 px-3 py-2 text-xs text-muted-foreground">
-                    {successInfo.inviteLink}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="sm"
-                    className="self-start"
-                    onClick={handleCopyInviteLink}
-                    disabled={copiedLink}
-                  >
-                    {copiedLink ? 'Link copiado' : 'Copiar link'}
-                  </Button>
-                </div>
-              )}
-            </AlertDescription>
-          </Alert>
-        )}
 
         <div className="space-y-5">
           <div className="space-y-3">
             <Label>Método de invitación</Label>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="grid grid-cols-3 gap-2">
               {contactOptions.map((option) => {
                 const Icon = option.icon
                 const isSelected = contactMethod === option.key
+                const isDisabled = loading || (option.key === 'contact' && myContacts.length === 0 && !loadingContacts)
                 return (
                   <button
                     key={option.key}
@@ -399,60 +434,118 @@ export function InviteUserDialog({
                         setContact('')
                         setSuccessInfo(null)
                         setCopiedLink(false)
+                        setSelectedContactId(null)
                       }
                       setContactMethod(option.key)
                     }}
-                    disabled={loading}
+                    disabled={isDisabled}
                     className={cn(
-                      'w-full rounded-2xl border p-3 text-left transition',
+                      'flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition',
                       isSelected ? 'border-primary bg-primary/10 shadow-sm' : 'border-border hover:border-primary/40',
-                      loading && 'opacity-60'
+                      isDisabled && 'opacity-40 cursor-not-allowed'
                     )}
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon className={cn('h-4 w-4', isSelected ? 'text-primary' : 'text-muted-foreground')} />
-                      <span className="font-semibold">{option.label}</span>
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground">{option.description}</p>
+                    <Icon className={cn('h-5 w-5', isSelected ? 'text-primary' : 'text-muted-foreground')} />
+                    <span className="text-xs font-medium">{option.label}</span>
                   </button>
                 )
               })}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="contact">
-                {contactMethod === 'email' ? 'Correo electrónico' : 'Número de WhatsApp'}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="contact"
-                  type={contactMethod === 'email' ? 'email' : 'tel'}
-                  placeholder={contactMethod === 'email' ? 'email@ejemplo.com' : '+56912345678'}
-                  value={contact}
-                  onChange={(e) => setContact(e.target.value)}
-                  disabled={loading}
-                  className="pl-10"
-                />
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  {contactMethod === 'email' ? (
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </div>
+
+            {/* Input de email/teléfono o lista de contactos */}
+            {contactMethod === 'contact' ? (
+              <div className="space-y-2">
+                <Label>Selecciona un contacto</Label>
+                {loadingContacts ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  </div>
+                ) : myContacts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-4 text-center">
+                    No tienes contactos disponibles. Primero invita a personas a tus sobres o listas.
+                  </p>
+                ) : (
+                  <div className="max-h-[200px] overflow-y-auto space-y-2 rounded-lg border p-2">
+                    {myContacts.map((contact) => (
+                      <button
+                        key={contact.id}
+                        type="button"
+                        onClick={() => setSelectedContactId(contact.id)}
+                        disabled={loading}
+                        className={cn(
+                          'w-full flex items-center gap-3 rounded-lg border p-3 text-left transition',
+                          selectedContactId === contact.id
+                            ? 'border-primary bg-primary/10 shadow-sm'
+                            : 'border-border hover:border-primary/40',
+                          loading && 'opacity-60'
+                        )}
+                      >
+                        {contact.image ? (
+                          <Image
+                            src={contact.image}
+                            alt={contact.name || 'Usuario'}
+                            width={32}
+                            height={32}
+                            className="rounded-full"
+                          />
+                        ) : (
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                            <UserCircle className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">
+                            {contact.name || contact.email || 'Sin nombre'}
+                          </p>
+                          {contact.email && (
+                            <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+                          )}
+                        </div>
+                        {selectedContactId === contact.id && (
+                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {contactMethod === 'email'
-                  ? `Enviaremos un correo con el enlace para unirse ${tipo === 'sobre' ? 'al sobre' : 'a la lista'}.`
-                  : 'Usa código de país. Se abrirá WhatsApp con un mensaje listo para enviar.'}
-              </p>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="contact">
+                  {contactMethod === 'email' ? 'Correo electrónico' : 'Número de WhatsApp'}
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="contact"
+                    type={contactMethod === 'email' ? 'email' : 'tel'}
+                    placeholder={contactMethod === 'email' ? 'email@ejemplo.com' : '+56912345678'}
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    disabled={loading}
+                    className="pl-10"
+                  />
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    {contactMethod === 'email' ? (
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {contactMethod === 'email'
+                    ? `Enviaremos un correo con el enlace para unirse ${tipo === 'sobre' ? 'al sobre' : 'a la lista'}.`
+                    : 'Usa código de país. Se abrirá WhatsApp con un mensaje listo para enviar.'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-3">
             <Label>Selecciona el rol</Label>
             <div className="flex flex-col gap-2">
               {selectableRoles.map((roleKey) => {
-                const config = roleConfig[roleKey]
+                const config = roleConfig[roleKey as keyof typeof roleConfig]
                 const Icon = config.icon
                 const isSelected = rol === roleKey
                 return (
@@ -507,24 +600,74 @@ export function InviteUserDialog({
         </div>
 
         <DialogFooter className="pt-4">
-          <Button onClick={handleInvite} disabled={loading} className="w-full">
-            {loading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Procesando...
-              </>
-            ) : contactMethod === 'email' ? (
-              <>
-                <Mail className="h-4 w-4 mr-2" />
-                Enviar por mail
-              </>
-            ) : (
-              <>
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Compartir en WhatsApp
-              </>
-            )}
-          </Button>
+          {successInfo ? (
+            <Alert className="w-full border-emerald-200 bg-emerald-50 text-emerald-900">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <AlertTitle>Invitación enviada</AlertTitle>
+                  <AlertDescription className="space-y-3 text-sm mt-2">
+                    <p>
+                      Invitamos a <span className="font-semibold text-foreground">{successInfo.contact}</span> a{' '}
+                      {tipo === 'sobre' ? 'este sobre' : 'esta lista'}.{' '}
+                      {successInfo.inviteLink
+                        ? 'Si necesita el acceso directo, comparte este enlace.'
+                        : 'Recibirá un correo con los pasos para unirse.'}
+                    </p>
+                    {successInfo.inviteLink && (
+                      <div className="flex flex-col gap-2">
+                        <div className="break-all rounded-lg border border-emerald-200 bg-white/80 px-3 py-2 text-xs text-muted-foreground">
+                          {successInfo.inviteLink}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          className="self-start"
+                          onClick={handleCopyInviteLink}
+                          disabled={copiedLink}
+                        >
+                          {copiedLink ? 'Link copiado' : 'Copiar link'}
+                        </Button>
+                      </div>
+                    )}
+                  </AlertDescription>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setSuccessInfo(null)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </Alert>
+          ) : (
+            <Button onClick={handleInvite} disabled={loading} className="w-full">
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Procesando...
+                </>
+              ) : contactMethod === 'email' ? (
+                <>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Enviar por mail
+                </>
+              ) : contactMethod === 'whatsapp' ? (
+                <>
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Compartir en WhatsApp
+                </>
+              ) : (
+                <>
+                  <UsersIcon className="h-4 w-4 mr-2" />
+                  Invitar contacto
+                </>
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
