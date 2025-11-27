@@ -18,6 +18,7 @@ import { ExecutionHistoryDrawer } from '@/components/drawers/ExecutionHistoryDra
 import { InviteUserDialog, type ContactMethod } from '@/components/sobres/invite-user-dialog'
 import { ManageListInvitationsDrawer } from '@/presentation/components/listas/manage-list-invitations-drawer'
 import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 import { PendingRegistrationsAlert } from '@/presentation/components/listas/PendingRegistrationsAlert'
 import { OwnerRegisterPurchaseDrawer } from '@/presentation/components/drawers/OwnerRegisterPurchaseDrawer'
 import { notify } from '@/infrastructure/lib/notifications'
@@ -79,7 +80,6 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const [showMyLists, setShowMyLists] = useState(true)
   const [showActiveExecutions, setShowActiveExecutions] = useState(false)
   const [showCompletedExecutions, setShowCompletedExecutions] = useState(false)
-  const [showSharedLists, setShowSharedLists] = useState(false)
   const [editingList, setEditingList] = useState<ShoppingList | null>(null)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [invitingList, setInvitingList] = useState<ShoppingList | null>(null)
@@ -88,10 +88,10 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
 
   // "Mis listas" debe mostrarse expandido al cargar datos
   useEffect(() => {
-    if (lists.length > 0) {
+    if (lists.length > 0 || sharedLists.length > 0) {
       setShowMyLists(true)
     }
-  }, [lists.length])
+  }, [lists.length, sharedLists.length])
 
   // Cargar listas y ejecuciones al montar
   useEffect(() => {
@@ -404,6 +404,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   // Separate lists into pending and executed
   const pendingLists = lists.filter(list => list.purchase_count === 0)
   const executedLists = lists.filter(list => list.purchase_count > 0)
+  const totalLists = lists.length + sharedLists.length
 
   const renderSectionEmptyState = (message: string) => (
     <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
@@ -793,7 +794,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
           <div>
             <h3 className="typography-h3 text-foreground">Listas de Compras</h3>
           </div>
-          {lists.length === 0 ? (
+          {totalLists === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border bg-card px-6 py-10 text-muted-foreground">
               <ShoppingCart size={64} className="opacity-20" />
               <p className="text-center">
@@ -818,7 +819,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                   <ListCheck className="h-4 w-4 text-muted-foreground" />
                   Mis Listas
                   <Badge variant="secondary" className="rounded-full px-2 py-0 text-[0.65rem] font-semibold">
-                    {lists.length}
+                    {totalLists}
                   </Badge>
                 </span>
                 <ChevronDown
@@ -831,43 +832,24 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               {showMyLists && (
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {lists.map(renderListCard)}
+                  {sharedLists.length > 0 && (
+                    <>
+                      <div className="col-span-full pt-2">
+                        <div className="flex items-center gap-3 text-muted-foreground">
+                          <Separator className="flex-1" />
+                          <span className="typography-caption font-semibold whitespace-nowrap">
+                            Listas compartidas conmigo
+                          </span>
+                          <Separator className="flex-1" />
+                        </div>
+                      </div>
+                      {sharedLists.map(renderListCard)}
+                    </>
+                  )}
                 </div>
               )}
             </div>
           )}
-
-          {/* Shared Lists Section */}
-          <div className="space-y-2 rounded-2xl border border-foreground/20 px-4 py-3">
-            <button
-              type="button"
-              onClick={() => setShowSharedLists(prev => !prev)}
-              aria-expanded={showSharedLists}
-              className="flex w-full items-center justify-between text-left"
-            >
-              <span className="typography-body-sm font-semibold text-foreground flex items-center gap-2">
-                <Users className="h-[1.2em] w-[1.2em]" />
-                Listas compartidas conmigo
-                <Badge variant="secondary" className="rounded-full px-2 py-0 text-[0.65rem] font-semibold">
-                  {sharedLists.length}
-                </Badge>
-              </span>
-              <ChevronDown
-                className={cn(
-                  'h-5 w-5 text-muted-foreground transition-transform',
-                  showSharedLists ? 'rotate-180' : ''
-                )}
-              />
-            </button>
-            {showSharedLists && (
-              sharedLists.length > 0 ? (
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {sharedLists.map(renderListCard)}
-                </div>
-              ) : (
-                renderSectionEmptyState('Todavía no tienes listas compartidas')
-              )
-            )}
-          </div>
 
           {/* Active Executions Section */}
           <div className="space-y-2 rounded-2xl border border-foreground/20 px-4 py-3">
@@ -932,6 +914,22 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               )
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Footer action */}
+      <div className="border-t border-border bg-background/90 px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="typography-caption text-muted-foreground">
+            {totalLists === 1 ? '1 lista disponible' : `${totalLists} listas disponibles`}
+          </span>
+          <Button
+            className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
+            onClick={handleOpenCreateDrawer}
+          >
+            <Plus size={16} />
+            Nueva lista
+          </Button>
         </div>
       </div>
 

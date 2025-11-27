@@ -670,6 +670,7 @@ export async function findInvitacionesEnviadasByUser(userId: string) {
       'users.image as invitado_image',
     ])
     .where('inv.invitado_por_id', '=', userId)
+    .where('inv.estado', '!=', 'CANCELADA')
     .where('sobres.deleted_at', 'is', null)
     .orderBy('inv.created_at', 'desc')
     .execute()

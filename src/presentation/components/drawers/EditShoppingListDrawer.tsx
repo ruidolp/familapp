@@ -91,7 +91,7 @@ export function EditShoppingListDrawer({
           />
         </div>
 
-        <DrawerFooter className="flex-row gap-2 justify-end">
+        <DrawerFooter className="flex-row gap-2 justify-end py-[1.1rem]">
           <DrawerClose asChild>
             <Button variant="outline" disabled={isLoading}>
               {t('common.cancel')}
