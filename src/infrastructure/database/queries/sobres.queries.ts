@@ -51,30 +51,72 @@ export async function findSobreById(sobreId: string) {
  * Buscar sobres por usuario (como owner o participante)
  */
 export async function findSobresByUser(userId: string) {
+  // Calcular periodo actual
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() + 1 // getMonth() returns 0-11
+
   // Sobres propios (donde usuario_id = userId)
-  const sobresOwner = await db
+  const sobresOwnerRaw = await db
     .selectFrom('sobres')
-    .selectAll()
-    .where('usuario_id', '=', userId)
-    .where('deleted_at', 'is', null)
+    .leftJoin('sobres_presupuestos', (join) =>
+      join
+        .onRef('sobres_presupuestos.sobre_id', '=', 'sobres.id')
+        .on('sobres_presupuestos.periodo_year', '=', currentYear)
+        .on('sobres_presupuestos.periodo_month', '=', currentMonth)
+        .on('sobres_presupuestos.presupuesto_enabled', '=', true)
+    )
+    .selectAll('sobres')
+    .select('sobres_presupuestos.monto_global as presupuesto_monto_global')
+    .select('sobres_presupuestos.presupuesto_enabled as presupuesto_enabled')
+    .where('sobres.usuario_id', '=', userId)
+    .where('sobres.deleted_at', 'is', null)
     .execute()
 
-  // Add user_role = 'OWNER' to owned sobres
-  const sobresOwnerWithRole = sobresOwner.map(sobre => ({
-    ...sobre,
-    user_role: 'OWNER' as const,
-  }))
+  // Add user_role = 'OWNER' and calculate correct presupuesto_asignado
+  const sobresOwnerWithRole = sobresOwnerRaw.map(sobre => {
+    const presupuesto_asignado = sobre.presupuesto_monto_global !== null && sobre.presupuesto_monto_global !== undefined
+      ? Number(sobre.presupuesto_monto_global)
+      : Number(sobre.presupuesto_asignado)
+
+    return {
+      ...sobre,
+      presupuesto_asignado,
+      user_role: 'OWNER' as const,
+    }
+  })
 
   // Sobres compartidos donde participa (pero NO es owner)
-  const sobresParticipante = await db
+  const sobresParticipanteRaw = await db
     .selectFrom('sobres')
     .innerJoin('sobres_usuarios', 'sobres.id', 'sobres_usuarios.sobre_id')
+    .leftJoin('sobres_presupuestos', (join) =>
+      join
+        .onRef('sobres_presupuestos.sobre_id', '=', 'sobres.id')
+        .on('sobres_presupuestos.periodo_year', '=', currentYear)
+        .on('sobres_presupuestos.periodo_month', '=', currentMonth)
+        .on('sobres_presupuestos.presupuesto_enabled', '=', true)
+    )
     .selectAll('sobres')
+    .select('sobres_presupuestos.monto_global as presupuesto_monto_global')
+    .select('sobres_presupuestos.presupuesto_enabled as presupuesto_enabled')
     .select('sobres_usuarios.rol as user_role')
     .where('sobres_usuarios.usuario_id', '=', userId)
     .where('sobres.usuario_id', '!=', userId) // Excluir sobres donde es owner
     .where('sobres.deleted_at', 'is', null)
     .execute()
+
+  // Calculate correct presupuesto_asignado for shared sobres
+  const sobresParticipante = sobresParticipanteRaw.map(sobre => {
+    const presupuesto_asignado = sobre.presupuesto_monto_global !== null && sobre.presupuesto_monto_global !== undefined
+      ? Number(sobre.presupuesto_monto_global)
+      : Number(sobre.presupuesto_asignado)
+
+    return {
+      ...sobre,
+      presupuesto_asignado,
+    }
+  })
 
   // Combinar y ordenar
   // IMPORTANTE: is_compartido viene de la DB, NO lo calculamos manualmente
@@ -456,11 +498,21 @@ export async function removeCategoriasFromSobre(sobreId: string, categoriaId: st
 
 /**
  * Obtener categorías de un sobre CON cálculo de gastos y porcentajes
+ * OPTIMIZED: Usa sobres_gastos_resumen (pre-calculado) en lugar de SUM on-the-fly
  * Retorna: categorías ordenadas por número de compras descendente (más usadas primero)
  */
-export async function findCategoriasWithGastosBySobre(sobreId: string) {
+export async function findCategoriasWithGastosBySobre(
+  sobreId: string,
+  periodoYear?: number,
+  periodoMonth?: number
+) {
   const sobre = await findSobreById(sobreId)
   if (!sobre) return []
+
+  // Si no se especifica periodo, usar periodo actual
+  const today = new Date()
+  const year = periodoYear ?? today.getFullYear()
+  const month = periodoMonth ?? today.getMonth() + 1
 
   const categorias = await db
     .selectFrom('sobres_categorias')
@@ -475,22 +527,21 @@ export async function findCategoriasWithGastosBySobre(sobreId: string) {
     .where('categorias.deleted_at', 'is', null)
     .execute()
 
-  // Para cada categoría, calcular gastos
+  // Para cada categoría, obtener gastos desde tabla de agregación (OPTIMIZADO)
   const categoriasWithGastos = await Promise.all(
     categorias.map(async (cat) => {
+      // Usar sobres_gastos_resumen en lugar de SUM
       const gastos = await db
-        .selectFrom('transacciones')
-        .select([
-          db.fn.sum('monto').as('total'),
-          db.fn.count('id').as('compras'),
-        ])
-        .where('categoria_id', '=', cat.id)
+        .selectFrom('sobres_gastos_resumen')
+        .select(['total_gastado', 'cantidad_transacciones'])
         .where('sobre_id', '=', sobreId)
-        .where('deleted_at', 'is', null)
+        .where('categoria_id', '=', cat.id)
+        .where('periodo_year', '=', year)
+        .where('periodo_month', '=', month)
         .executeTakeFirst()
 
-      const totalGastado = Number(gastos?.total || 0)
-      const compras = Number(gastos?.compras || 0)
+      const totalGastado = Number(gastos?.total_gastado || 0)
+      const compras = Number(gastos?.cantidad_transacciones || 0)
       const presupuestoAsignado = Number(sobre.presupuesto_asignado || 0)
       const porcentaje =
         presupuestoAsignado > 0
@@ -891,4 +942,264 @@ export async function associateInvitacionesToNewUser(
     .execute()
 
   return result.length
+}
+
+/**
+ * ============================================================================
+ * PRESUPUESTOS (Budget Configuration)
+ * ============================================================================
+ */
+
+/**
+ * Obtener configuración de presupuesto para un sobre en un periodo
+ */
+export async function findPresupuestoByPeriodo(
+  sobreId: string,
+  periodoYear: number,
+  periodoMonth: number
+) {
+  return await db
+    .selectFrom('sobres_presupuestos')
+    .selectAll()
+    .where('sobre_id', '=', sobreId)
+    .where('periodo_year', '=', periodoYear)
+    .where('periodo_month', '=', periodoMonth)
+    .executeTakeFirst()
+}
+
+/**
+ * Crear o actualizar configuración de presupuesto
+ */
+export async function upsertPresupuesto(data: {
+  sobre_id: string
+  periodo_year: number
+  periodo_month: number
+  presupuesto_enabled: boolean
+  monto_global: number
+}) {
+  return await db
+    .insertInto('sobres_presupuestos')
+    .values({
+      sobre_id: data.sobre_id,
+      periodo_year: data.periodo_year,
+      periodo_month: data.periodo_month,
+      presupuesto_enabled: data.presupuesto_enabled,
+      monto_global: data.monto_global,
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+    .onConflict((oc) =>
+      oc.columns(['sobre_id', 'periodo_year', 'periodo_month']).doUpdateSet({
+        presupuesto_enabled: data.presupuesto_enabled,
+        monto_global: data.monto_global,
+        updated_at: new Date(),
+      })
+    )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+/**
+ * Obtener cuotas de categorías para un presupuesto
+ */
+export async function findCuotasByPresupuesto(presupuestoId: string) {
+  return await db
+    .selectFrom('sobres_categorias_cuotas as scc')
+    .innerJoin('categorias as c', 'c.id', 'scc.categoria_id')
+    .select([
+      'scc.id',
+      'scc.presupuesto_id',
+      'scc.categoria_id',
+      'scc.monto_cuota',
+      'c.nombre as categoria_nombre',
+      'c.emoji as categoria_emoji',
+      'c.color as categoria_color',
+    ])
+    .where('scc.presupuesto_id', '=', presupuestoId)
+    .where('c.deleted_at', 'is', null)
+    .execute()
+}
+
+/**
+ * Crear o actualizar cuota de categoría
+ */
+export async function upsertCuotaCategoria(data: {
+  presupuesto_id: string
+  categoria_id: string
+  monto_cuota: number
+}) {
+  return await db
+    .insertInto('sobres_categorias_cuotas')
+    .values({
+      presupuesto_id: data.presupuesto_id,
+      categoria_id: data.categoria_id,
+      monto_cuota: data.monto_cuota,
+      created_at: new Date(),
+      updated_at: new Date(),
+    })
+    .onConflict((oc) =>
+      oc.columns(['presupuesto_id', 'categoria_id']).doUpdateSet({
+        monto_cuota: data.monto_cuota,
+        updated_at: new Date(),
+      })
+    )
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+/**
+ * Eliminar cuota de categoría
+ */
+export async function deleteCuotaCategoria(presupuestoId: string, categoriaId: string) {
+  return await db
+    .deleteFrom('sobres_categorias_cuotas')
+    .where('presupuesto_id', '=', presupuestoId)
+    .where('categoria_id', '=', categoriaId)
+    .executeTakeFirst()
+}
+
+/**
+ * Registrar ajuste de presupuesto en log de auditoría
+ */
+export async function registrarAjustePresupuesto(data: {
+  sobre_id: string
+  periodo_year: number
+  periodo_month: number
+  tipo_ajuste: string
+  campo: string
+  categoria_id?: string | null
+  valor_anterior: number | null
+  valor_nuevo: number
+  usuario_id: string
+  motivo?: string
+}) {
+  const diferencia = (data.valor_nuevo || 0) - (data.valor_anterior || 0)
+
+  return await db
+    .insertInto('presupuesto_ajustes_log')
+    .values({
+      sobre_id: data.sobre_id,
+      periodo_year: data.periodo_year,
+      periodo_month: data.periodo_month,
+      tipo_ajuste: data.tipo_ajuste,
+      campo: data.campo,
+      categoria_id: data.categoria_id || null,
+      valor_anterior: data.valor_anterior,
+      valor_nuevo: data.valor_nuevo,
+      diferencia,
+      usuario_id: data.usuario_id,
+      motivo: data.motivo || null,
+      fecha_ajuste: new Date(),
+    })
+    .returningAll()
+    .executeTakeFirstOrThrow()
+}
+
+/**
+ * Obtener ajustes de presupuesto por periodo (para stats)
+ */
+export async function findAjustesByPeriodo(
+  sobreId: string,
+  periodoYear: number,
+  periodoMonth: number
+) {
+  return await db
+    .selectFrom('presupuesto_ajustes_log')
+    .selectAll()
+    .where('sobre_id', '=', sobreId)
+    .where('periodo_year', '=', periodoYear)
+    .where('periodo_month', '=', periodoMonth)
+    .orderBy('fecha_ajuste', 'desc')
+    .execute()
+}
+
+/**
+ * Obtener gastos agregados del periodo actual (desde sobres_gastos_resumen)
+ */
+export async function findGastosResumenByPeriodo(
+  sobreId: string,
+  periodoYear: number,
+  periodoMonth: number
+) {
+  return await db
+    .selectFrom('sobres_gastos_resumen as sgr')
+    .leftJoin('categorias as c', 'c.id', 'sgr.categoria_id')
+    .select([
+      'sgr.id',
+      'sgr.sobre_id',
+      'sgr.categoria_id',
+      'sgr.total_gastado',
+      'sgr.cantidad_transacciones',
+      'c.nombre as categoria_nombre',
+      'c.emoji as categoria_emoji',
+      'c.color as categoria_color',
+    ])
+    .where('sgr.sobre_id', '=', sobreId)
+    .where('sgr.periodo_year', '=', periodoYear)
+    .where('sgr.periodo_month', '=', periodoMonth)
+    .execute()
+}
+
+/**
+ * Sugerencia de presupuesto basada en periodo anterior
+ */
+export async function findSugerenciaPresupuesto(
+  sobreId: string,
+  periodoYear: number,
+  periodoMonth: number
+) {
+  // Calcular periodo anterior
+  let prevYear = periodoYear
+  let prevMonth = periodoMonth - 1
+  if (prevMonth < 1) {
+    prevMonth = 12
+    prevYear -= 1
+  }
+
+  // Obtener gastos del periodo anterior
+  return await db
+    .selectFrom('sobres_gastos_resumen as sgr')
+    .leftJoin('categorias as c', 'c.id', 'sgr.categoria_id')
+    .select([
+      'sgr.categoria_id',
+      'sgr.total_gastado',
+      'sgr.cantidad_transacciones',
+      'c.nombre as categoria_nombre',
+      'c.emoji as categoria_emoji',
+      'c.color as categoria_color',
+    ])
+    .where('sgr.sobre_id', '=', sobreId)
+    .where('sgr.periodo_year', '=', prevYear)
+    .where('sgr.periodo_month', '=', prevMonth)
+    .orderBy('sgr.total_gastado', 'desc')
+    .execute()
+}
+
+/**
+ * Obtener presupuesto completo del sobre con sus cuotas
+ * (Helper para carga rápida en ConfigurarPresupuestoDrawer)
+ */
+export async function findPresupuestoCompletoByPeriodo(
+  sobreId: string,
+  periodoYear: number,
+  periodoMonth: number
+) {
+  // 1. Obtener presupuesto base
+  const presupuesto = await findPresupuestoByPeriodo(sobreId, periodoYear, periodoMonth)
+
+  if (!presupuesto) {
+    return null
+  }
+
+  // 2. Obtener cuotas de categorías
+  const cuotas = await findCuotasByPresupuesto(presupuesto.id)
+
+  return {
+    enabled: presupuesto.presupuesto_enabled,
+    monto_global: presupuesto.monto_global,
+    cuotas: cuotas.map(c => ({
+      categoria_id: c.categoria_id,
+      monto_cuota: c.monto_cuota,
+    })),
+  }
 }

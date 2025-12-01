@@ -381,6 +381,12 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                     onVerTransaccionesCategoria={(categoriaId, categoriaNombre) =>
                       handleDetalleCategoria(categoriaId, categoriaNombre, sobre.id, sobre.nombre)
                     }
+                    onPresupuestoUpdated={async () => {
+                      // Guardar índice actual para restaurar después
+                      targetIndexRef.current = selectedIndex
+                      isRestoringRef.current = true
+                      await fetchSobres()
+                    }}
                   />
                 </div>
               ))}

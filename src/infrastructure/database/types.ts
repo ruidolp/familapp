@@ -311,6 +311,25 @@ export interface PlanLimits {
   resource_key: string;
 }
 
+export interface PresupuestoAjustesLog {
+  campo: string;
+  categoria_id: string | null;
+  /**
+   * Positive values = increase, negative values = decrease
+   */
+  diferencia: Numeric | null;
+  fecha_ajuste: Generated<Timestamp>;
+  id: Generated<string>;
+  motivo: string | null;
+  periodo_month: number;
+  periodo_year: number;
+  sobre_id: string;
+  tipo_ajuste: string;
+  usuario_id: string;
+  valor_anterior: Numeric | null;
+  valor_nuevo: Numeric | null;
+}
+
 export interface ProductCatalog {
   /**
    * Referencia a product_categories_global (SIN FK para independencia)
@@ -562,6 +581,52 @@ export interface SobresCategorias {
   categoria_id: string;
   created_at: Generated<Timestamp>;
   sobre_id: string;
+}
+
+export interface SobresCategoriasCuotas {
+  categoria_id: string;
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  /**
+   * Target spending limit for this category (not enforced, only visual)
+   */
+  monto_cuota: Numeric;
+  presupuesto_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface SobresGastosResumen {
+  /**
+   * Count of transactions (maintained automatically)
+   */
+  cantidad_transacciones: Generated<number>;
+  categoria_id: string | null;
+  id: Generated<string>;
+  periodo_month: number;
+  periodo_year: number;
+  sobre_id: string;
+  /**
+   * Sum of all expense transactions (maintained automatically)
+   */
+  total_gastado: Generated<Numeric>;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface SobresPresupuestos {
+  created_at: Generated<Timestamp>;
+  id: Generated<string>;
+  /**
+   * Total budget amount for the envelope in this period
+   */
+  monto_global: Generated<Numeric | null>;
+  periodo_month: number;
+  periodo_year: number;
+  /**
+   * Enable/disable budget tracking (soft limits)
+   */
+  presupuesto_enabled: Generated<boolean>;
+  sobre_id: string;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface SobresUsuarios {
@@ -826,6 +891,7 @@ export interface DB {
   periodos: Periodos;
   plan_capabilities: PlanCapabilities;
   plan_limits: PlanLimits;
+  presupuesto_ajustes_log: PresupuestoAjustesLog;
   product_catalog: ProductCatalog;
   product_categories_global: ProductCategoriesGlobal;
   product_categories_user: ProductCategoriesUser;
@@ -841,6 +907,9 @@ export interface DB {
   shopping_lists: ShoppingLists;
   sobres: Sobres;
   sobres_categorias: SobresCategorias;
+  sobres_categorias_cuotas: SobresCategoriasCuotas;
+  sobres_gastos_resumen: SobresGastosResumen;
+  sobres_presupuestos: SobresPresupuestos;
   sobres_usuarios: SobresUsuarios;
   subcategorias: Subcategorias;
   subcategorias_globales: SubcategoriasGlobales;

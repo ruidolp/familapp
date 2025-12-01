@@ -406,6 +406,7 @@
         "budgetSection": "Budget",
         "increase": "Increase",
         "reduce": "Reduce",
+        "configureBudget": "Configure spending goal",
         "transactions": "Movement details",
         "organizationSection": "Organization",
         "categoriesAndBrands": "Categories & Brands",
@@ -773,6 +774,51 @@
         "loadFailed": "Failed to load transactions",
         "deleteFailed": "Failed to delete transaction"
       }
+    }
+  },
+  "presupuesto": {
+    "title": {
+      "create": "Configure spending goals",
+      "edit": "Configure spending goals"
+    },
+    "description": "Set a total budget and optionally assign amounts per expense type. These are visual limits that don't block expenses.",
+    "global": {
+      "label": "Total envelope budget",
+      "manualAdjust": "Manual adjustment"
+    },
+    "categories": {
+      "title": "Goals per expense type",
+      "remainder": "Remaining expense types",
+      "remainderDescription": "Assign an amount for expense types that don't have a fixed goal",
+      "ofTotal": "of total",
+      "empty": "No expense types in this envelope. Add expense types to assign individual goals.",
+      "metaPlaceholder": "Optional goal",
+      "spent": "Spent"
+    },
+    "warning": {
+      "exceeds": "Category goals exceed total budget by {amount}"
+    },
+    "sugerencia": {
+      "button": "Load suggestion from last month",
+      "loading": "Loading suggestion...",
+      "noData": "No data from previous month to suggest",
+      "success": "Suggestion loaded successfully",
+      "error": "Error loading suggestion"
+    },
+    "actions": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "globalRequired": "Enter a total budget greater than 0"
+    },
+    "error": {
+      "save": "Error saving configuration"
+    },
+    "success": {
+      "create": "Spending goal configured successfully",
+      "update": "Spending goal updated successfully"
     }
   },
   "categorias": {

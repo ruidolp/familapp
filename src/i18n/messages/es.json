@@ -406,6 +406,7 @@
         "budgetSection": "Presupuesto",
         "increase": "Aumentar",
         "reduce": "Reducir",
+        "configureBudget": "Configurar meta de gasto",
         "transactions": "Detalle de movimientos",
         "organizationSection": "Organización",
         "categoriesAndBrands": "Categorías y Marcas",
@@ -605,6 +606,51 @@
         "loadFailed": "Error al cargar movimientos",
         "deleteFailed": "Error al eliminar el movimiento"
       }
+    }
+  },
+  "presupuesto": {
+    "title": {
+      "create": "Configurar metas de gastos",
+      "edit": "Configurar metas de gastos"
+    },
+    "description": "Define un presupuesto total y opcionalmente asigna montos por tipo de gasto. Son límites visuales que no bloquean gastos.",
+    "global": {
+      "label": "Presupuesto total del sobre",
+      "manualAdjust": "Ajuste manual"
+    },
+    "categories": {
+      "title": "Metas por tipo de gasto",
+      "remainder": "Tipos de gastos restantes",
+      "remainderDescription": "Asigna un monto para los tipos de gastos que no tienen meta fija",
+      "ofTotal": "del total",
+      "empty": "No hay tipos de gastos en este sobre. Agrega tipos de gastos para asignarles metas individuales.",
+      "metaPlaceholder": "Meta opcional",
+      "spent": "Gastado"
+    },
+    "warning": {
+      "exceeds": "Las metas de categorías superan el presupuesto total por {amount}"
+    },
+    "sugerencia": {
+      "button": "Cargar sugerencia del mes anterior",
+      "loading": "Cargando sugerencia...",
+      "noData": "No hay datos del mes anterior para sugerir",
+      "success": "Sugerencia cargada correctamente",
+      "error": "Error al cargar sugerencia"
+    },
+    "actions": {
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando..."
+    },
+    "validation": {
+      "globalRequired": "Ingresa un presupuesto total mayor a 0"
+    },
+    "error": {
+      "save": "Error al guardar la configuración"
+    },
+    "success": {
+      "create": "Meta de gasto configurada correctamente",
+      "update": "Meta de gasto actualizada correctamente"
     }
   },
   "shopping": {

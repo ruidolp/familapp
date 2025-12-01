@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useEffect, useState, useRef, useCallback, type CSSProperties } from 'react'
-import { MoreVertical, Wallet, ArrowUpRight, ArrowDownRight, List, UserPlus, Users } from 'lucide-react'
+import { Sliders, Wallet, ArrowUpRight, ArrowDownRight, List, UserPlus, Users, Settings2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -22,6 +22,7 @@ import { useCurrency } from '@/presentation/providers/currency-provider'
 import { getCurrentBudgetCycle, formatDetailedBudgetRange } from '@/infrastructure/utils/budget-cycle'
 import { InviteUserDialog } from '@/components/sobres/invite-user-dialog'
 import { ManageInvitationsDrawer } from '@/components/sobres/manage-invitations-drawer'
+import { ConfigurarPresupuestoDrawer } from '@/components/drawers/ConfigurarPresupuestoDrawer'
 import { useTheme } from '@/presentation/providers/theme-provider'
 import { cn } from '@/infrastructure/lib/utils'
 
@@ -61,6 +62,7 @@ interface SobreCardProps {
     sobreId: string,
     sobreName: string
   ) => void
+  onPresupuestoUpdated?: () => void
 }
 
 // Hook: auto-resize large numbers so they don't overlap
@@ -120,6 +122,7 @@ export function SobreCard({
   onVerDetalle,
   onFlashGasto,
   onVerTransaccionesCategoria,
+  onPresupuestoUpdated,
 }: SobreCardProps) {
   const { formatNumber } = useCurrency()
   const t = useTranslations('sobres')
@@ -128,6 +131,9 @@ export function SobreCard({
   const [accionesOpen, setAccionesOpen] = useState(false)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [manageInvitesOpen, setManageInvitesOpen] = useState(false)
+  const [configurarPresupuestoOpen, setConfigurarPresupuestoOpen] = useState(false)
+  const [presupuestoActual, setPresupuestoActual] = useState<any>(null)
+  const [loadingPresupuesto, setLoadingPresupuesto] = useState(false)
 
   // Permisos basados en rol
   const canManageBudget = userRole === 'OWNER' || userRole === 'ADMIN'
@@ -168,6 +174,37 @@ export function SobreCard({
   const handleInvitePerson = () => {
     setAccionesOpen(false)
     setInviteDialogOpen(true)
+  }
+
+  const handleOpenConfigurarPresupuesto = async () => {
+    setAccionesOpen(false)
+    setLoadingPresupuesto(true)
+
+    try {
+      const res = await fetch(`/api/sobres/${id}/presupuesto`)
+      const data = await res.json()
+
+      if (data.success && data.data) {
+        setPresupuestoActual(data.data)
+      } else {
+        setPresupuestoActual(null)
+      }
+    } catch (error) {
+      console.error('Error al cargar presupuesto:', error)
+      setPresupuestoActual(null)
+    } finally {
+      setLoadingPresupuesto(false)
+      setConfigurarPresupuestoOpen(true)
+    }
+  }
+
+  const handlePresupuestoSuccess = () => {
+    refetchCategorias()
+    setConfigurarPresupuestoOpen(false)
+    // Recargar presupuesto para que se actualice en próxima apertura
+    setPresupuestoActual(null)
+    // Notificar al padre para que recargue la lista de sobres
+    onPresupuestoUpdated?.()
   }
 
   // Hook para obtener categorías
@@ -261,7 +298,7 @@ export function SobreCard({
                     setAccionesOpen(true)
                   }}
                 >
-                  <MoreVertical className="h-5 w-5" />
+                  <Sliders className="h-5 w-5" />
                   <span className="sr-only">{t('card.accessibility.actions')}</span>
                 </Button>
                 <DrawerContent>
@@ -303,6 +340,18 @@ export function SobreCard({
                         >
                           <ArrowDownRight className="h-4 w-4" />
                           {t('card.actions.reduce')}
+                        </Button>
+                        <Button
+                          variant={drawerButtonVariant}
+                          className={drawerButtonClassName}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenConfigurarPresupuesto()
+                          }}
+                          disabled={loadingPresupuesto}
+                        >
+                          <Settings2 className="h-4 w-4" />
+                          {loadingPresupuesto ? 'Cargando...' : t('card.actions.configureBudget')}
                         </Button>
                         <Button
                           variant={drawerButtonVariant}
@@ -535,6 +584,25 @@ export function SobreCard({
           onOpenChange={setManageInvitesOpen}
           sobreId={id}
           sobreNombre={nombre}
+        />
+      )}
+
+      {/* Budget Configuration Drawer */}
+      {canManageBudget && (
+        <ConfigurarPresupuestoDrawer
+          open={configurarPresupuestoOpen}
+          onOpenChange={setConfigurarPresupuestoOpen}
+          sobreId={id}
+          sobreNombre={nombre}
+          categorias={categoriasOrdenadas.map((cat) => ({
+            id: cat.id,
+            nombre: cat.nombre,
+            emoji: cat.emoji,
+            color: cat.color,
+            gastado: cat.gastado,
+          }))}
+          presupuestoActual={presupuestoActual}
+          onSuccess={handlePresupuestoSuccess}
         />
       )}
     </div>

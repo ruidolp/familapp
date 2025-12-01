@@ -58,25 +58,27 @@ export function CategoriaCard({
           </div>
         </div>
 
-        {/* Columna derecha: monto y botón Flash alineados */}
+        {/* Columna derecha: monto (Flash button temporalmente oculto para validación visual) */}
         <div className="flex shrink-0 flex-col gap-2" style={{ alignItems: 'flex-end', width: 'auto' }}>
           <span className="text-right tabular-nums tracking-tight typography-label-lg text-foreground" style={{ lineHeight: '1', paddingRight: '0px', marginRight: '0px', display: 'block', width: 'max-content' }}>
             {formatNumber(gastadoNum)}
           </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            className="h-12 w-12 rounded-full text-muted-foreground"
-            style={{ flexShrink: 0 }}
-            onClick={(e) => {
-              e.stopPropagation()
-              onFlashGasto?.(e)
-            }}
-          >
-            <Zap className="h-5 w-5" />
-            <span className="sr-only">{t('quickExpense')}</span>
-          </Button>
+          {/* 
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-12 w-12 rounded-full text-muted-foreground"
+              style={{ flexShrink: 0 }}
+              onClick={(e) => {
+                e.stopPropagation()
+                onFlashGasto?.(e)
+              }}
+            >
+              <Zap className="h-5 w-5" />
+              <span className="sr-only">{t('quickExpense')}</span>
+            </Button>
+          */}
         </div>
       </div>
     </>
