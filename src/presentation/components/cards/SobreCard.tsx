@@ -51,17 +51,12 @@ interface SobreCardProps {
   isCompartido?: boolean
   isOwner?: boolean
   userRole?: 'OWNER' | 'ADMIN' | 'CONTRIBUTOR' | 'VIEWER'
+  presupuestoEnabled?: boolean
   onAgregarPresupuesto?: () => void
   onDevolverPresupuesto?: () => void
   onEditarCategorias?: () => void
   onVerDetalle?: () => void
   onFlashGasto?: (categoriaId: string) => void
-  onVerTransaccionesCategoria?: (
-    categoriaId: string,
-    categoriaNombre: string,
-    sobreId: string,
-    sobreName: string
-  ) => void
   onPresupuestoUpdated?: () => void
 }
 
@@ -116,12 +111,12 @@ export function SobreCard({
   isCompartido = false,
   isOwner = false,
   userRole = 'OWNER',
+  presupuestoEnabled = false,
   onAgregarPresupuesto,
   onDevolverPresupuesto,
   onEditarCategorias,
   onVerDetalle,
   onFlashGasto,
-  onVerTransaccionesCategoria,
   onPresupuestoUpdated,
 }: SobreCardProps) {
   const { formatNumber } = useCurrency()
@@ -178,8 +173,16 @@ export function SobreCard({
 
   const handleOpenConfigurarPresupuesto = async () => {
     setAccionesOpen(false)
-    setLoadingPresupuesto(true)
 
+    // Si el presupuesto está deshabilitado, no hacer fetch - ir directo al dialog
+    if (!presupuestoEnabled) {
+      setPresupuestoActual({ enabled: false, monto_global: 0, cuotas: [] })
+      setConfigurarPresupuestoOpen(true)
+      return
+    }
+
+    // Solo hacer fetch cuando el presupuesto está habilitado
+    setLoadingPresupuesto(true)
     try {
       const res = await fetch(`/api/sobres/${id}/presupuesto`)
       const data = await res.json()
@@ -228,7 +231,10 @@ export function SobreCard({
   const libreEsPositivo = presupuestoLibre >= 0
   const usadoFormatted = useMemo(() => formatNumber(gastadoNum), [formatNumber, gastadoNum])
   const libreFormatted = useMemo(
-    () => formatNumber(libreEsPositivo ? presupuestoLibre : Math.abs(presupuestoLibre)),
+    () =>
+      libreEsPositivo
+        ? formatNumber(presupuestoLibre)
+        : `-${formatNumber(Math.abs(presupuestoLibre))}`,
     [formatNumber, libreEsPositivo, presupuestoLibre]
   )
 
@@ -351,7 +357,12 @@ export function SobreCard({
                           disabled={loadingPresupuesto}
                         >
                           <Settings2 className="h-4 w-4" />
-                          {loadingPresupuesto ? 'Cargando...' : t('card.actions.configureBudget')}
+                          {loadingPresupuesto
+                            ? 'Cargando...'
+                            : presupuestoEnabled
+                              ? t('card.actions.configureBudget')
+                              : t('card.actions.enableBudget')
+                          }
                         </Button>
                         <Button
                           variant={drawerButtonVariant}
@@ -481,7 +492,7 @@ export function SobreCard({
         <div className="space-y-3 px-4 pt-2 pb-1">
           <div className="flex items-center gap-3 typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
             <div className="h-px flex-1 bg-border" />
-            <span>{t('categories.title', { count: categoriasOrdenadas.length })}</span>
+            <span>{t('categories.title')}</span>
             <div className="h-px flex-1 bg-border" />
           </div>
 
@@ -521,9 +532,7 @@ export function SobreCard({
                   gastado={categoria.gastado || 0}
                   porcentaje={categoria.porcentaje || 0}
                   compras={categoria.compras || 0}
-                  onViewTransactions={() =>
-                    onVerTransaccionesCategoria?.(categoria.id, categoria.nombre, id, nombre)
-                  }
+                  meta={categoria.meta}
                   onFlashGasto={(e) => {
                     e?.stopPropagation()
                     onFlashGasto?.(categoria.id)

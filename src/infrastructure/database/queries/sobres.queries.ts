@@ -540,6 +540,17 @@ export async function findCategoriasWithGastosBySobre(
         .where('periodo_month', '=', month)
         .executeTakeFirst()
 
+      // Obtener meta/cuota de la categoría si existe
+      const cuota = await db
+        .selectFrom('sobres_presupuestos as sp')
+        .leftJoin('sobres_categorias_cuotas as scc', 'scc.presupuesto_id', 'sp.id')
+        .select(['scc.monto_cuota'])
+        .where('sp.sobre_id', '=', sobreId)
+        .where('sp.periodo_year', '=', year)
+        .where('sp.periodo_month', '=', month)
+        .where('scc.categoria_id', '=', cat.id)
+        .executeTakeFirst()
+
       const totalGastado = Number(gastos?.total_gastado || 0)
       const compras = Number(gastos?.cantidad_transacciones || 0)
       const presupuestoAsignado = Number(sobre.presupuesto_asignado || 0)
@@ -547,12 +558,14 @@ export async function findCategoriasWithGastosBySobre(
         presupuestoAsignado > 0
           ? Math.round((totalGastado / presupuestoAsignado) * 100)
           : 0
+      const meta = cuota?.monto_cuota ? Number(cuota.monto_cuota) : undefined
 
       return {
         ...cat,
         gastado: totalGastado,
         porcentaje,
         compras,
+        meta,
       }
     })
   )

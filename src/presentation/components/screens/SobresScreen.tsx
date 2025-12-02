@@ -11,7 +11,6 @@ import { ReducirPresupuestoDrawer } from '@/components/drawers/ReducirPresupuest
 import { CrearGastoDrawer } from '@/components/drawers/CrearGastoDrawer'
 import { EditarCategoriasMarcasDrawer } from '@/components/drawers/EditarCategoriasMarcasDrawer'
 import { VerDetalleTransaccionesDrawer } from '@/components/drawers/VerDetalleTransaccionesDrawer'
-import { VerDetalleCategoriaTransaccionesDrawer } from '@/components/drawers/VerDetalleCategoriaTransaccionesDrawer'
 import { OverspendWarningModal } from '@/components/modals/OverspendWarningModal'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useSobre, useDevolverPresupuesto } from '@/presentation/hooks/useSobres'
@@ -30,6 +29,7 @@ interface Sobre {
   is_compartido?: boolean
   usuario_id?: string
   user_role?: 'OWNER' | 'ADMIN' | 'CONTRIBUTOR' | 'VIEWER'
+  presupuesto_enabled?: boolean
 }
 
 interface WarningType {
@@ -59,13 +59,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const [crearGastoOpen, setCrearGastoOpen] = useState(false)
   const [editarCategoriasOpen, setEditarCategoriasOpen] = useState(false)
   const [verDetalleOpen, setVerDetalleOpen] = useState(false)
-  const [detalleCategoriaOpen, setDetalleCategoriaOpen] = useState(false)
-  const [categoriaDetalle, setCategoriaDetalle] = useState<{
-    id: string
-    nombre: string
-    sobreId: string
-    sobreName: string
-  } | null>(null)
   const [sobreSeleccionado, setSobreSeleccionado] = useState<Sobre | null>(null)
   const [sobreSeleccionadoParaGasto, setSobreSeleccionadoParaGasto] = useState<string>('')
   const [categoriaPreseleccionada, setCategoriaPreseleccionada] = useState<string>('')
@@ -252,16 +245,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     setVerDetalleOpen(true)
   }
 
-  const handleDetalleCategoria = (categoriaId: string, categoriaNombre: string, sobreId: string, sobreName: string) => {
-    setCategoriaDetalle({
-      id: categoriaId,
-      nombre: categoriaNombre,
-      sobreId,
-      sobreName,
-    })
-    setDetalleCategoriaOpen(true)
-  }
-
   const handleSobreCreated = (sobre: Sobre) => {
     // Actualizar lista de sobres
     fetchSobres()
@@ -354,42 +337,42 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
       ) : (
         <div className="relative flex-1 px-4 py-4">
           {/* Carousel Container */}
-          <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex gap-4">
-              {sobres.map((sobre) => (
-                <div
-                  key={sobre.id}
-                  className="flex-[0_0_100%] min-w-0"
-                >
-                  <SobreCard
-                    id={sobre.id}
-                    nombre={sobre.nombre}
-                    emoji={sobre.emoji}
-                    color={sobre.color}
-                    presupuestoAsignado={sobre.presupuesto_asignado}
-                    gastado={sobre.gastado || 0}
-                    asignaciones={sobre.asignaciones || []}
-                    diaInicioPeriodo={diaInicioPeriodo}
-                    isCompartido={Boolean(sobre.is_compartido)}
-                    isOwner={sobre.usuario_id === userId}
-                    userRole={sobre.user_role || 'OWNER'}
-                    onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
-                    onVerDetalle={() => handleDetalleSobre(sobre)}
-                    onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
-                    onEditarCategorias={() => handleEditarCategorias(sobre)}
-                    onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}
-                    onVerTransaccionesCategoria={(categoriaId, categoriaNombre) =>
-                      handleDetalleCategoria(categoriaId, categoriaNombre, sobre.id, sobre.nombre)
-                    }
-                    onPresupuestoUpdated={async () => {
-                      // Guardar índice actual para restaurar después
-                      targetIndexRef.current = selectedIndex
-                      isRestoringRef.current = true
-                      await fetchSobres()
-                    }}
-                  />
-                </div>
-              ))}
+          <div className="-mx-4">
+            <div className="overflow-hidden px-4" ref={emblaRef}>
+              <div className="flex gap-4">
+                {sobres.map((sobre) => (
+                  <div
+                    key={sobre.id}
+                    className="flex-[0_0_100%] min-w-0"
+                  >
+                    <SobreCard
+                      id={sobre.id}
+                      nombre={sobre.nombre}
+                      emoji={sobre.emoji}
+                      color={sobre.color}
+                      presupuestoAsignado={sobre.presupuesto_asignado}
+                      gastado={sobre.gastado || 0}
+                      asignaciones={sobre.asignaciones || []}
+                      diaInicioPeriodo={diaInicioPeriodo}
+                      isCompartido={Boolean(sobre.is_compartido)}
+                      isOwner={sobre.usuario_id === userId}
+                      userRole={sobre.user_role || 'OWNER'}
+                      presupuestoEnabled={sobre.presupuesto_enabled}
+                      onAgregarPresupuesto={() => handleAgregarPresupuesto(sobre)}
+                      onVerDetalle={() => handleDetalleSobre(sobre)}
+                      onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
+                      onEditarCategorias={() => handleEditarCategorias(sobre)}
+                      onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}
+                      onPresupuestoUpdated={async () => {
+                        // Guardar índice actual para restaurar después
+                        targetIndexRef.current = selectedIndex
+                        isRestoringRef.current = true
+                        await fetchSobres()
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -446,20 +429,6 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         onOpenChange={setVerDetalleOpen}
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
-        onTransactionsUpdated={handleTransaccionesUpdated}
-      />
-      <VerDetalleCategoriaTransaccionesDrawer
-        open={detalleCategoriaOpen}
-        onOpenChange={(open) => {
-          setDetalleCategoriaOpen(open)
-          if (!open) {
-            setCategoriaDetalle(null)
-          }
-        }}
-        sobreId={categoriaDetalle?.sobreId || ''}
-        sobreName={categoriaDetalle?.sobreName || ''}
-        categoriaId={categoriaDetalle?.id || ''}
-        categoriaName={categoriaDetalle?.nombre || ''}
         onTransactionsUpdated={handleTransaccionesUpdated}
       />
 

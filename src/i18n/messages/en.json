@@ -407,6 +407,7 @@
         "increase": "Increase",
         "reduce": "Reduce",
         "configureBudget": "Configure spending goal",
+        "enableBudget": "Enable Spending Goals",
         "transactions": "Movement details",
         "organizationSection": "Organization",
         "categoriesAndBrands": "Categories & Brands",
@@ -426,7 +427,8 @@
       "purchases": "{count} purchases",
       "percentUsed": "{percent}% of the budget",
       "quickExpense": "Record expense",
-      "editCategory": "Edit category"
+      "editCategory": "Edit category",
+      "goal": "Goal"
     }
   },
   "shopping": {
@@ -562,27 +564,27 @@
       "originPlaceholder": "Envelope",
       "selectEnvelope": "Select envelope",
       "selectEnvelopePlaceholder": "Envelope",
-      "category": "Category",
-      "addNewCategory": "New category",
-      "categoryNamePlaceholder": "Category name",
+      "category": "Expense type",
+      "addNewCategory": "New expense type",
+      "categoryNamePlaceholder": "Expense type name",
       "categoryEmoji": "🏷️",
       "creating": "Recording...",
       "submit": "Record Expense",
       "cancel": "Cancel",
       "details": "Details",
-      "brand": "Brand",
-      "addNewBrand": "New brand",
-      "brandPlaceholder": "Search or create brand...",
+      "brand": "Merchant",
+      "addNewBrand": "New merchant",
+      "brandPlaceholder": "Search or create merchant...",
       "brandOptional": "optional",
-      "pressEnter": "Press Enter to create new brand",
-      "selectCategoryForBrands": "Select a category to see available brands",
+      "pressEnter": "Press Enter to create a new merchant",
+      "selectCategoryForBrands": "Pick an expense type to see available merchants",
       "comment": "Comment",
       "commentOptional": "optional",
       "commentPlaceholder": "Eg: Lunch at the office",
       "errors": {
         "amountGreaterThanZero": "Amount must be greater than 0",
         "selectEnvelope": "Select an envelope",
-        "categoryRequired": "Category is required"
+        "categoryRequired": "Expense type is required"
       }
     }
   },
@@ -614,7 +616,7 @@
     },
     "categories": {
       "loading": "Loading categories...",
-      "title": "Categories ({count})",
+      "title": "Expense types",
       "empty": "Add categories for this envelope to track your spending by category",
       "addButton": "Add Categories"
     },
@@ -781,19 +783,52 @@
       "create": "Configure spending goals",
       "edit": "Configure spending goals"
     },
-    "description": "Set a total budget and optionally assign amounts per expense type. These are visual limits that don't block expenses.",
+    "intro": "Let's set your goal for the month",
     "global": {
       "label": "Total envelope budget",
       "manualAdjust": "Manual adjustment"
     },
     "categories": {
       "title": "Goals per expense type",
-      "remainder": "Remaining expense types",
-      "remainderDescription": "Assign an amount for expense types that don't have a fixed goal",
+      "remainder": "General",
+      "remainderDescription": "Amount you'll assign to expense types without a goal",
       "ofTotal": "of total",
       "empty": "No expense types in this envelope. Add expense types to assign individual goals.",
-      "metaPlaceholder": "Optional goal",
+      "metaPlaceholder": "Optional",
       "spent": "Spent"
+    },
+    "disabled": {
+      "badge": "Flexible planning",
+      "title": "Activate your spending goals",
+      "description": "Plan your month with flexible goals: set a total goal and, if you want, amounts per expense type.",
+      "listTitle": "When you enable goals you can:",
+      "items": {
+        "metaGlobal": {
+          "title": "Monthly goal",
+          "description": "Set how much you want to spend in total this month."
+        },
+        "partial": {
+          "title": "Selective goals",
+          "description": "Define goals only for the expense types you care about—from none to all of them."
+        },
+        "general": {
+          "title": "General amount",
+          "description": "Assign an amount that covers the expense types without their own goal."
+        },
+        "visual": {
+          "title": "Visual guidance",
+          "description": "Get a clear view that helps you make better decisions."
+        }
+      },
+      "noBlock": {
+        "title": "We never block",
+        "description": "The logging of a real expense, even if you exceed your goals."
+      }
+    },
+    "deactivate": {
+      "title": "Disable spending goals",
+      "description": "All expenses already registered this month will remain intact.",
+      "action": "Disable"
     },
     "warning": {
       "exceeds": "Category goals exceed total budget by {amount}"
@@ -808,7 +843,8 @@
     "actions": {
       "cancel": "Cancel",
       "save": "Save",
-      "saving": "Saving..."
+      "saving": "Saving...",
+      "enable": "Enable spending goals"
     },
     "validation": {
       "globalRequired": "Enter a total budget greater than 0"
@@ -818,7 +854,9 @@
     },
     "success": {
       "create": "Spending goal configured successfully",
-      "update": "Spending goal updated successfully"
+      "update": "Spending goal updated successfully",
+      "enabled": "Spending goals enabled",
+      "disabled": "Spending goals disabled"
     }
   },
   "categorias": {

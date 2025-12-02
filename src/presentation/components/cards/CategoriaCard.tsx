@@ -1,7 +1,5 @@
 'use client'
 
-import { Zap } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 import { useTranslations } from 'next-intl'
 
@@ -13,8 +11,8 @@ interface CategoriaCardProps {
   gastado: number
   porcentaje: number
   compras?: number
+  meta?: number
   onClick?: (e?: React.MouseEvent) => void
-  onViewTransactions?: (categoriaId: string, categoriaNombre: string) => void
   onFlashGasto?: (e?: React.MouseEvent) => void
 }
 
@@ -26,59 +24,46 @@ export function CategoriaCard({
   gastado,
   porcentaje,
   compras = 0,
+  meta,
   onClick,
-  onViewTransactions,
   onFlashGasto,
 }: CategoriaCardProps) {
   const { formatNumber } = useCurrency()
   const t = useTranslations('sobres.categoryCard')
   const gastadoNum = Number(gastado) || 0
   const porcentajeNum = Number(porcentaje) || 0
+  const metaNum = meta ? Number(meta) : undefined
 
   return (
     <>
       <div
-        className="flex cursor-pointer items-start justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-theme transition-all hover:shadow-none hover:bg-accent/5"
+        className="flex cursor-pointer flex-col gap-2 rounded-2xl border border-border bg-card p-4 shadow-theme transition-all hover:shadow-none hover:bg-accent/5"
         onClick={e => {
           onClick?.(e)
-          onViewTransactions?.(id, nombre)
+          onFlashGasto?.(e)
         }}
       >
-        {/* Columna izquierda: 3 líneas de información */}
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
+        {/* Primera línea: Nombre (izq) | Monto (der) - alineados verticalmente */}
+        <div className="flex items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-2 typography-body font-semibold text-foreground">
             {emoji && <span className="typography-body">{emoji}</span>}
             <span className="truncate">{nombre}</span>
           </div>
-          <div className="flex items-center gap-2 typography-caption font-semibold text-muted-foreground">
-            <span>{t('purchases', { count: compras })}</span>
-          </div>
-          <div className="flex items-center gap-2 typography-caption font-semibold text-muted-foreground">
-            <span>{t('percentUsed', { percent: porcentajeNum.toFixed(0) })}</span>
-          </div>
-        </div>
-
-        {/* Columna derecha: monto (Flash button temporalmente oculto para validación visual) */}
-        <div className="flex shrink-0 flex-col gap-2" style={{ alignItems: 'flex-end', width: 'auto' }}>
-          <span className="text-right tabular-nums tracking-tight typography-label-lg text-foreground" style={{ lineHeight: '1', paddingRight: '0px', marginRight: '0px', display: 'block', width: 'max-content' }}>
+          <span className="shrink-0 tabular-nums tracking-tight typography-label-lg text-foreground">
             {formatNumber(gastadoNum)}
           </span>
-          {/* 
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-12 w-12 rounded-full text-muted-foreground"
-              style={{ flexShrink: 0 }}
-              onClick={(e) => {
-                e.stopPropagation()
-                onFlashGasto?.(e)
-              }}
-            >
-              <Zap className="h-5 w-5" />
-              <span className="sr-only">{t('quickExpense')}</span>
-            </Button>
-          */}
+        </div>
+
+        {/* Segunda línea: Compras (izq) | Meta (der) */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="typography-caption font-semibold text-muted-foreground">
+            {t('purchases', { count: compras })}
+          </span>
+          {metaNum !== undefined && (
+            <span className="shrink-0 tabular-nums typography-caption font-semibold text-muted-foreground">
+              {t('goal')}: {metaNum.toLocaleString()}
+            </span>
+          )}
         </div>
       </div>
     </>

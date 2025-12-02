@@ -53,7 +53,8 @@ export function AppShell({
 }: AppShellProps) {
   return (
     // CONTENEDOR RAÍZ - SIEMPRE h-screen flex flex-col
-    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
+    <div className="relative h-screen flex flex-col bg-background text-foreground overflow-hidden">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background via-background/80 to-primary/15" />
 
       {/* ========== HEADER ========== */}
       {/* shrink-0: NUNCA cambia de tamaño | Solo se renderiza si existe headerContent */}
@@ -80,7 +81,7 @@ export function AppShell({
         {/* Solo se renderiza si existe | shrink-0: NUNCA cambia de tamaño */}
         {dotIndicator && (
           <div
-            className="shrink-0 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+            className="shrink-0 flex items-center justify-center bg-transparent"
             style={{ height: `${dotIndicatorHeight}px` }}
           >
             {dotIndicator}

@@ -319,12 +319,12 @@ export function CrearGastoDrawer({
 
   const crearYAgregarMarca = async (nombre: string, emoji?: string) => {
     if (!categoriaSeleccionada) {
-      notify.error('Selecciona una categoría primero')
+      notify.error('Selecciona un tipo de gasto primero')
       return
     }
 
     if (!nombre.trim()) {
-      notify.error('Ingresa el nombre de la marca')
+      notify.error('Ingresa el nombre del comercio')
       return
     }
 
@@ -342,7 +342,7 @@ export function CrearGastoDrawer({
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Error al crear marca')
+        throw new Error(error.error || 'Error al crear comercio')
       }
 
       const data = await response.json()
@@ -357,9 +357,9 @@ export function CrearGastoDrawer({
       // Actualizar cache de IndexedDB
       await updateMarcasCache(marcasGlobales, [...marcas, nuevaMarca], marcasVersion, pais)
 
-      notify.success(`Marca "${nombre}" creada`)
+      notify.success(`Comercio "${nombre}" creado`)
     } catch (error: any) {
-      notify.error(error.message || 'Error al crear marca')
+      notify.error(error.message || 'Error al crear comercio')
     } finally {
       setLoading(false)
     }
@@ -369,7 +369,7 @@ export function CrearGastoDrawer({
     e.preventDefault()
 
     if (!nuevaCategoriaName.trim()) {
-      notify.error('Ingresa el nombre de la categoría')
+      notify.error('Ingresa el nombre del tipo de gasto')
       return
     }
 
@@ -392,7 +392,7 @@ export function CrearGastoDrawer({
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Error al crear categoría')
+        throw new Error(error.error || 'Error al crear tipo de gasto')
       }
 
       const data = await response.json()
@@ -403,9 +403,9 @@ export function CrearGastoDrawer({
       setCrearCategoriaMode(false)
       setNuevaCategoriaName('')
       setNuevaCategoriaEmoji(DEFAULT_CATEGORY_EMOJI)
-      notify.success(`Categoría "${nuevaCategoriaName}" creada`)
+      notify.success(`Tipo de gasto "${nuevaCategoriaName}" creado`)
     } catch (error: any) {
-      notify.error(error.message || 'Error al crear categoría')
+      notify.error(error.message || 'Error al crear tipo de gasto')
     } finally {
       setCreandoCategoria(false)
     }
@@ -687,20 +687,12 @@ export function CrearGastoDrawer({
                   </div>
                 )}
               </div>
-            </Card>
-          </div>
-
-            {/* DETALLE */}
-            <div className="space-y-3">
-              <SectionTitle>{t('gastos.create.details')}</SectionTitle>
-
-              <Card className="p-4 space-y-4 bg-card-elevated">
-              {categoriaSeleccionada && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="typography-label text-muted-foreground">
-                      {t('gastos.create.brand')}
-                    </Label>
+              <div className="space-y-3 border-t border-border/60 pt-4">
+                <div className="flex items-center justify-between">
+                  <Label className="typography-label text-muted-foreground">
+                    {t('gastos.create.brand')}
+                  </Label>
+                  {categoriaSeleccionada && (
                     <button
                       type="button"
                       onClick={() => {
@@ -713,104 +705,102 @@ export function CrearGastoDrawer({
                         ? t('common.cancel')
                         : t('gastos.create.addNewBrand')}
                     </button>
-                  </div>
-
-                  {/* Grid de marcas existentes */}
-                  {marcaSeleccionada ? (
-                    (() => {
-                      const marcaActiva = marcasDelCategoria.find(
-                        (marca) => marca.id === marcaSeleccionada,
-                      )
-                      if (!marcaActiva) return null
-                      return (
-                        <SelectionBadge
-                          emoji={marcaActiva.emoji}
-                          label={marcaActiva.nombre}
-                          onClear={handleRemoveMarca}
-                        />
-                      )
-                    })()
-                  ) : (
-                    marcasDelCategoria.length > 0 && (
-                      <div className="grid grid-cols-2 gap-2">
-                        {marcasDelCategoria.map((marca) => (
-                          <button
-                            key={marca.id}
-                            type="button"
-                            onClick={() => handleSelectMarca(marca)}
-                            className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
-                          >
-                            <div className="flex items-center gap-2">
-                              {marca.emoji && <span className="text-lg">{marca.emoji}</span>}
-                              <span className="flex-1">{marca.nombre}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )
                   )}
-
-                  {/* Crear nueva marca */}
-                  {crearMarcaMode && (
-                    <div className="p-3 rounded-lg border-2 border-dashed border-primary/30 bg-muted space-y-2">
-                      <div className="relative">
-                        <Input
-                          ref={inputMarcaRef}
-                          type="text"
-                          placeholder={t('gastos.create.brandPlaceholder')}
-                          value={inputMarca}
-                          onChange={(e) => handleInputMarcaChange(e.target.value)}
-                          onKeyDown={handleKeyDownMarca}
-                          className="h-10"
-                          autoFocus
-                        />
-                        {/* Sugerencias de autocompletado */}
-                        {marcasSugeridas.length > 0 && (
-                          <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                            {marcasSugeridas.map((sugerencia, idx) => (
-                              <button
-                                key={`${sugerencia.id}-${idx}`}
-                                type="button"
-                                onClick={() => handleSelectMarcaSugerida(sugerencia)}
-                                className="w-full flex items-center gap-2 px-3 py-2 typography-body-sm hover:bg-muted transition-colors text-left"
-                              >
-                                {sugerencia.emoji && (
-                                  <span className="typography-body">{sugerencia.emoji}</span>
-                                )}
-                                <span className="flex-1">{sugerencia.nombre}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2 justify-end">
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="h-8 px-3"
-                          disabled={loading || !inputMarca.trim()}
-                          onClick={() => crearYAgregarMarca(inputMarca)}
-                        >
-                          {t('gastos.create.addNewBrand')}
-                        </Button>
-                      </div>
-                      <p className="text-[11px] text-muted-foreground">
-                        {t('gastos.create.pressEnter')}{' '}
-                        <kbd className="px-1.5 py-0.5 bg-background rounded text-[10px] font-mono">
-                          Enter
-                        </kbd>
-                      </p>
-                    </div>
-                  )}
-
                 </div>
-              )}
 
-              {!categoriaSeleccionada && (
-                <p className="typography-body-sm text-muted-foreground italic">
-                  {t('gastos.create.selectCategoryForBrands')}
-                </p>
-              )}
+                {categoriaSeleccionada ? (
+                  <div className="space-y-3">
+                    {marcaSeleccionada ? (
+                      (() => {
+                        const marcaActiva = marcasDelCategoria.find(
+                          (marca) => marca.id === marcaSeleccionada,
+                        )
+                        if (!marcaActiva) return null
+                        return (
+                          <SelectionBadge
+                            emoji={marcaActiva.emoji}
+                            label={marcaActiva.nombre}
+                            onClear={handleRemoveMarca}
+                          />
+                        )
+                      })()
+                    ) : (
+                      marcasDelCategoria.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {marcasDelCategoria.map((marca) => (
+                            <button
+                              key={marca.id}
+                              type="button"
+                              onClick={() => handleSelectMarca(marca)}
+                              className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
+                            >
+                              <div className="flex items-center gap-2">
+                                {marca.emoji && <span className="text-lg">{marca.emoji}</span>}
+                                <span className="flex-1">{marca.nombre}</span>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )
+                    )}
+
+                    {crearMarcaMode && (
+                      <div className="p-3 rounded-lg border-2 border-dashed border-primary/30 bg-muted space-y-2">
+                        <div className="relative">
+                          <Input
+                            ref={inputMarcaRef}
+                            type="text"
+                            placeholder={t('gastos.create.brandPlaceholder')}
+                            value={inputMarca}
+                            onChange={(e) => handleInputMarcaChange(e.target.value)}
+                            onKeyDown={handleKeyDownMarca}
+                            className="h-10"
+                            autoFocus
+                          />
+                          {marcasSugeridas.length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                              {marcasSugeridas.map((sugerencia, idx) => (
+                                <button
+                                  key={`${sugerencia.id}-${idx}`}
+                                  type="button"
+                                  onClick={() => handleSelectMarcaSugerida(sugerencia)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 typography-body-sm hover:bg-muted transition-colors text-left"
+                                >
+                                  {sugerencia.emoji && (
+                                    <span className="typography-body">{sugerencia.emoji}</span>
+                                  )}
+                                  <span className="flex-1">{sugerencia.nombre}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-8 px-3"
+                            disabled={loading || !inputMarca.trim()}
+                            onClick={() => crearYAgregarMarca(inputMarca)}
+                          >
+                            {t('gastos.create.addNewBrand')}
+                          </Button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {t('gastos.create.pressEnter')}{' '}
+                          <kbd className="px-1.5 py-0.5 bg-background rounded text-[10px] font-mono">
+                            Enter
+                          </kbd>
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="typography-body-sm text-muted-foreground italic">
+                    {t('gastos.create.selectCategoryForBrands')}
+                  </p>
+                )}
+              </div>
             </Card>
           </div>
 
