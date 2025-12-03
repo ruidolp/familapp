@@ -54,7 +54,7 @@ export function AppShell({
   return (
     // CONTENEDOR RAÍZ - SIEMPRE h-screen flex flex-col
     <div className="relative h-screen flex flex-col bg-background text-foreground overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background via-background/80 to-primary/15" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background via-background/80 to-primary/10" />
 
       {/* ========== HEADER ========== */}
       {/* shrink-0: NUNCA cambia de tamaño | Solo se renderiza si existe headerContent */}
@@ -76,18 +76,17 @@ export function AppShell({
         <div className="flex-1 min-h-0 overflow-y-auto">
           {children}
         </div>
-
-        {/* ===== DOT INDICATOR ===== */}
-        {/* Solo se renderiza si existe | shrink-0: NUNCA cambia de tamaño */}
-        {dotIndicator && (
-          <div
-            className="shrink-0 flex items-center justify-center bg-transparent"
-            style={{ height: `${dotIndicatorHeight}px` }}
-          >
-            {dotIndicator}
-          </div>
-        )}
       </main>
+
+      {/* ===== DOT INDICATOR (Overlay) ===== */}
+      {dotIndicator && (
+        <div
+          className="pointer-events-none absolute left-0 right-0 flex items-center justify-center bg-transparent"
+          style={{ bottom: `${footerHeight}px`, height: `${dotIndicatorHeight}px` }}
+        >
+          {dotIndicator}
+        </div>
+      )}
 
       {/* ========== FOOTER ========== */}
       {/* shrink-0: NUNCA cambia de tamaño */}

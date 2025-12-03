@@ -391,6 +391,7 @@
     "libre": "Available",
     "utilizado": "used",
     "total": "total",
+    "monthlyGoal": "Monthly goal",
     "list": {
       "loading": "Loading envelopes...",
       "empty": "You have no envelopes yet",
@@ -558,7 +559,7 @@
     "create": {
       "title": "Record Expense",
       "description": "Create a new expense in an envelope",
-      "amount": "💰 Expense Amount",
+        "amount": "Expense amount",
       "amountPlaceholder": "$",
       "origin": "Expense Origin",
       "originPlaceholder": "Envelope",
@@ -577,6 +578,7 @@
       "brandPlaceholder": "Search or create merchant...",
       "brandOptional": "optional",
       "pressEnter": "Press Enter to create a new merchant",
+      "openCalculator": "Open calculator",
       "selectCategoryForBrands": "Pick an expense type to see available merchants",
       "comment": "Comment",
       "commentOptional": "optional",

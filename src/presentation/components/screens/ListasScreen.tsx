@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
-import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, ChevronDown, UserPlus, User, ListCheck, Pencil, ExternalLink, Users, Bell } from 'lucide-react'
+import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, UserPlus, User, Pencil, ExternalLink, Users, Bell } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { CreateShoppingListDrawer } from '@/components/drawers/CreateShoppingListDrawer'
 import { EditShoppingListDrawer } from '@/components/drawers/EditShoppingListDrawer'
 import { ExecutionHistoryDrawer } from '@/components/drawers/ExecutionHistoryDrawer'
@@ -77,21 +78,12 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
   const [selectedExecution, setSelectedExecution] = useState<ExecutionDisplay | null>(null)
   const [selectedExecutionForOwner, setSelectedExecutionForOwner] = useState<any>(null)
   const [editDrawerOpen, setEditDrawerOpen] = useState(false)
-  const [showMyLists, setShowMyLists] = useState(true)
-  const [showActiveExecutions, setShowActiveExecutions] = useState(false)
-  const [showCompletedExecutions, setShowCompletedExecutions] = useState(false)
+  const [activeTab, setActiveTab] = useState('listas')
   const [editingList, setEditingList] = useState<ShoppingList | null>(null)
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false)
   const [invitingList, setInvitingList] = useState<ShoppingList | null>(null)
   const [manageListInvitesOpen, setManageListInvitesOpen] = useState(false)
   const [listInvitesTarget, setListInvitesTarget] = useState<ShoppingList | null>(null)
-
-  // "Mis listas" debe mostrarse expandido al cargar datos
-  useEffect(() => {
-    if (lists.length > 0 || sharedLists.length > 0) {
-      setShowMyLists(true)
-    }
-  }, [lists.length, sharedLists.length])
 
   // Cargar listas y ejecuciones al montar
   useEffect(() => {
@@ -423,148 +415,146 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
       .join(', ')
   }
 
-  // Helper to render a list card
-  const renderListCard = (list: ShoppingList) => {
+  // Helper to render a list item (inside single card)
+  const renderListItem = (list: ShoppingList) => {
     const collaboratorNames = !list._isShared ? formatCollaboratorNames(list._collaborators) : ''
     const sharedByLabel = list._isShared ? (list._sharedBy?.name || list._sharedBy?.email || '') : ''
 
     return (
-      <Card
+      <div
         key={list.id}
-        className="p-4 cursor-pointer shadow-theme hover:shadow-none transition-shadow text-foreground"
+        className="flex items-start justify-between gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
         onClick={() => handleOpenList(list.id)}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold typography-body truncate">
-                {list.nombre}
-              </h3>
-              {list._isShared && list.user_role && (
-                <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 whitespace-nowrap">
-                  {list.user_role === 'EDITOR'
-                    ? 'Editor'
-                    : list.user_role === 'EXECUTION_ONLY'
-                      ? 'Solo Compra'
-                      : list.user_role}
-                </span>
-              )}
-            </div>
-
-            {!list._isShared && collaboratorNames && (
-              <div className="mt-1 flex items-center gap-1 text-xs font-semibold text-foreground">
-                <User className="h-[1.1em] w-[1.1em]" />
-                <span className="truncate">Compartido con {collaboratorNames}</span>
-              </div>
-            )}
-
-            {list._isShared && sharedByLabel && (
-              <p className="mt-1 flex items-center gap-1 typography-caption font-semibold text-foreground">
-                <Users className="h-[1.1em] w-[1.1em]" />
-                Compartida por {sharedByLabel}
-              </p>
-            )}
-
-            {list.descripcion && (
-              <p className="typography-caption font-semibold text-muted-foreground line-clamp-2 mt-1">
-                {list.descripcion}
-              </p>
-            )}
-
-            <div className="flex items-center gap-3 mt-2 typography-caption font-semibold text-muted-foreground">
-              <span>
-                {list._itemCount !== undefined
-                  ? `${list._itemCount} items`
-                  : 'Sin items'}
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold typography-body truncate">
+              {list.nombre}
+            </h3>
+            {list._isShared && list.user_role && (
+              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 whitespace-nowrap">
+                {list.user_role === 'EDITOR'
+                  ? 'Editor'
+                  : list.user_role === 'EXECUTION_ONLY'
+                    ? 'Solo Compra'
+                    : list.user_role}
               </span>
-              <span>•</span>
-              <span>
-                {list.purchase_count > 0
-                  ? `${list.purchase_count} compras realizadas`
-                  : 'Sin compras aún'}
-              </span>
-            </div>
+            )}
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-              >
-                <MoreVertical size={16} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleOpenList(list.id)
-                }}
-              >
-                <ExternalLink size={14} className="mr-2" />
-                Abrir
-              </DropdownMenuItem>
+          {!list._isShared && collaboratorNames && (
+            <div className="flex items-center gap-1 text-xs font-semibold text-foreground">
+              <User className="h-[1.1em] w-[1.1em]" />
+              <span className="truncate">Compartido con {collaboratorNames}</span>
+            </div>
+          )}
 
-              {!list._isShared && (
-                <>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleEditList(list)
-                    }}
-                  >
-                    <Pencil size={14} className="mr-2" />
-                    Editar
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleInviteUser(list)
-                    }}
-                  >
-                    <UserPlus size={14} className="mr-2" />
-                    Invitar usuario
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleManageListInvites(list)
-                    }}
-                  >
-                    <Users size={14} className="mr-2" />
-                    Gestionar invitados
-                  </DropdownMenuItem>
-                </>
-              )}
+          {list._isShared && sharedByLabel && (
+            <p className="flex items-center gap-1 typography-caption font-semibold text-foreground">
+              <Users className="h-[1.1em] w-[1.1em]" />
+              Compartida por {sharedByLabel}
+            </p>
+          )}
 
-              <DropdownMenuItem
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleCloneList(list.id, list.nombre)
-                }}
-              >
-                <Copy size={14} className="mr-2" />
-                Clonar
-              </DropdownMenuItem>
+          {list.descripcion && (
+            <p className="typography-caption font-semibold text-muted-foreground line-clamp-1">
+              {list.descripcion}
+            </p>
+          )}
 
-              {!list._isShared && (
+          <div className="flex items-center gap-3 typography-caption font-semibold text-muted-foreground">
+            <span>
+              {list._itemCount !== undefined
+                ? `${list._itemCount} items`
+                : 'Sin items'}
+            </span>
+            <span>•</span>
+            <span>
+              {list.purchase_count > 0
+                ? `${list.purchase_count} compras`
+                : 'Sin compras'}
+            </span>
+          </div>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 shrink-0"
+            >
+              <MoreVertical size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpenList(list.id)
+              }}
+            >
+              <ExternalLink size={14} className="mr-2" />
+              Abrir
+            </DropdownMenuItem>
+
+            {!list._isShared && (
+              <>
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
-                    handleDeleteList(list.id, list.nombre)
+                    handleEditList(list)
                   }}
-                  className="text-destructive"
                 >
-                  <Trash2 size={14} className="mr-2" />
-                  Eliminar
+                  <Pencil size={14} className="mr-2" />
+                  Editar
                 </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </Card>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleInviteUser(list)
+                  }}
+                >
+                  <UserPlus size={14} className="mr-2" />
+                  Invitar usuario
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleManageListInvites(list)
+                  }}
+                >
+                  <Users size={14} className="mr-2" />
+                  Gestionar invitados
+                </DropdownMenuItem>
+              </>
+            )}
+
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleCloneList(list.id, list.nombre)
+              }}
+            >
+              <Copy size={14} className="mr-2" />
+              Clonar
+            </DropdownMenuItem>
+
+            {!list._isShared && (
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleDeleteList(list.id, list.nombre)
+                }}
+                className="text-destructive"
+              >
+                <Trash2 size={14} className="mr-2" />
+                Eliminar
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     )
   }
 
@@ -594,9 +584,8 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     return Number.isFinite(total) ? total : null
   }
 
-  // Helper to render an execution card
-  const renderExecutionCard = (execution: ExecutionDisplay) => {
-    // Encontrar el nombre de la lista asociada
+  // Helper to render an execution item (inside single card)
+  const renderExecutionItem = (execution: ExecutionDisplay) => {
     const listName = lists.find(l => l.id === execution.shopping_list_id)?.nombre || 'Compra'
     const startDate = new Date(execution.started_at)
     const timeAgo = Math.floor((Date.now() - startDate.getTime()) / 1000)
@@ -611,82 +600,69 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
       timeText = `Hace ${Math.floor(timeAgo / 86400)} días`
     }
 
-    // Obtener el ID apropiado
     const executionId = (execution as any).localId || (execution as any).id
-    const isLocal = (execution as any).isLocal
-
-    const executionToneClass = isLocal
-      ? 'border-primary/60 bg-primary/10'
-      : 'border-accent/40 bg-accent/10'
 
     return (
-      <Card
+      <div
         key={executionId}
-        className={`p-4 cursor-pointer rounded-2xl shadow-theme hover:shadow-none transition-shadow ${executionToneClass}`}
+        className="flex items-start justify-between gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
         onClick={() => handleOpenExecution(execution)}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="mb-1 flex items-center gap-2">
-              <Clock size={16} className="text-muted-foreground" />
-              <h3 className="flex-1 truncate typography-label-lg text-foreground">
-                {listName}
-              </h3>
-            </div>
-            <p className="mb-2 typography-caption font-semibold text-muted-foreground">En progreso • {timeText}</p>
-            {(execution as any).store_name && (
-              <p className="typography-caption font-semibold text-muted-foreground line-clamp-1">
-                📍 {(execution as any).store_name}
-              </p>
-            )}
-          </div>
-
-          {/* Action buttons */}
+        <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center gap-2">
+            <Clock size={16} className="text-muted-foreground shrink-0" />
+            <h3 className="flex-1 truncate typography-body font-semibold">
+              {listName}
+            </h3>
+          </div>
+          <p className="typography-caption font-semibold text-muted-foreground">
+            En progreso • {timeText}
+          </p>
+          {(execution as any).store_name && (
+            <p className="typography-caption font-semibold text-muted-foreground line-clamp-1">
+              📍 {(execution as any).store_name}
+            </p>
+          )}
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
             <Button
-              className="gap-2 rounded-full px-4 py-2 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90"
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 shrink-0"
+            >
+              <MoreVertical size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
               onClick={(e) => {
                 e.stopPropagation()
                 handleOpenExecution(execution)
               }}
             >
-              <Clock size={14} />
+              <Clock size={14} className="mr-2" />
               Continuar
-            </Button>
-
-            {/* Menu de opciones */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                >
-                  <MoreVertical size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteExecution(execution)
-                  }}
-                  className="text-destructive"
-                >
-                  <Trash2 size={14} className="mr-2" />
-                  Eliminar
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-      </Card>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDeleteExecution(execution)
+              }}
+              className="text-destructive"
+            >
+              <Trash2 size={14} className="mr-2" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     )
   }
 
-  // Helper to render a completed execution card
-  const renderCompletedExecutionCard = (execution: ExecutionDisplay) => {
-    // Encontrar el nombre de la lista asociada
+  // Helper to render a completed execution item (inside single card)
+  const renderCompletedExecutionItem = (execution: ExecutionDisplay) => {
     const listName = lists.find(l => l.id === execution.shopping_list_id)?.nombre || 'Compra'
     const endDate = (execution as any).completed_at ? new Date((execution as any).completed_at) : new Date()
     const completedText = formatDate(endDate)
@@ -698,83 +674,88 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
     const executorName = (execution as any).executor_name || (execution as any).executor_email
 
     return (
-      <Card
+      <div
         key={(execution as any).localId || (execution as any).id}
-        className="p-4 cursor-pointer rounded-2xl border-tertiary/40 bg-tertiary/10 shadow-theme hover:shadow-none transition-shadow"
+        className="flex items-start justify-between gap-3 p-4 cursor-pointer hover:bg-muted/50 transition-colors"
         onClick={() => handleOpenHistory(execution)}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <div className="mb-1 flex items-center gap-2 text-foreground flex-wrap">
-              <CheckCircle2 size={16} />
-              <h3 className="font-semibold typography-body truncate">
-                {listName}
-              </h3>
-              {hasPendingRegistration && (
-                <Bell size={14} className="text-orange-500 animate-pulse" />
-              )}
-              {isRegisteredByOwner && executorName && (
-                <Badge
-                  variant="secondary"
-                  className="text-xs px-2 py-0.5 cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleOpenHistory(execution)
-                  }}
-                >
-                  <Users className="h-[1em] w-[1em]" />
-                  {executorName}
-                </Badge>
-              )}
-            </div>
-            <p className="mb-2 typography-caption font-semibold text-muted-foreground">
-              {completedText} {endTime && `· ${endTime}`}
-            </p>
-            {(storeName || total !== null) && (
-              <div className="mt-1 flex items-center gap-2 typography-caption font-semibold">
-                {storeName ? (
-                  <span className="flex-1 text-muted-foreground line-clamp-1">
-                    📍 {storeName}
-                  </span>
-                ) : (
-                  <span className="flex-1 text-muted-foreground">Total</span>
-                )}
-                {total !== null && (
-                  <span className="font-semibold text-foreground whitespace-nowrap">
-                    {formatNumber(total)}
-                  </span>
-                )}
-              </div>
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <CheckCircle2 size={16} className="text-muted-foreground shrink-0" />
+            <h3 className="font-semibold typography-body truncate">
+              {listName}
+            </h3>
+            {hasPendingRegistration && (
+              <Bell size={14} className="text-orange-500 animate-pulse shrink-0" />
+            )}
+            {isRegisteredByOwner && executorName && (
+              <Badge
+                variant="secondary"
+                className="text-xs px-2 py-0.5 cursor-pointer hover:bg-secondary/80 flex items-center gap-1"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleOpenHistory(execution)
+                }}
+              >
+                <Users className="h-[1em] w-[1em]" />
+                {executorName}
+              </Badge>
             )}
           </div>
-
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                >
-                  <MoreVertical size={16} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDeleteExecution(execution)
-                  }}
-                  className="text-destructive"
-                >
-                  <Trash2 size={14} className="mr-2" />
-                  Eliminar
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <p className="typography-caption font-semibold text-muted-foreground">
+            {completedText} {endTime && `· ${endTime}`}
+          </p>
+          {(storeName || total !== null) && (
+            <div className="flex items-center gap-2 typography-caption font-semibold">
+              {storeName ? (
+                <span className="flex-1 text-muted-foreground line-clamp-1">
+                  📍 {storeName}
+                </span>
+              ) : (
+                <span className="flex-1 text-muted-foreground">Total</span>
+              )}
+              {total !== null && (
+                <span className="font-semibold text-foreground whitespace-nowrap">
+                  {formatNumber(total)}
+                </span>
+              )}
+            </div>
+          )}
         </div>
-      </Card>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 shrink-0"
+            >
+              <MoreVertical size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpenHistory(execution)
+              }}
+            >
+              <ExternalLink size={14} className="mr-2" />
+              Ver detalles
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                handleDeleteExecution(execution)
+              }}
+              className="text-destructive"
+            >
+              <Trash2 size={14} className="mr-2" />
+              Eliminar
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     )
   }
 
@@ -788,140 +769,106 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
 
   return (
     <div className="flex flex-col h-full">
-      {/* Lists Grid */}
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4 flex-wrap p-4 pb-0">
+        <h3 className="typography-h3 text-foreground">Listas de Compras</h3>
+        <Button
+          className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
+          onClick={handleOpenCreateDrawer}
+        >
+          <Plus size={16} />
+          Nueva lista
+        </Button>
+      </div>
+
+      {/* Tabs Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-8">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <h3 className="typography-h3 text-foreground">Listas de Compras</h3>
-            <Button
-              className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
-              onClick={handleOpenCreateDrawer}
-            >
-              <Plus size={16} />
-              Nueva lista
+        {totalLists === 0 && activeExecutions.length === 0 && completedExecutions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border bg-card px-6 py-10 text-muted-foreground">
+            <ShoppingCart size={64} className="opacity-20" />
+            <p className="text-center">
+              No tienes listas de compras aún
+              <br />
+              <span className="typography-body-sm">Crea tu primera lista para empezar</span>
+            </p>
+            <Button onClick={handleOpenCreateDrawer} className="gap-2 rounded-full px-4 py-2 text-base font-semibold">
+              <Plus size={18} />
+              Crear Lista
             </Button>
           </div>
-          {totalLists === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed border-border bg-card px-6 py-10 text-muted-foreground">
-              <ShoppingCart size={64} className="opacity-20" />
-              <p className="text-center">
-                No tienes listas de compras aún
-                <br />
-                <span className="typography-body-sm">Crea tu primera lista para empezar</span>
-              </p>
-              <Button onClick={handleOpenCreateDrawer} className="gap-2 rounded-full px-4 py-2 text-base font-semibold">
-                <Plus size={18} />
-                Crear Lista
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-2 rounded-2xl border border-foreground/20 px-4 py-3">
-              <button
-                type="button"
-                onClick={() => setShowMyLists(prev => !prev)}
-                aria-expanded={showMyLists}
-                className="flex w-full items-center justify-between text-left"
-              >
-                <span className="typography-body-sm font-semibold text-foreground flex items-center gap-2">
-                  <ListCheck className="h-4 w-4 text-muted-foreground" />
-                  Mis Listas
-                  <Badge variant="secondary" className="rounded-full px-2 py-0 text-[0.65rem] font-semibold">
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full grid grid-cols-3 mb-4">
+              <TabsTrigger value="listas" className="text-sm font-semibold relative">
+                Listas
+                {totalLists > 0 && (
+                  <Badge variant="secondary" className="ml-1.5 rounded-full px-1.5 py-0 text-[0.65rem] font-semibold min-w-[1.25rem] h-5">
                     {totalLists}
                   </Badge>
-                </span>
-                <ChevronDown
-                  className={cn(
-                    'h-5 w-5 text-muted-foreground transition-transform',
-                    showMyLists ? 'rotate-180' : ''
-                  )}
-                />
-              </button>
-              {showMyLists && (
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {lists.map(renderListCard)}
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="en-curso" className="text-sm font-semibold relative">
+                En curso
+                {activeExecutions.length > 0 && (
+                  <Badge variant="secondary" className="ml-1.5 rounded-full px-1.5 py-0 text-[0.65rem] font-semibold min-w-[1.25rem] h-5">
+                    {activeExecutions.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="finalizadas" className="text-sm font-semibold relative">
+                Finalizadas
+                {completedExecutions.length > 0 && (
+                  <Badge variant="secondary" className="ml-1.5 rounded-full px-1.5 py-0 text-[0.65rem] font-semibold min-w-[1.25rem] h-5">
+                    {completedExecutions.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Listas Tab */}
+            <TabsContent value="listas" className="mt-0">
+              {totalLists === 0 ? (
+                renderSectionEmptyState('No tienes listas de compras aún')
+              ) : (
+                <Card className="divide-y divide-border rounded-2xl overflow-hidden">
+                  {lists.map(renderListItem)}
                   {sharedLists.length > 0 && (
                     <>
-                      <div className="col-span-full pt-2">
-                        <div className="flex items-center gap-3 text-muted-foreground">
-                          <Separator className="flex-1" />
-                          <span className="typography-caption font-semibold whitespace-nowrap">
-                            Listas compartidas conmigo
-                          </span>
-                          <Separator className="flex-1" />
-                        </div>
+                      <div className="px-4 py-3 bg-muted/30">
+                        <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground text-center">
+                          Listas compartidas conmigo
+                        </p>
                       </div>
-                      {sharedLists.map(renderListCard)}
+                      {sharedLists.map(renderListItem)}
                     </>
                   )}
-                </div>
+                </Card>
               )}
-            </div>
-          )}
+            </TabsContent>
 
-          {/* Active Executions Section */}
-          <div className="space-y-2 rounded-2xl border border-foreground/20 px-4 py-3">
-            <button
-              type="button"
-              onClick={() => setShowActiveExecutions(prev => !prev)}
-              aria-expanded={showActiveExecutions}
-              className="flex w-full items-center justify-between text-left"
-            >
-              <span className="typography-body-sm font-semibold text-foreground flex items-center gap-2">
-                ⏱️ Compras en curso
-                <Badge variant="secondary" className="rounded-full px-2 py-0 text-[0.65rem] font-semibold">
-                  {activeExecutions.length}
-                </Badge>
-              </span>
-              <ChevronDown
-                className={cn(
-                  'h-5 w-5 text-muted-foreground transition-transform',
-                  showActiveExecutions ? 'rotate-180' : ''
-                )}
-              />
-            </button>
-            {showActiveExecutions && (
-              activeExecutions.length > 0 ? (
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {activeExecutions.map(renderExecutionCard)}
-                </div>
-              ) : (
+            {/* En Curso Tab */}
+            <TabsContent value="en-curso" className="mt-0">
+              {activeExecutions.length === 0 ? (
                 renderSectionEmptyState('No hay compras en curso en este momento')
-              )
-            )}
-          </div>
-
-          {/* Completed Executions Section */}
-          <div className="space-y-2 rounded-2xl border border-foreground/20 px-4 py-3">
-            <button
-              type="button"
-              onClick={() => setShowCompletedExecutions(prev => !prev)}
-              aria-expanded={showCompletedExecutions}
-              className="flex w-full items-center justify-between text-left"
-            >
-              <span className="typography-body-sm font-semibold text-foreground flex items-center gap-2">
-                ✓ Compras Finalizadas
-                <Badge variant="secondary" className="rounded-full px-2 py-0 text-[0.65rem] font-semibold">
-                  {completedExecutions.length}
-                </Badge>
-              </span>
-              <ChevronDown
-                className={cn(
-                  'h-5 w-5 text-muted-foreground transition-transform',
-                  showCompletedExecutions ? 'rotate-180' : ''
-                )}
-              />
-            </button>
-            {showCompletedExecutions && (
-              completedExecutions.length > 0 ? (
-                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                  {completedExecutions.map(renderCompletedExecutionCard)}
-                </div>
               ) : (
+                <Card className="divide-y divide-border rounded-2xl overflow-hidden">
+                  {activeExecutions.map(renderExecutionItem)}
+                </Card>
+              )}
+            </TabsContent>
+
+            {/* Finalizadas Tab */}
+            <TabsContent value="finalizadas" className="mt-0">
+              {completedExecutions.length === 0 ? (
                 renderSectionEmptyState('No tienes compras finalizadas todavía')
-              )
-            )}
-          </div>
-        </div>
+              ) : (
+                <Card className="divide-y divide-border rounded-2xl overflow-hidden">
+                  {completedExecutions.map(renderCompletedExecutionItem)}
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
       {/* Create Shopping List Drawer */}
       <CreateShoppingListDrawer

@@ -391,6 +391,7 @@
     "libre": "Libre",
     "utilizado": "utilizado",
     "total": "total",
+    "monthlyGoal": "Meta del mes",
     "list": {
       "loading": "Cargando sobres...",
       "empty": "No tienes sobres aún",
@@ -947,7 +948,7 @@
     "create": {
       "title": "Registrar gasto",
       "description": "Registra un nuevo gasto en uno de tus sobres.",
-      "amount": "💰 Monto del gasto",
+      "amount": "Monto del gasto",
       "amountPlaceholder": "$",
       "origin": "Origen del gasto",
       "originPlaceholder": "Sobre",
@@ -966,6 +967,7 @@
       "brandPlaceholder": "Buscar o crear comercio...",
       "brandOptional": "opcional",
       "pressEnter": "Presiona Enter para crear un nuevo comercio",
+      "openCalculator": "Abrir calculadora",
       "selectCategoryForBrands": "Elige un tipo de gasto para ver los comercios disponibles.",
       "comment": "Comentario",
       "commentOptional": "opcional",

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useEffect, useState, useRef, useCallback, type CSSProperties } from 'react'
+import { useMemo, useEffect, useState, useRef, useCallback } from 'react'
 import { Sliders, Wallet, ArrowUpRight, ArrowDownRight, List, UserPlus, Users, Settings2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
@@ -25,6 +25,7 @@ import { ManageInvitationsDrawer } from '@/components/sobres/manage-invitations-
 import { ConfigurarPresupuestoDrawer } from '@/components/drawers/ConfigurarPresupuestoDrawer'
 import { useTheme } from '@/presentation/providers/theme-provider'
 import { cn } from '@/infrastructure/lib/utils'
+import { getColorShades, getContrastColor } from '@/infrastructure/utils/color-utils'
 
 interface Billetera {
   id: string
@@ -228,6 +229,16 @@ export function SobreCard({
   }, [categorias])
 
   const accentColor = color || '#3b82f6'
+  const { color700, color600 } = getColorShades(accentColor)
+  const contrastColor = getContrastColor(color600)
+  const primaryTextClass = contrastColor === 'white' ? 'text-white' : 'text-black'
+  const mutedText70 = contrastColor === 'white' ? 'text-white/70' : 'text-black/70'
+  const mutedText80 = contrastColor === 'white' ? 'text-white/80' : 'text-black/80'
+  const mutedText85 = contrastColor === 'white' ? 'text-white/85' : 'text-black/85'
+  const overBudgetTextClass = contrastColor === 'white' ? 'text-red-100' : 'text-red-600'
+  const sliderTriggerClasses = contrastColor === 'white'
+    ? 'text-white/80 hover:text-white'
+    : 'text-black/80 hover:text-black'
   const libreEsPositivo = presupuestoLibre >= 0
   const usadoFormatted = useMemo(() => formatNumber(gastadoNum), [formatNumber, gastadoNum])
   const libreFormatted = useMemo(
@@ -240,74 +251,50 @@ export function SobreCard({
 
   const usadoScale = useAutoScaleNumber(usadoFormatted)
   const libreScale = useAutoScaleNumber(libreFormatted)
-
-  const withAlpha = (hex: string, alphaHex: string) => {
-    if (!hex || !hex.startsWith('#') || (hex.length !== 7 && hex.length !== 4)) return hex
-    if (hex.length === 7) {
-      return `${hex}${alphaHex}`
-    }
-    const r = hex[1]
-    const g = hex[2]
-    const b = hex[3]
-    return `#${r}${r}${g}${g}${b}${b}${alphaHex}`
-  }
-
-  const accentBg = withAlpha(accentColor, 'b3')
-  const accentStyles = {
-    '--sobre-accent': accentColor,
-  } as CSSProperties
-
   return (
-    <div className="flex min-h-[calc(100vh-12rem)] flex-col gap-4" style={accentStyles}>
+    <div className="flex min-h-[calc(100vh-14rem)] flex-col gap-3">
       <Card
-        className="relative overflow-hidden rounded-3xl border border-transparent p-5 text-white shadow-theme hover:shadow-none transition-shadow"
-        style={{ background: `linear-gradient(135deg, ${accentBg} 0%, ${withAlpha(accentColor, '90')} 60%)` }}
+        className={cn(
+          'relative overflow-hidden rounded-xl border border-transparent px-5 pt-4 pb-4 shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:shadow-none transition-shadow',
+          primaryTextClass
+        )}
+        style={{
+          backgroundImage: `linear-gradient(to bottom right, ${color700}, ${color600})`,
+        }}
         onClick={onVerDetalle}
       >
-        <div
-          className="pointer-events-none absolute -top-4 right-0 h-16 w-24 opacity-70"
-          style={{
-            backgroundColor: accentColor,
-            clipPath: 'polygon(100% 0, 0 0, 100% 100%)',
-          }}
-        />
-        <div className="relative z-10 space-y-6">
+        <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/5" />
+        <div className="relative z-10">
           <div className="flex items-start justify-between gap-3">
-            <div className="space-y-2">
-              <div className="flex items-center gap-3 typography-caption font-semibold uppercase tracking-wide text-white/70">
-                <span className="text-left">{periodLabel}</span>
-                <div className="h-px flex-1 bg-white/30" />
+            <div>
+              <p className={cn('text-xs tracking-wide opacity-70', mutedText70)}>{periodLabel}</p>
+              <div className="mt-0.5 flex items-center gap-2">
+                <h2 className="text-[26px] font-semibold leading-tight">{nombre}</h2>
+                {isCompartido && (
+                  <Users
+                    className="h-[1.2em] w-[1.2em] text-current drop-shadow-sm"
+                    aria-label="Sobre compartido"
+                  />
+                )}
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="typography-h1 leading-tight">{nombre}</h2>
-                  {isCompartido && (
-                    <Users
-                      className="h-[1.2em] w-[1.2em] text-current drop-shadow-sm"
-                      aria-label="Sobre compartido"
-                    />
-                  )}
-                </div>
-                <p className="typography-caption font-semibold text-white/80">
-                  {formatNumber(presupuesto)} {t('total')}
-                </p>
-              </div>
+              <p className={cn('text-xs tracking-wide opacity-70 mt-1', mutedText70)}>
+                {formatNumber(presupuesto)} {t('monthlyGoal')}
+              </p>
             </div>
-            <div className="flex flex-col items-end gap-2" onClick={(e) => e.stopPropagation()}>
-              <Drawer open={accionesOpen} onOpenChange={setAccionesOpen}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-white/80"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setAccionesOpen(true)
-                  }}
-                >
-                  <Sliders className="h-5 w-5" />
-                  <span className="sr-only">{t('card.accessibility.actions')}</span>
-                </Button>
-                <DrawerContent>
+            <Drawer open={accionesOpen} onOpenChange={setAccionesOpen}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn('opacity-80 hover:opacity-100 transition-opacity', sliderTriggerClasses)}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setAccionesOpen(true)
+                }}
+              >
+                <Sliders className="h-5 w-5" />
+                <span className="sr-only">{t('card.accessibility.actions')}</span>
+              </Button>
+              <DrawerContent>
                   <DrawerHeader>
                     <DrawerTitle>{t('card.actions.title', { name: nombre })}</DrawerTitle>
                     <DrawerDescription>{t('card.actions.description')}</DrawerDescription>
@@ -451,110 +438,106 @@ export function SobreCard({
               </DrawerContent>
             </Drawer>
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 text-white">
-            <div className="space-y-1">
-              <p className="typography-caption font-semibold uppercase tracking-wide text-white/80">
-                {t('usado')}
-              </p>
+          <div className="mt-2 grid grid-cols-2 gap-3 items-end">
+            <div className="flex flex-col">
               <p
                 ref={usadoScale.ref}
-                className="typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)] inline-block max-w-full"
+                className="text-2xl font-semibold leading-tight inline-block max-w-full"
                 style={{ transform: `scale(${usadoScale.scale})`, transformOrigin: 'left center' }}
               >
                 {usadoFormatted}
               </p>
-              <p className="typography-caption font-semibold text-white/80">
-                {t('card.status.percentOfBudget', { percent: Math.round(porcentajeGastado) })}
-              </p>
+              <p className={cn('text-xs opacity-70 mt-0.5', mutedText80)}>{t('usado')}</p>
             </div>
-            <div className="text-right space-y-1">
-              <p className="typography-caption font-semibold uppercase tracking-wide text-white/80">
-                {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
-              </p>
+            <div className="flex flex-col items-end text-right">
               <p
                 ref={libreScale.ref}
-                className={`typography-h1 leading-tight text-[clamp(1.75rem,8vw,2.75rem)] inline-block max-w-full ${
-                  libreEsPositivo ? '' : 'text-red-100'
-                }`}
+                className={cn(
+                  'text-2xl font-semibold leading-tight inline-block max-w-full',
+                  !libreEsPositivo && overBudgetTextClass
+                )}
                 style={{ transform: `scale(${libreScale.scale})`, transformOrigin: 'right center' }}
               >
                 {libreFormatted}
               </p>
-              <p className="typography-caption font-semibold text-white/80">{t('card.status.available')}</p>
+              <p className={cn('text-xs opacity-70 mt-0.5', mutedText80)}>
+                {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
+              </p>
             </div>
           </div>
         </div>
       </Card>
 
-      <div className="flex flex-1 flex-col">
-        <div className="space-y-3 px-4 pt-2 pb-1">
-          <div className="flex items-center gap-3 typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
-            <div className="h-px flex-1 bg-border" />
-            <span>{t('categories.title')}</span>
-            <div className="h-px flex-1 bg-border" />
+      <div className="flex flex-1 flex-col pb-4">
+        <div className="flex-1 rounded-2xl border border-border bg-card w-full">
+          <div className="space-y-3 px-4 pt-4 pb-2">
+            <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
+              {t('categories.title')}
+            </p>
+
+            {presupuesto <= 0 && (
+              <div className="space-y-3 rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-center">
+                <p className="typography-caption font-semibold text-muted-foreground">
+                  {t('emptyBudget.message')}
+                </p>
+                <Button
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onAgregarPresupuesto?.()
+                  }}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  {t('emptyBudget.button')}
+                </Button>
+              </div>
+            )}
           </div>
 
-          {presupuesto <= 0 && (
-            <div className="space-y-3 rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-center">
-              <p className="typography-caption font-semibold text-muted-foreground">
-                {t('emptyBudget.message')}
-              </p>
-              <Button
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onAgregarPresupuesto?.()
-                }}
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-              >
-                {t('emptyBudget.button')}
-              </Button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4">
-          {categoriasLoading ? (
-            <div className="flex items-center justify-center rounded-2xl border border-border bg-muted/30 p-4 typography-caption font-semibold text-muted-foreground">
-              {t('categories.loading')}
-            </div>
-          ) : categoriasOrdenadas.length > 0 ? (
-            <>
-              {categoriasOrdenadas.map((categoria) => (
-                <CategoriaCard
-                  key={categoria.id}
-                  id={categoria.id}
-                  nombre={categoria.nombre}
-                  emoji={categoria.emoji}
-                  color={categoria.color}
-                  gastado={categoria.gastado || 0}
-                  porcentaje={categoria.porcentaje || 0}
-                  compras={categoria.compras || 0}
-                  meta={categoria.meta}
-                  onFlashGasto={(e) => {
-                    e?.stopPropagation()
-                    onFlashGasto?.(categoria.id)
+          <div className="flex-1 overflow-y-auto">
+            {categoriasLoading ? (
+              <div className="flex h-full items-center justify-center px-4 pb-4 text-center typography-caption font-semibold text-muted-foreground">
+                {t('categories.loading')}
+              </div>
+            ) : categoriasOrdenadas.length > 0 ? (
+              <div className="divide-y divide-border border-t border-border">
+                {categoriasOrdenadas.map((categoria) => (
+                  <CategoriaCard
+                    key={categoria.id}
+                    nombre={categoria.nombre}
+                    emoji={categoria.emoji}
+                    color={categoria.color}
+                    gastado={categoria.gastado || 0}
+                    compras={categoria.compras || 0}
+                    meta={categoria.meta}
+                    onFlashGasto={(e) => {
+                      e?.stopPropagation()
+                      onFlashGasto?.(categoria.id)
+                    }}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-3 border-t border-border px-4 pb-4 pt-6 text-center">
+                <p className="typography-caption font-semibold text-muted-foreground">
+                  {t('categories.empty')}
+                </p>
+                <Button
+                  size="sm"
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onEditarCategorias?.()
                   }}
-                />
-              ))}
-              <Button
-                size="sm"
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onEditarCategorias?.()
-                }}
-              >
-                {t('categories.addButton')}
-              </Button>
-            </>
-          ) : (
-            <div className="space-y-3 rounded-2xl border border-border bg-muted/30 p-4 text-center">
-              <p className="typography-caption font-semibold text-muted-foreground">
-                {t('categories.empty')}
-              </p>
+                >
+                  {t('categories.addButton')}
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {categoriasOrdenadas.length > 0 && !categoriasLoading && (
+            <div className="border-t border-border p-4">
               <Button
                 size="sm"
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90"

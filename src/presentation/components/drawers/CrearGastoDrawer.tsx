@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,9 +34,24 @@ import {
   updateMarcasCache,
 } from '@/infrastructure/utils/marcas-storage'
 import { useCurrency } from '@/presentation/providers/currency-provider'
-import { X } from 'lucide-react'
+import { X, Calculator } from 'lucide-react'
+import { CalculatorDrawer } from '@/presentation/components/execution/CalculatorDrawer'
 
 const DEFAULT_CATEGORY_EMOJI = '📁'
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const getLocaleSeparators = (locale: string) => {
+  const formatter = new Intl.NumberFormat(locale, {
+    style: 'decimal',
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  })
+  const parts = formatter.formatToParts(1234.5)
+  const decimal = parts.find((part) => part.type === 'decimal')?.value || ','
+  const group = parts.find((part) => part.type === 'group')?.value || '.'
+  return { decimalSeparator: decimal, groupSeparator: group }
+}
 
 interface Sobre {
   id: string
@@ -70,15 +85,6 @@ interface CrearGastoDrawerProps {
   onSuccess?: () => void
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-5 w-1 bg-primary rounded-full" />
-      <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
-    </div>
-  )
-}
-
 function SelectionBadge({
   emoji,
   label,
@@ -89,15 +95,15 @@ function SelectionBadge({
   onClear: () => void
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-primary bg-primary/10 px-3 py-2">
-      <div className="flex items-center gap-2 text-sm font-semibold">
-        {emoji && <span className="text-lg">{emoji}</span>}
-        <span className="text-foreground">{label}</span>
+    <div className="flex items-center gap-3 rounded-xl border border-primary bg-primary/10 px-3 py-2 min-w-0">
+      <div className="flex items-center gap-2 text-sm font-semibold min-w-0">
+        {emoji && <span className="text-lg flex-shrink-0">{emoji}</span>}
+        <span className="text-foreground truncate">{label}</span>
       </div>
       <button
         type="button"
         onClick={onClear}
-        className="rounded-full p-1 text-primary transition-colors hover:bg-primary/10"
+        className="flex-shrink-0 rounded-full p-1 text-primary transition-colors hover:bg-primary/10"
         aria-label="Limpiar selección"
       >
         <X className="h-4 w-4" />
@@ -116,9 +122,100 @@ export function CrearGastoDrawer({
 }: CrearGastoDrawerProps) {
   const t = useTranslations()
   const { selectedCategoryId, setSelectedCategoryId } = useCategoryContext()
-  const { decimales, formatNumber, simbolo } = useCurrency()
-  const stepValue = decimales > 0 ? Number((1 / Math.pow(10, decimales)).toFixed(decimales)) : 1
+  const { decimales, formatNumber, simbolo, locale } = useCurrency()
   const placeholderValue = decimales > 0 ? (1 / Math.pow(10, decimales)).toFixed(decimales) : '0'
+  const numberFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale || 'es-CL', {
+        minimumFractionDigits: decimales,
+        maximumFractionDigits: decimales,
+      }),
+    [decimales, locale],
+  )
+
+  const { decimalSeparator, groupSeparator } = useMemo(
+    () => getLocaleSeparators(locale || 'es-CL'),
+    [locale],
+  )
+
+  const formatInputValue = useCallback(
+    (value: string) => {
+      if (!value) return ''
+      const decimalChar = decimales > 0 ? (decimalSeparator || '.') : null
+      const groupChar = groupSeparator || ','
+      const regexBody = decimalChar ? `[^0-9${escapeRegExp(decimalChar)}]` : '[^0-9]'
+      const sanitizeRegex = new RegExp(regexBody, 'g')
+      let sanitized = value.replace(sanitizeRegex, '')
+      if (!sanitized) return ''
+
+      let integerPart = '0'
+      let decimalPart = ''
+      let endsWithDecimal = false
+
+      if (decimalChar) {
+        endsWithDecimal = sanitized.endsWith(decimalChar)
+        const [rawInteger, ...rawDecimals] = sanitized.split(decimalChar)
+        integerPart = rawInteger || '0'
+        decimalPart = rawDecimals.join('')
+      } else {
+        integerPart = sanitized || '0'
+      }
+
+      if (decimales === 0) {
+        decimalPart = ''
+        endsWithDecimal = false
+      } else if (decimalPart.length > decimales) {
+        decimalPart = decimalPart.slice(0, decimales)
+      }
+
+      integerPart = integerPart.replace(/^0+(?=\d)/, '') || '0'
+      const groupedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, groupChar)
+
+      if (decimalPart) {
+        return `${groupedInteger}${decimalChar}${decimalPart}`
+      }
+
+      if (decimalChar && endsWithDecimal) {
+        return `${groupedInteger}${decimalChar}`
+      }
+
+      return groupedInteger
+    },
+    [decimales, decimalSeparator, groupSeparator],
+  )
+
+  const parseInputToNumber = useCallback(
+    (value: string) => {
+      if (!value) return 0
+      const groupRegex = new RegExp(escapeRegExp(groupSeparator || ','), 'g')
+      let normalized = value.replace(/\s+/g, '').replace(groupRegex, '')
+
+      if (decimales > 0) {
+        const decimalChar = decimalSeparator || '.'
+        const decimalRegex = new RegExp(escapeRegExp(decimalChar), 'g')
+        normalized = normalized.replace(decimalRegex, '.')
+      }
+
+      const parsed = parseFloat(normalized)
+      return Number.isNaN(parsed) ? 0 : parsed
+    },
+    [decimalSeparator, groupSeparator, decimales],
+  )
+
+  const formattedPlaceholder = useMemo(() => {
+    if (!placeholderValue) return ''
+    const numeric = parseFloat(placeholderValue)
+    if (Number.isNaN(numeric)) return ''
+    return numberFormatter.format(numeric)
+  }, [numberFormatter, placeholderValue])
+
+  const handleMontoChange = useCallback(
+    (value: string) => {
+      const formatted = formatInputValue(value)
+      setMonto(formatted)
+    },
+    [formatInputValue],
+  )
 
   const [loading, setLoading] = useState(false)
   const [sobres, setSobres] = useState<Sobre[]>([])
@@ -148,11 +245,14 @@ export function CrearGastoDrawer({
   const [creandoCategoria, setCreandoCategoria] = useState(false)
 
   const [crearMarcaMode, setCrearMarcaMode] = useState(false)
+  const [calculatorOpen, setCalculatorOpen] = useState(false)
 
   const montoRef = useRef<HTMLInputElement>(null)
   const inputMarcaRef = useRef<HTMLInputElement>(null)
 
   const { crearGasto } = useCrearGasto()
+
+  const montoNumerico = useMemo(() => parseInputToNumber(monto), [monto, parseInputToNumber])
 
   useEffect(() => {
     if (open) {
@@ -426,7 +526,7 @@ export function CrearGastoDrawer({
         setLoading(false)
         return
       }
-      if (!monto || parseFloat(monto) <= 0) {
+      if (!monto || montoNumerico <= 0) {
         notify.error(t('gastos.create.errors.amountGreaterThanZero'))
         setLoading(false)
         return
@@ -453,7 +553,7 @@ export function CrearGastoDrawer({
       }
 
       const gastoData = {
-        monto: parseFloat(monto),
+        monto: montoNumerico,
         monedaId: monedaId,
         tipo: 'GASTO',
         descripcion: comentario || undefined,
@@ -485,12 +585,11 @@ export function CrearGastoDrawer({
     if (monto && sobreSeleccionado) {
       const sobreActual = sobres.find((s) => s.id === sobreSeleccionado)
       if (sobreActual) {
-        const montoNum = parseFloat(monto)
         const presupuesto = Number(sobreActual.presupuesto_asignado) || 0
         const gastado = Number(sobreActual.gastado) || 0
-        const nuevoGastadoTotal = gastado + montoNum
+        const nuevoGastadoTotal = gastado + montoNumerico
 
-        if (nuevoGastadoTotal > presupuesto) {
+        if (nuevoGastadoTotal > presupuesto && presupuesto > 0) {
           const exceso = nuevoGastadoTotal - presupuesto
           const porcentaje = (exceso / presupuesto) * 100
           setPresupuestoWarning({
@@ -503,8 +602,10 @@ export function CrearGastoDrawer({
           setPresupuestoWarning(null)
         }
       }
+    } else {
+      setPresupuestoWarning(null)
     }
-  }, [monto, sobreSeleccionado, sobres])
+  }, [monto, montoNumerico, sobreSeleccionado, sobres])
 
   useEffect(() => {
     setMarcaSeleccionada('')
@@ -522,9 +623,17 @@ export function CrearGastoDrawer({
     const gastadoB = Number(b.gastado) || 0
     return gastadoB - gastadoA
   })
+  const categoriaActiva = categoriaSeleccionada
+    ? categoriasOrdenadas.find((c) => c.id === categoriaSeleccionada)
+    : null
+  const marcaActiva = marcaSeleccionada
+    ? marcasDelCategoria.find((marca) => marca.id === marcaSeleccionada)
+    : null
+  const showCompactSelections = Boolean(categoriaActiva && marcaActiva)
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <>
+      <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="max-h-[95dvh]">
         <DrawerHeader>
           <DrawerTitle>{t('gastos.create.title')}</DrawerTitle>
@@ -535,130 +644,148 @@ export function CrearGastoDrawer({
 
         <DrawerBody className="pt-0 pb-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* ORIGEN */}
-            <div className="space-y-3">
-              <SectionTitle>{t('gastos.create.origin')}</SectionTitle>
-
-              <Card className="p-4 space-y-4 bg-card-elevated">
-                {/* Sobre */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="sobre"
-                    className="typography-label text-muted-foreground"
-                  >
-                    {t('gastos.create.originPlaceholder')}
-                  </Label>
-                  {sobres.length === 1 ? (
-                    <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
-                      <span className="typography-body-lg">{sobreActual?.emoji}</span>
-                      <span className="font-medium">
-                        {sobreActual?.nombre}
-                      </span>
-                    </div>
-                  ) : (
-                    <Select
-                      value={sobreSeleccionado}
-                      onValueChange={setSobreSeleccionado}
-                    >
-                      <SelectTrigger id="sobre" className="h-11">
-                        <SelectValue
-                          placeholder={t(
-                            'gastos.create.selectEnvelopePlaceholder',
-                          )}
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sobres.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            <div className="flex items-center gap-2 w-full">
-                              <span>{s.emoji}</span>
-                              <span className="flex-1">{s.nombre}</span>
-                              {s.is_compartido && (
-                                <span className="text-xs text-muted-foreground">(Compartido)</span>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-
-              {/* Categoría */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="typography-label text-muted-foreground">
-                    {t('gastos.create.category')}
-                  </Label>
-                  {!crearCategoriaMode && (
-                    <button
-                      type="button"
-                      onClick={() => setCrearCategoriaMode(true)}
-                      className="text-xs text-primary hover:underline font-medium"
-                    >
-                      {t('gastos.create.addNewCategory')}
-                    </button>
-                  )}
-                </div>
-
-                {crearCategoriaMode && (
-                  <div className="p-3 rounded-lg border-2 border-dashed border-primary/30 bg-muted space-y-3">
-                    <div className="flex gap-2 items-end">
-                      <Input
-                        type="text"
-                        placeholder={t(
-                          'gastos.create.categoryNamePlaceholder',
-                        )}
-                        value={nuevaCategoriaName}
-                        onChange={(e) =>
-                          setNuevaCategoriaName(e.target.value)
-                        }
-                        className="h-10 flex-1"
-                        autoFocus
-                      />
-                      <EmojiPicker
-                        value={nuevaCategoriaEmoji}
-                        onChange={setNuevaCategoriaEmoji}
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        onClick={handleCreateCategoria}
-                        disabled={
-                          creandoCategoria || !nuevaCategoriaName.trim()
-                        }
-                        className="flex-1 h-10"
-                        size="sm"
-                      >
-                        {creandoCategoria
-                          ? t('common.loading')
-                          : t('gastos.create.addNewCategory')}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => {
-                          setCrearCategoriaMode(false)
-                          setNuevaCategoriaName('')
-                          setNuevaCategoriaEmoji(DEFAULT_CATEGORY_EMOJI)
-                        }}
-                        className="h-10 px-3"
-                        size="sm"
-                      >
-                        ✕
-                      </Button>
-                    </div>
+            <Card className="p-4 space-y-4 bg-card-elevated">
+              {/* Sobre */}
+              <div className="space-y-2">
+                <Label
+                  htmlFor="sobre"
+                  className="typography-label text-muted-foreground -ml-1"
+                >
+                  {t('gastos.create.originPlaceholder')}
+                </Label>
+                {sobres.length === 1 ? (
+                  <div className="flex items-center gap-2 p-3 rounded-lg bg-muted">
+                    <span className="typography-body-lg">{sobreActual?.emoji}</span>
+                    <span className="font-medium">
+                      {sobreActual?.nombre}
+                    </span>
                   </div>
+                ) : (
+                  <Select
+                    value={sobreSeleccionado}
+                    onValueChange={setSobreSeleccionado}
+                  >
+                    <SelectTrigger id="sobre" className="h-11">
+                      <SelectValue
+                        placeholder={t(
+                          'gastos.create.selectEnvelopePlaceholder',
+                        )}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sobres.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          <div className="flex items-center gap-2 w-full">
+                            <span>{s.emoji}</span>
+                            <span className="flex-1">{s.nombre}</span>
+                            {s.is_compartido && (
+                              <span className="text-xs text-muted-foreground">(Compartido)</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
+              </div>
 
-                {categoriaSeleccionada ? (
-                  (() => {
-                    const categoriaActiva = categoriasOrdenadas.find(
-                      (c) => c.id === categoriaSeleccionada,
-                    )
-                    if (!categoriaActiva) return null
-                    return (
+              {showCompactSelections ? (
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex-1 basis-0 min-w-[140px] space-y-1">
+                    <Label className="typography-label text-muted-foreground">
+                      {t('gastos.create.category')}
+                    </Label>
+                    <SelectionBadge
+                      emoji={categoriaActiva?.emoji}
+                      label={categoriaActiva?.nombre || ''}
+                      onClear={() => {
+                        setCategoriaSeleccionada('')
+                        setMarcaSeleccionada('')
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 basis-0 min-w-[140px] space-y-1">
+                    <Label className="typography-label text-muted-foreground">
+                      {t('gastos.create.brand')}
+                    </Label>
+                    <SelectionBadge
+                      emoji={marcaActiva?.emoji}
+                      label={marcaActiva?.nombre || ''}
+                      onClear={handleRemoveMarca}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Categoría */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="typography-label text-muted-foreground">
+                        {t('gastos.create.category')}
+                      </Label>
+                      {!crearCategoriaMode && (
+                        <button
+                          type="button"
+                          onClick={() => setCrearCategoriaMode(true)}
+                          className="text-xs text-primary hover:underline font-medium"
+                        >
+                          {t('gastos.create.addNewCategory')}
+                        </button>
+                      )}
+                    </div>
+
+                    {crearCategoriaMode && (
+                      <div className="p-3 rounded-lg border-2 border-dashed border-primary/30 bg-muted space-y-3">
+                        <div className="flex gap-2 items-end">
+                          <Input
+                            type="text"
+                            placeholder={t(
+                              'gastos.create.categoryNamePlaceholder',
+                            )}
+                            value={nuevaCategoriaName}
+                            onChange={(e) =>
+                              setNuevaCategoriaName(e.target.value)
+                            }
+                            className="h-10 flex-1"
+                            autoFocus
+                          />
+                          <EmojiPicker
+                            value={nuevaCategoriaEmoji}
+                            onChange={setNuevaCategoriaEmoji}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            onClick={handleCreateCategoria}
+                            disabled={
+                              creandoCategoria || !nuevaCategoriaName.trim()
+                            }
+                            className="flex-1 h-10"
+                            size="sm"
+                          >
+                            {creandoCategoria
+                              ? t('common.loading')
+                              : t('gastos.create.addNewCategory')}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => {
+                              setCrearCategoriaMode(false)
+                              setNuevaCategoriaName('')
+                              setNuevaCategoriaEmoji(DEFAULT_CATEGORY_EMOJI)
+                            }}
+                            className="h-10 px-3"
+                            size="sm"
+                          >
+                            ✕
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {categoriaSeleccionada && categoriaActiva ? (
                       <SelectionBadge
                         emoji={categoriaActiva.emoji}
                         label={categoriaActiva.nombre}
@@ -667,170 +794,170 @@ export function CrearGastoDrawer({
                           setMarcaSeleccionada('')
                         }}
                       />
-                    )
-                  })()
-                ) : (
-                  <div className="grid grid-cols-2 gap-2">
-                    {categoriasOrdenadas.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => setCategoriaSeleccionada(c.id)}
-                        className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
-                      >
-                        <div className="flex items-center gap-2">
-                          {c.emoji && <span className="text-lg">{c.emoji}</span>}
-                          <span className="flex-1">{c.nombre}</span>
-                        </div>
-                      </button>
-                    ))}
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2">
+                        {categoriasOrdenadas.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => setCategoriaSeleccionada(c.id)}
+                            className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
+                          >
+                            <div className="flex items-center gap-2">
+                              {c.emoji && <span className="text-lg">{c.emoji}</span>}
+                              <span className="flex-1">{c.nombre}</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <div className="space-y-3 border-t border-border/60 pt-4">
-                <div className="flex items-center justify-between">
-                  <Label className="typography-label text-muted-foreground">
-                    {t('gastos.create.brand')}
-                  </Label>
-                  {categoriaSeleccionada && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCrearMarcaMode((prev) => !prev)
-                        setInputMarca('')
-                      }}
-                      className="text-xs text-primary hover:underline font-medium"
-                    >
-                      {crearMarcaMode
-                        ? t('common.cancel')
-                        : t('gastos.create.addNewBrand')}
-                    </button>
-                  )}
-                </div>
+                  <div className="space-y-3 border-t border-border/60 pt-4">
+                    <div className="flex items-center justify-between">
+                      <Label className="typography-label text-muted-foreground">
+                        {t('gastos.create.brand')}
+                      </Label>
+                      {categoriaSeleccionada && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCrearMarcaMode((prev) => !prev)
+                            setInputMarca('')
+                          }}
+                          className="text-xs text-primary hover:underline font-medium"
+                        >
+                          {crearMarcaMode
+                            ? t('common.cancel')
+                            : t('gastos.create.addNewBrand')}
+                        </button>
+                      )}
+                    </div>
 
-                {categoriaSeleccionada ? (
-                  <div className="space-y-3">
-                    {marcaSeleccionada ? (
-                      (() => {
-                        const marcaActiva = marcasDelCategoria.find(
-                          (marca) => marca.id === marcaSeleccionada,
-                        )
-                        if (!marcaActiva) return null
-                        return (
+                    {categoriaSeleccionada ? (
+                      <div className="space-y-3">
+                        {marcaSeleccionada && marcaActiva ? (
                           <SelectionBadge
                             emoji={marcaActiva.emoji}
                             label={marcaActiva.nombre}
                             onClear={handleRemoveMarca}
                           />
-                        )
-                      })()
-                    ) : (
-                      marcasDelCategoria.length > 0 && (
-                        <div className="grid grid-cols-2 gap-2">
-                          {marcasDelCategoria.map((marca) => (
-                            <button
-                              key={marca.id}
-                              type="button"
-                              onClick={() => handleSelectMarca(marca)}
-                              className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
-                            >
-                              <div className="flex items-center gap-2">
-                                {marca.emoji && <span className="text-lg">{marca.emoji}</span>}
-                                <span className="flex-1">{marca.nombre}</span>
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )
-                    )}
-
-                    {crearMarcaMode && (
-                      <div className="p-3 rounded-lg border-2 border-dashed border-primary/30 bg-muted space-y-2">
-                        <div className="relative">
-                          <Input
-                            ref={inputMarcaRef}
-                            type="text"
-                            placeholder={t('gastos.create.brandPlaceholder')}
-                            value={inputMarca}
-                            onChange={(e) => handleInputMarcaChange(e.target.value)}
-                            onKeyDown={handleKeyDownMarca}
-                            className="h-10"
-                            autoFocus
-                          />
-                          {marcasSugeridas.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
-                              {marcasSugeridas.map((sugerencia, idx) => (
+                        ) : (
+                          marcasDelCategoria.length > 0 && (
+                            <div className="grid grid-cols-2 gap-2">
+                              {marcasDelCategoria.map((marca) => (
                                 <button
-                                  key={`${sugerencia.id}-${idx}`}
+                                  key={marca.id}
                                   type="button"
-                                  onClick={() => handleSelectMarcaSugerida(sugerencia)}
-                                  className="w-full flex items-center gap-2 px-3 py-2 typography-body-sm hover:bg-muted transition-colors text-left"
+                                  onClick={() => handleSelectMarca(marca)}
+                                  className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
                                 >
-                                  {sugerencia.emoji && (
-                                    <span className="typography-body">{sugerencia.emoji}</span>
-                                  )}
-                                  <span className="flex-1">{sugerencia.nombre}</span>
+                                  <div className="flex items-center gap-2">
+                                    {marca.emoji && <span className="text-lg">{marca.emoji}</span>}
+                                    <span className="flex-1">{marca.nombre}</span>
+                                  </div>
                                 </button>
                               ))}
                             </div>
-                          )}
-                        </div>
-                        <div className="flex gap-2 justify-end">
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="h-8 px-3"
-                            disabled={loading || !inputMarca.trim()}
-                            onClick={() => crearYAgregarMarca(inputMarca)}
-                          >
-                            {t('gastos.create.addNewBrand')}
-                          </Button>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground">
-                          {t('gastos.create.pressEnter')}{' '}
-                          <kbd className="px-1.5 py-0.5 bg-background rounded text-[10px] font-mono">
-                            Enter
-                          </kbd>
-                        </p>
+                          )
+                        )}
+
+                        {crearMarcaMode && (
+                          <div className="p-3 rounded-lg border-2 border-dashed border-primary/30 bg-muted space-y-2">
+                            <div className="relative">
+                              <Input
+                                ref={inputMarcaRef}
+                                type="text"
+                                placeholder={t('gastos.create.brandPlaceholder')}
+                                value={inputMarca}
+                                onChange={(e) => handleInputMarcaChange(e.target.value)}
+                                onKeyDown={handleKeyDownMarca}
+                                className="h-10"
+                                autoFocus
+                              />
+                              {marcasSugeridas.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                  {marcasSugeridas.map((sugerencia, idx) => (
+                                    <button
+                                      key={`${sugerencia.id}-${idx}`}
+                                      type="button"
+                                      onClick={() => handleSelectMarcaSugerida(sugerencia)}
+                                      className="w-full flex items-center gap-2 px-3 py-2 typography-body-sm hover:bg-muted transition-colors text-left"
+                                    >
+                                      {sugerencia.emoji && (
+                                        <span className="typography-body">{sugerencia.emoji}</span>
+                                      )}
+                                      <span className="flex-1">{sugerencia.nombre}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                type="button"
+                                size="sm"
+                                className="h-8 px-3"
+                                disabled={loading || !inputMarca.trim()}
+                                onClick={() => crearYAgregarMarca(inputMarca)}
+                              >
+                                {t('gastos.create.addNewBrand')}
+                              </Button>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground">
+                              {t('gastos.create.pressEnter')}{' '}
+                              <kbd className="px-1.5 py-0.5 bg-background rounded text-[10px] font-mono">
+                                Enter
+                              </kbd>
+                            </p>
+                          </div>
+                        )}
                       </div>
+                    ) : (
+                      <p className="typography-body-sm text-muted-foreground italic">
+                        {t('gastos.create.selectCategoryForBrands')}
+                      </p>
                     )}
                   </div>
-                ) : (
-                  <p className="typography-body-sm text-muted-foreground italic">
-                    {t('gastos.create.selectCategoryForBrands')}
-                  </p>
-                )}
-              </div>
+                </>
+              )}
             </Card>
-          </div>
 
             {/* MONTO + OBSERVACIÓN */}
             <Card className="p-5 bg-card-accent border-primary/20 space-y-4">
               <div className="space-y-3">
-                <Label
-                  htmlFor="monto"
-                className="typography-label-lg"
-              >
-                {t('gastos.create.amount')}
-              </Label>
-              <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 typography-h2 text-muted-foreground">
-                  {simbolo ?? ''}
-                </span>
-                <Input
-                  ref={montoRef}
-                  id="monto"
-                  type="number"
-                  step={stepValue}
-                  min="0"
-                  value={monto}
-                  onChange={(e) => setMonto(e.target.value)}
-                  placeholder={placeholderValue}
-                  required
-                  className="pl-10 typography-h2 h-14 bg-background"
-                />
+                <Label htmlFor="monto" className="typography-label-lg">
+                  {t('gastos.create.amount')}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <div className="flex h-14 flex-1 items-center rounded-xl border border-input bg-background shadow-sm focus-within:ring-2 focus-within:ring-primary/20">
+                    <span className="flex h-full items-center border-r border-border px-4 text-lg font-semibold text-muted-foreground">
+                      {simbolo ?? ''}
+                    </span>
+                    <Input
+                      ref={montoRef}
+                      id="monto"
+                      type="text"
+                      inputMode="decimal"
+                      value={monto}
+                      onChange={(e) => handleMontoChange(e.target.value)}
+                      placeholder={formattedPlaceholder || placeholderValue}
+                      required
+                      autoComplete="off"
+                      className="typography-h2 flex-1 border-0 bg-transparent text-right focus-visible:ring-0"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12"
+                    onClick={() => setCalculatorOpen(true)}
+                  >
+                    <Calculator className="h-5 w-5" />
+                    <span className="sr-only">{t('gastos.create.openCalculator') ?? 'Calculadora'}</span>
+                  </Button>
+                </div>
               </div>
-            </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
@@ -866,31 +993,35 @@ export function CrearGastoDrawer({
                   </p>
                 </AlertDescription>
               </Alert>
-              )}
+            )}
             </Card>
           </form>
         </DrawerBody>
 
         <DrawerFooter className="border-t bg-muted/30">
-          <Button
-            onClick={handleSubmit}
-            disabled={
-              loading ||
-              !sobreSeleccionado ||
-              !categoriaSeleccionada ||
-              !monto
-            }
-            className="w-full h-12 typography-label-lg"
-          >
-            {loading ? t('gastos.create.creating') : t('gastos.create.submit')}
-          </Button>
-          <DrawerClose asChild>
-            <Button variant="ghost" disabled={loading} className="w-full">
-              {t('common.cancel')}
+          <div className="flex gap-2 w-full">
+            <DrawerClose asChild>
+              <Button variant="outline" disabled={loading} className="flex-1">
+                {t('common.cancel')}
+              </Button>
+            </DrawerClose>
+            <Button
+              onClick={handleSubmit}
+              disabled={
+                loading ||
+                !sobreSeleccionado ||
+                !categoriaSeleccionada ||
+                !monto
+              }
+              className="flex-1 h-12 typography-label-lg"
+            >
+              {loading ? t('gastos.create.creating') : t('gastos.create.submit')}
             </Button>
-          </DrawerClose>
+          </div>
         </DrawerFooter>
       </DrawerContent>
-    </Drawer>
+      </Drawer>
+      <CalculatorDrawer open={calculatorOpen} onOpenChange={setCalculatorOpen} />
+    </>
   )
 }
