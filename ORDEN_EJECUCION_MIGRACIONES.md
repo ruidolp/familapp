@@ -1,6 +1,6 @@
 # Orden de Ejecución de Migraciones
 
-## Bse de Datos Nueva (Fresh Install)
+## aBse de Datos Nueva (Fresh Install)
 
 Ejecutar en este orden exacto:
 
