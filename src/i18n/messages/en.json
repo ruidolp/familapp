@@ -403,18 +403,24 @@
       "active": "Active envelope",
       "actions": {
         "title": "Actions for {name}",
-        "description": "Manage budget and categories quickly.",
-        "budgetSection": "Budget",
+        "description": "Manage your goals and expense types",
+        "budgetSection": "Monthly goals",
         "increase": "Increase",
         "reduce": "Reduce",
         "configureBudget": "Configure spending goal",
         "enableBudget": "Enable Spending Goals",
         "transactions": "Movement details",
+        "expenseInfo": "Expense information",
         "organizationSection": "Organization",
-        "categoriesAndBrands": "Categories & Brands",
+        "categoriesAndBrands": "Expense types & Merchants",
         "newCategory": "New category",
         "close": "Close"
       },
+      "sections": {
+        "manageEnvelope": "Envelope management",
+        "actionsAndCollaboration": "Actions & collaboration"
+      },
+      "noGoal": "No goal defined",
       "status": {
         "percentOfBudget": "{percent}% of the budget",
         "overBudget": "Over budget",
@@ -558,7 +564,7 @@
     "title": "Expenses",
     "create": {
       "title": "Record Expense",
-      "description": "Create a new expense in an envelope",
+      "description": "Fill in the expense details",
         "amount": "Expense amount",
       "amountPlaceholder": "$",
       "origin": "Expense Origin",
@@ -580,6 +586,8 @@
       "pressEnter": "Press Enter to create a new merchant",
       "openCalculator": "Open calculator",
       "selectCategoryForBrands": "Pick an expense type to see available merchants",
+      "noBrandsMessage": "(Optional) We recommend selecting merchants for better statistics",
+      "addBrandButton": "add merchant",
       "comment": "Comment",
       "commentOptional": "optional",
       "commentPlaceholder": "Eg: Lunch at the office",
@@ -667,6 +675,33 @@
       "typeLabel": "Envelope type",
       "budgetLabel": "Initial budget ({currency})",
       "icon": "Emoji / Icon"
+    },
+    "edit": {
+      "title": "Edit Envelope",
+      "description": "Update the details of your envelope",
+      "name": "Name",
+      "namePlaceholder": "Eg: Food, Transport, Home",
+      "color": "Color",
+      "colorLabel": "Select a color",
+      "deleteSection": "Danger Zone",
+      "deleteLabel": "Delete this envelope",
+      "deleteDescription": "This action cannot be undone. All associated data will be deleted.",
+      "deleteButton": "Expand delete options",
+      "deleteConfirm": "Yes, delete",
+      "deleteCancel": "Cancel",
+      "deleteTitle": "Delete {name}?",
+      "deleteWarning": "This action is irreversible. All envelope data will be lost.",
+      "editing": "Updating...",
+      "submit": "Save Changes",
+      "cancel": "Cancel",
+      "errors": {
+        "updateFailed": "We couldn't update the envelope. Try again.",
+        "deleteFailed": "We couldn't delete the envelope. Try again."
+      },
+      "success": {
+        "updated": "Envelope updated successfully.",
+        "deleted": "Envelope deleted successfully."
+      }
     },
     "addBudget": {
       "title": "Add Budget",
@@ -937,6 +972,16 @@
       "noPurchasedProducts": "No products recorded"
     },
     "lists": {
+      "menu": {
+        "open": "Open",
+        "rename": "Rename",
+        "inviteUser": "Invite user",
+        "manageInvites": "Manage invites",
+        "clone": "Clone",
+        "delete": "Delete",
+        "continue": "Continue",
+        "viewDetails": "View details"
+      },
       "createNew": {
         "title": "Create new shopping list",
         "description": "Give a name to your new list (optional)",
@@ -947,11 +992,31 @@
         "creating": "Creating...",
         "submit": "Create"
       },
+      "editItem": {
+        "title": "Edit {name}",
+        "description": "Update the product details",
+        "unnamed": "Product",
+        "quantity": "Quantity",
+        "category": {
+          "label": "Category (optional)",
+          "placeholder": "Select a category",
+          "none": "No category"
+        },
+        "comment": {
+          "label": "Notes (optional)",
+          "placeholder": "e.g. Specific brand, special notes..."
+        },
+        "actions": {
+          "delete": "Delete",
+          "cancel": "Cancel",
+          "save": "Save"
+        }
+      },
       "options": {
         "title": "View options",
         "description": "Customize how the list is displayed",
         "groupByCategory": "Group by category",
-        "showControls": "Show quantity controls",
+        "showControls": "Quantity editor",
         "flatList": "Flat list",
         "close": "Close"
       }
@@ -974,14 +1039,14 @@
         "description": "Get everything ready before starting.",
         "register": {
           "title": "Register expense in envelopes",
-          "description": "Link this purchase to an envelope, category, and brand.",
+          "description": "Link this purchase to an envelope, expense type, and merchant.",
           "createBrand": "Create new brand",
           "envelopeLabel": "Envelope",
           "envelopePlaceholder": "Select envelope",
-          "categoryLabel": "Category",
-          "categoryPlaceholder": "Select category",
-          "brandLabel": "Brand / Store",
-          "brandPlaceholder": "Select store",
+          "categoryLabel": "Expense type",
+          "categoryPlaceholder": "Select expense type",
+          "brandLabel": "Merchant",
+          "brandPlaceholder": "Select merchant",
         "brandInputPlaceholder": "Type the brand name",
         "brandClearSelection": "Clear selection",
         "brandSubmit": "Add",

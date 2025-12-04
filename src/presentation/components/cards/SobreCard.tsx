@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useEffect, useState, useRef, useCallback } from 'react'
-import { Sliders, Wallet, ArrowUpRight, ArrowDownRight, List, UserPlus, Users, Settings2 } from 'lucide-react'
+import { Sliders, Wallet, List, UserPlus, Users, Settings2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,6 +59,7 @@ interface SobreCardProps {
   onVerDetalle?: () => void
   onFlashGasto?: (categoriaId: string) => void
   onPresupuestoUpdated?: () => void
+  onEditarSobre?: () => void
 }
 
 // Hook: auto-resize large numbers so they don't overlap
@@ -119,6 +120,7 @@ export function SobreCard({
   onVerDetalle,
   onFlashGasto,
   onPresupuestoUpdated,
+  onEditarSobre,
 }: SobreCardProps) {
   const { formatNumber } = useCurrency()
   const t = useTranslations('sobres')
@@ -161,6 +163,8 @@ export function SobreCard({
     actionButtonClass,
     isRosadoTheme && 'bg-primary text-primary-foreground hover:bg-primary/90'
   )
+  const showGestionSobreCard = canManageBudget || canManageCategories || isOwner
+  const showAccionesCard = canManageBudget || isOwner
 
   const handleOpenManageInvites = () => {
     setAccionesOpen(false)
@@ -278,7 +282,9 @@ export function SobreCard({
                 )}
               </div>
               <p className={cn('text-xs tracking-wide opacity-70 mt-1', mutedText70)}>
-                {formatNumber(presupuesto)} {t('monthlyGoal')}
+                {presupuestoEnabled
+                  ? `${formatNumber(presupuesto)} ${t('monthlyGoal')}`
+                  : t('card.noGoal')}
               </p>
             </div>
             <Drawer open={accionesOpen} onOpenChange={setAccionesOpen}>
@@ -300,130 +306,127 @@ export function SobreCard({
                     <DrawerDescription>{t('card.actions.description')}</DrawerDescription>
                   </DrawerHeader>
                   <DrawerBody className="space-y-4">
-                  {canManageBudget && (
-                    <Card className="p-3 space-y-3 bg-muted/40">
-                      <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t('card.actions.budgetSection')}
-                      </p>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          variant={drawerButtonVariant}
-                          className={drawerButtonClassName}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setAccionesOpen(false)
-                            onAgregarPresupuesto?.()
-                          }}
-                        >
-                          <ArrowUpRight className="h-4 w-4" />
-                          {t('card.actions.increase')}
-                        </Button>
-                        <Button
-                          variant={drawerButtonVariant}
-                          className={cn(
-                            drawerButtonClassName,
-                            presupuestoLibre <= 0 && 'cursor-not-allowed'
-                          )}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            if (presupuestoLibre <= 0) return
-                            setAccionesOpen(false)
-                            onDevolverPresupuesto?.()
-                          }}
-                        >
-                          <ArrowDownRight className="h-4 w-4" />
-                          {t('card.actions.reduce')}
-                        </Button>
-                        <Button
-                          variant={drawerButtonVariant}
-                          className={drawerButtonClassName}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleOpenConfigurarPresupuesto()
-                          }}
-                          disabled={loadingPresupuesto}
-                        >
-                          <Settings2 className="h-4 w-4" />
-                          {loadingPresupuesto
-                            ? 'Cargando...'
-                            : presupuestoEnabled
-                              ? t('card.actions.configureBudget')
-                              : t('card.actions.enableBudget')
-                          }
-                        </Button>
-                        <Button
-                          variant={drawerButtonVariant}
-                          className={drawerButtonClassName}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setAccionesOpen(false)
-                            onVerDetalle?.()
-                          }}
-                        >
-                          <List className="h-4 w-4" />
-                          {t('card.actions.transactions')}
-                        </Button>
+                  {showGestionSobreCard && (
+                    <Card className="p-4 space-y-3 bg-muted/40">
+                      <div className="space-y-1">
+                        <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
+                          {t('card.sections.manageEnvelope')}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{t('card.actions.description')}</p>
+                      </div>
+                      <div className="space-y-3">
+                        {isOwner && (
+                          <div className="space-y-2">
+                            <Button
+                              variant={drawerButtonVariant}
+                              className={drawerButtonClassName}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setAccionesOpen(false)
+                                onEditarSobre?.()
+                              }}
+                            >
+                              <Settings2 className="h-4 w-4" />
+                              Editar sobre
+                            </Button>
+                          </div>
+                        )}
+                        {canManageBudget && (
+                          <div className={cn('space-y-2', isOwner && 'border-t border-border/70 pt-3')}>
+                            <Button
+                              variant={drawerButtonVariant}
+                              className={drawerButtonClassName}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleOpenConfigurarPresupuesto()
+                              }}
+                              disabled={loadingPresupuesto}
+                            >
+                              <Settings2 className="h-4 w-4" />
+                              {loadingPresupuesto
+                                ? 'Cargando...'
+                                : presupuestoEnabled
+                                  ? t('card.actions.configureBudget')
+                                  : t('card.actions.enableBudget')
+                              }
+                            </Button>
+                          </div>
+                        )}
+                        {canManageCategories && (
+                          <div className={cn('space-y-2', (isOwner || canManageBudget) && 'border-t border-border/70 pt-3')}>
+                            <Button
+                              variant={drawerButtonVariant}
+                              className={drawerButtonClassName}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setAccionesOpen(false)
+                                onEditarCategorias?.()
+                              }}
+                            >
+                              <Wallet className="h-4 w-4" />
+                              {t('card.actions.categoriesAndBrands')}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </Card>
                   )}
 
-                  {canManageCategories && (
-                    <Card className="p-3 space-y-3 bg-muted/40">
+                  {showAccionesCard && (
+                    <Card className="p-4 space-y-3 bg-muted/40">
                       <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t('card.actions.organizationSection')}
+                        {t('card.sections.actionsAndCollaboration')}
                       </p>
-                      <div className="flex flex-col gap-2">
-                        <Button
-                          variant={drawerButtonVariant}
-                          className={drawerButtonClassName}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setAccionesOpen(false)
-                            onEditarCategorias?.()
-                          }}
-                        >
-                          <Wallet className="h-4 w-4" />
-                          {t('card.actions.categoriesAndBrands')}
-                        </Button>
-                      </div>
-                    </Card>
-                  )}
-
-                  {isOwner && (
-                    <Card className="p-3 space-y-3 bg-muted/40">
-                      <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
-                        Compartir
-                      </p>
-                      <div className="flex flex-col gap-2">
-                        {isCompartido && (
-                          <Button
-                            variant={drawerButtonVariant}
-                            className={drawerButtonClassName}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleOpenManageInvites()
-                            }}
-                          >
-                            <Users className="h-4 w-4" />
-                            Gestionar Invitados
-                          </Button>
+                      <div className="space-y-3">
+                        {canManageBudget && (
+                          <div className="space-y-2">
+                            <Button
+                              variant={drawerButtonVariant}
+                              className={drawerButtonClassName}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setAccionesOpen(false)
+                                onVerDetalle?.()
+                              }}
+                            >
+                              <List className="h-4 w-4" />
+                              {t('card.actions.transactions')}
+                            </Button>
+                          </div>
                         )}
-                        {!isCompartido && (
-                          <p className="text-xs font-semibold text-muted-foreground">
-                            Aún no has compartido este sobre, invita a alguien para colaborar.
-                          </p>
+                        {isOwner && (
+                          <div className={cn('space-y-2', canManageBudget && 'border-t border-border/70 pt-3')}>
+                            {isCompartido && (
+                              <Button
+                                variant={drawerButtonVariant}
+                                className={drawerButtonClassName}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleOpenManageInvites()
+                                }}
+                              >
+                                <Users className="h-4 w-4" />
+                                Gestionar Invitados
+                              </Button>
+                            )}
+                            {!isCompartido && (
+                              <p className="text-xs font-semibold text-muted-foreground">
+                                Aún no has compartido este sobre, invita a alguien para colaborar.
+                              </p>
+                            )}
+                            <Button
+                              variant={drawerButtonVariant}
+                              className={drawerButtonClassName}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleInvitePerson()
+                              }}
+                            >
+                              <UserPlus className="h-4 w-4" />
+                              Invitar una persona
+                            </Button>
+                          </div>
                         )}
-                        <Button
-                          variant={drawerButtonVariant}
-                          className={drawerButtonClassName}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleInvitePerson()
-                          }}
-                        >
-                          <UserPlus className="h-4 w-4" />
-                          Invitar una persona
-                        </Button>
                       </div>
                     </Card>
                   )}
@@ -438,7 +441,12 @@ export function SobreCard({
               </DrawerContent>
             </Drawer>
           </div>
-          <div className="mt-2 grid grid-cols-2 gap-3 items-end">
+          <div
+            className={cn(
+              'mt-2 grid gap-3 items-end',
+              presupuestoEnabled ? 'grid-cols-2' : 'grid-cols-1'
+            )}
+          >
             <div className="flex flex-col">
               <p
                 ref={usadoScale.ref}
@@ -449,21 +457,23 @@ export function SobreCard({
               </p>
               <p className={cn('text-xs opacity-70 mt-0.5', mutedText80)}>{t('usado')}</p>
             </div>
-            <div className="flex flex-col items-end text-right">
-              <p
-                ref={libreScale.ref}
-                className={cn(
-                  'text-2xl font-semibold leading-tight inline-block max-w-full',
-                  !libreEsPositivo && overBudgetTextClass
-                )}
-                style={{ transform: `scale(${libreScale.scale})`, transformOrigin: 'right center' }}
-              >
-                {libreFormatted}
-              </p>
-              <p className={cn('text-xs opacity-70 mt-0.5', mutedText80)}>
-                {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
-              </p>
-            </div>
+            {presupuestoEnabled && (
+              <div className="flex flex-col items-end text-right">
+                <p
+                  ref={libreScale.ref}
+                  className={cn(
+                    'text-2xl font-semibold leading-tight inline-block max-w-full',
+                    !libreEsPositivo && overBudgetTextClass
+                  )}
+                  style={{ transform: `scale(${libreScale.scale})`, transformOrigin: 'right center' }}
+                >
+                  {libreFormatted}
+                </p>
+                <p className={cn('text-xs opacity-70 mt-0.5', mutedText80)}>
+                  {libreEsPositivo ? t('libre') : t('card.status.overBudget')}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </Card>

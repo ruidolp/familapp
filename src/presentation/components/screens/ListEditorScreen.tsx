@@ -830,19 +830,21 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
             </Button>
 
             <div className="flex-1 min-w-0 space-y-2">
-              <div className="flex items-center justify-between gap-2 text-xs uppercase text-muted-foreground">
-                <span className="whitespace-nowrap">{tSummary('activeLabel')}</span>
-                <span className="whitespace-nowrap">
-                  {tSummary('productsTitle')}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-baseline justify-between gap-4">
-                <div className="flex-1 min-w-[200px]">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs uppercase text-muted-foreground">
+                    {tSummary('activeLabel')}
+                  </div>
                   <h1 className="typography-h3 text-foreground">{data.listInfo.nombre}</h1>
                 </div>
-                <p className="typography-h3 text-foreground leading-tight text-right min-w-[80px]">
-                  {items.length}
-                </p>
+                <div className="text-right min-w-[80px]">
+                  <div className="text-xs uppercase text-muted-foreground">
+                    {tSummary('productsTitle')}
+                  </div>
+                  <p className="typography-h3 text-foreground leading-tight">
+                    {items.length}
+                  </p>
+                </div>
               </div>
               {data.listInfo.descripcion && (
                 <p className="typography-body-sm text-muted-foreground">
@@ -992,10 +994,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                                   onPointerDown={handlePointerDown}
                                   onPointerMove={handlePointerMove}
                                   onClick={(e) => handleItemClick(item, e)}
-                                  className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted"
+                                  className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted min-w-0"
                                   disabled={isSaving}
                                 >
-                                  {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                                  <span className="block line-clamp-1">
+                                    {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                                  </span>
                                 </Button>
 
                                 {/* Save status indicator */}
@@ -1020,7 +1024,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                               {/* Line 2: Comment (if exists) - indented */}
                               {item.comentario && (
-                                <div className="typography-metadata pl-12 leading-tight">
+                                <div className="typography-metadata pl-12 leading-tight break-words">
                                   {item.comentario}
                                 </div>
                               )}
@@ -1098,10 +1102,12 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
                         onPointerDown={handlePointerDown}
                         onPointerMove={handlePointerMove}
                         onClick={(e) => handleItemClick(item, e)}
-                        className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted"
+                        className="flex-1 h-auto justify-start text-left px-2 py-0.5 font-medium hover:bg-muted min-w-0"
                         disabled={isSaving}
                       >
-                        {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                        <span className="block line-clamp-1">
+                          {item.nombre || item._productName || item.product_id || item.product_custom_id}
+                        </span>
                       </Button>
 
                       {/* Save status indicator */}
@@ -1126,7 +1132,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
 
                     {/* Line 2: Comment (if exists) - indented under product name */}
                     {item.comentario && (
-                      <div className="typography-metadata pl-12 leading-tight">
+                      <div className="typography-metadata pl-12 leading-tight break-words">
                         {item.comentario}
                       </div>
                     )}

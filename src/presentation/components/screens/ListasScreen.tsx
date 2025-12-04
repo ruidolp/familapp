@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useLocale } from 'next-intl'
 import { Plus, ShoppingCart, Trash2, Copy, MoreVertical, Clock, CheckCircle2, UserPlus, User, Pencil, ExternalLink, Users, Bell } from 'lucide-react'
 import { Card } from '@/components/ui/card'
@@ -65,6 +66,7 @@ interface ListasScreenProps {
 export function ListasScreen({ userId, menuAction, onMenuActionHandled }: ListasScreenProps) {
   const router = useRouter()
   const locale = useLocale()
+  const t = useTranslations('shopping.lists')
   const { formatNumber } = useCurrency()
   const [lists, setLists] = useState<ShoppingList[]>([])
   const [sharedLists, setSharedLists] = useState<ShoppingList[]>([])
@@ -495,7 +497,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               }}
             >
               <ExternalLink size={14} className="mr-2" />
-              Abrir
+              {t('menu.open')}
             </DropdownMenuItem>
 
             {!list._isShared && (
@@ -507,7 +509,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                   }}
                 >
                   <Pencil size={14} className="mr-2" />
-                  Editar
+                  {t('menu.rename')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -516,7 +518,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                   }}
                 >
                   <UserPlus size={14} className="mr-2" />
-                  Invitar usuario
+                  {t('menu.inviteUser')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -525,7 +527,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                   }}
                 >
                   <Users size={14} className="mr-2" />
-                  Gestionar invitados
+                  {t('menu.manageInvites')}
                 </DropdownMenuItem>
               </>
             )}
@@ -537,7 +539,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               }}
             >
               <Copy size={14} className="mr-2" />
-              Clonar
+              {t('menu.clone')}
             </DropdownMenuItem>
 
             {!list._isShared && (
@@ -545,12 +547,12 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
                 onClick={(e) => {
                   e.stopPropagation()
                   handleDeleteList(list.id, list.nombre)
-                }}
-                className="text-destructive"
-              >
-                <Trash2 size={14} className="mr-2" />
-                Eliminar
-              </DropdownMenuItem>
+              }}
+              className="text-destructive"
+            >
+              <Trash2 size={14} className="mr-2" />
+              {t('menu.delete')}
+            </DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -643,7 +645,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               }}
             >
               <Clock size={14} className="mr-2" />
-              Continuar
+              {t('menu.continue')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
@@ -653,7 +655,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               className="text-destructive"
             >
               <Trash2 size={14} className="mr-2" />
-              Eliminar
+              {t('menu.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -741,7 +743,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               }}
             >
               <ExternalLink size={14} className="mr-2" />
-              Ver detalles
+              {t('menu.viewDetails')}
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={(e) => {
@@ -773,10 +775,9 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
       <div className="flex items-center justify-between gap-4 flex-wrap p-4 pb-0">
         <h3 className="typography-h3 text-foreground">Listas de Compras</h3>
         <Button
-          className="gap-2 rounded-full px-4 py-2 text-base font-semibold"
+          className="rounded-full px-4 py-2 text-base font-semibold"
           onClick={handleOpenCreateDrawer}
         >
-          <Plus size={16} />
           Nueva lista
         </Button>
       </div>
@@ -791,8 +792,7 @@ export function ListasScreen({ userId, menuAction, onMenuActionHandled }: Listas
               <br />
               <span className="typography-body-sm">Crea tu primera lista para empezar</span>
             </p>
-            <Button onClick={handleOpenCreateDrawer} className="gap-2 rounded-full px-4 py-2 text-base font-semibold">
-              <Plus size={18} />
+            <Button onClick={handleOpenCreateDrawer} className="rounded-full px-4 py-2 text-base font-semibold">
               Crear Lista
             </Button>
           </div>

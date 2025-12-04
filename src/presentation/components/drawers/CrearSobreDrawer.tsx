@@ -29,14 +29,16 @@ interface CrearSobreDrawerProps {
 }
 
 const COLORES_SUGERIDOS = [
-  '#3b82f6',
-  '#8b5cf6',
-  '#ec4899',
-  '#10b981',
-  '#f59e0b',
-  '#ef4444',
-  '#06b6d4',
-  '#64748b',
+  '#2EBE76',
+  '#38D6AA',
+  '#3BC9C7',
+  '#2F89A3',
+  '#7A91F9',
+  '#A18CFF',
+  '#FF8FA9',
+  '#FFB77A',
+  '#F7D76F',
+  '#FF6F61',
 ]
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -202,64 +204,62 @@ export function CrearSobreDrawer({
                   <Label className="typography-label text-muted-foreground">
                     {t('form.color')}
                   </Label>
-                  
-                  <div className="flex gap-2 flex-wrap items-center">
-                    {COLORES_SUGERIDOS.map((c) => (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-2">
+                      {COLORES_SUGERIDOS.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => {
+                            setSobreColor(c)
+                            setShowColorPicker(false)
+                          }}
+                          className={`
+                            h-9 w-9 rounded-lg border transition-all
+                            ${sobreColor === c && !showColorPicker
+                              ? 'border-primary ring-2 ring-primary/40'
+                              : 'border-border hover:border-primary/60'}
+                          `}
+                          style={{ backgroundColor: c }}
+                        />
+                      ))}
                       <button
-                        key={c}
                         type="button"
-                        onClick={() => {
-                          setSobreColor(c)
-                          setShowColorPicker(false)
-                        }}
+                        onClick={() => setShowColorPicker(!showColorPicker)}
                         className={`
-                          w-10 h-10 rounded-full transition-all
-                          ${sobreColor === c && !showColorPicker
-                            ? 'ring-2 ring-offset-2 ring-primary scale-110'
-                            : 'hover:scale-105 opacity-80 hover:opacity-100'
-                          }
+                          h-9 w-9 rounded-lg border border-dashed transition-all 
+                          flex items-center justify-center text-sm font-semibold
+                          ${showColorPicker
+                            ? 'border-primary bg-muted text-primary'
+                            : 'border-muted-foreground/50 hover:border-primary hover:text-primary'}
                         `}
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-
-                    <button
-                      type="button"
-                      onClick={() => setShowColorPicker(!showColorPicker)}
-                      className={`
-                        w-10 h-10 rounded-full border-2 border-dashed transition-all 
-                        flex items-center justify-center text-sm font-bold
-                        ${showColorPicker
-                          ? 'border-primary bg-muted text-primary'
-                          : 'border-muted-foreground/30 hover:border-primary hover:text-primary'
-                        }
-                      `}
-                    >
-                      +
-                    </button>
-                  </div>
-
-                  {showColorPicker && (
-                    <div className="mt-3 p-4 border border-border rounded-lg bg-background space-y-3">
-                      <HexColorPicker 
-                        color={sobreColor} 
-                        onChange={setSobreColor}
-                        style={{ width: '100%' }}
-                      />
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-lg border border-border"
-                          style={{ backgroundColor: sobreColor }}
-                        />
-                        <Input
-                          type="text"
-                          value={sobreColor}
-                          onChange={(e) => setSobreColor(e.target.value)}
-                          className="flex-1 font-mono h-10"
-                        />
-                      </div>
+                      >
+                        +
+                      </button>
                     </div>
-                  )}
+
+                    {showColorPicker && (
+                      <div className="space-y-2 rounded-lg border border-border bg-background p-3">
+                        <HexColorPicker 
+                          color={sobreColor} 
+                          onChange={setSobreColor}
+                          style={{ width: '100%' }}
+                        />
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="h-9 w-9 rounded-lg border border-border"
+                            style={{ backgroundColor: sobreColor }}
+                          />
+                          <Input
+                            type="text"
+                            value={sobreColor}
+                            onChange={(e) => setSobreColor(e.target.value)}
+                            className="flex-1 font-mono h-10"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </Card>
             </div>

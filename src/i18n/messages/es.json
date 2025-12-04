@@ -396,25 +396,31 @@
       "loading": "Cargando sobres...",
       "empty": "No tienes sobres aún",
       "createFirst": "Crear tu primer sobre",
-      "loadError": "Error al cargar sobres",
+        "loadError": "Error al cargar sobres",
       "returnError": "Error al devolver presupuesto"
     },
     "card": {
       "active": "Sobre",
       "actions": {
         "title": "Acciones de {name}",
-        "description": "Gestiona presupuesto y categorías rápidamente.",
-        "budgetSection": "Presupuesto",
+        "description": "Gestiona tus metas y tipos de gastos",
+        "budgetSection": "Metas del mes",
         "increase": "Aumentar",
         "reduce": "Reducir",
         "configureBudget": "Configurar meta de gasto",
         "enableBudget": "Activar Metas de Gastos",
         "transactions": "Detalle de movimientos",
+        "expenseInfo": "Información de gastos",
         "organizationSection": "Organización",
-        "categoriesAndBrands": "Categorías y Marcas",
+        "categoriesAndBrands": "Tipos de gastos y Comercios",
         "newCategory": "Nueva categoría",
         "close": "Cerrar"
       },
+      "sections": {
+        "manageEnvelope": "Gestión del Sobre",
+        "actionsAndCollaboration": "Acciones y colaboración"
+      },
+      "noGoal": "Sin meta definida",
       "status": {
         "percentOfBudget": "{percent}% del presupuesto",
         "overBudget": "Te pasaste",
@@ -498,6 +504,33 @@
       "typeLabel": "Tipo de sobre",
       "budgetLabel": "Presupuesto inicial ({currency})",
       "icon": "Emoji / ícono"
+    },
+    "edit": {
+      "title": "Editar sobre",
+      "description": "Modifica los detalles de tu sobre",
+      "name": "Nombre",
+      "namePlaceholder": "Ej: Comida, Transporte, Hogar",
+      "color": "Color",
+      "colorLabel": "Selecciona un color",
+      "deleteSection": "Zona de peligro",
+      "deleteLabel": "Eliminar este sobre",
+      "deleteDescription": "Esta acción no se puede deshacer. Se eliminarán todos los datos asociados.",
+      "deleteButton": "Expandir opciones de eliminación",
+      "deleteConfirm": "Sí, eliminar",
+      "deleteCancel": "Cancelar",
+      "deleteTitle": "¿Eliminar {name}?",
+      "deleteWarning": "Esta acción es irreversible. Se perderán todos los datos del sobre.",
+      "editing": "Actualizando...",
+      "submit": "Guardar cambios",
+      "cancel": "Cancelar",
+      "errors": {
+        "updateFailed": "No pudimos actualizar el sobre. Intenta nuevamente.",
+        "deleteFailed": "No pudimos eliminar el sobre. Intenta nuevamente."
+      },
+      "success": {
+        "updated": "Sobre actualizado correctamente.",
+        "deleted": "Sobre eliminado correctamente."
+      }
     },
     "addBudget": {
       "title": "Agregar presupuesto",
@@ -702,6 +735,16 @@
       "noPurchasedProducts": "Aún no registras productos comprados"
     },
     "lists": {
+      "menu": {
+        "open": "Abrir",
+        "rename": "Modificar nombre",
+        "inviteUser": "Invitar usuario",
+        "manageInvites": "Gestionar invitados",
+        "clone": "Clonar",
+        "delete": "Eliminar",
+        "continue": "Continuar",
+        "viewDetails": "Ver detalles"
+      },
       "createNew": {
         "title": "Nueva lista de compras",
         "description": "Ponle un nombre o déjalo vacío y la app te ayudará 🛒",
@@ -712,11 +755,31 @@
         "creating": "Creando...",
         "submit": "Crear lista"
       },
+      "editItem": {
+        "title": "Editar {name}",
+        "description": "Actualiza los detalles del producto",
+        "unnamed": "Producto",
+        "quantity": "Cantidad",
+        "category": {
+          "label": "Categoría (opcional)",
+          "placeholder": "Selecciona una categoría",
+          "none": "Sin categoría"
+        },
+        "comment": {
+          "label": "Observación (opcional)",
+          "placeholder": "Ej: Marca específica, notas especiales..."
+        },
+        "actions": {
+          "delete": "Eliminar",
+          "cancel": "Cancelar",
+          "save": "Guardar"
+        }
+      },
       "options": {
         "title": "Opciones de vista",
         "description": "Elige cómo quieres ver tu lista",
         "groupByCategory": "Agrupar por categoría",
-        "showControls": "Mostrar cantidad",
+        "showControls": "Editor de cantidades",
         "flatList": "Lista simple",
         "close": "Cerrar"
       }
@@ -739,14 +802,14 @@
       "description": "Prepara la compra antes de iniciar el conteo.",
       "register": {
         "title": "Registrar el gasto en sobres",
-        "description": "Asocia la compra a un sobre, categoría y marca.",
+        "description": "Asocia la compra a un sobre, tipo de gasto y comercio.",
         "createBrand": "Crear nueva marca",
         "envelopeLabel": "Sobre",
         "envelopePlaceholder": "Selecciona sobre",
-        "categoryLabel": "Categoría",
-        "categoryPlaceholder": "Selecciona categoría",
-        "brandLabel": "Marca / Tienda",
-        "brandPlaceholder": "Selecciona tienda",
+        "categoryLabel": "Tipo de gasto",
+        "categoryPlaceholder": "Selecciona tipo de gasto",
+        "brandLabel": "Comercio",
+        "brandPlaceholder": "Selecciona comercio",
         "brandInputPlaceholder": "Escribe el nombre de la marca",
         "brandClearSelection": "Limpiar selección",
         "brandSubmit": "Agregar",
@@ -947,7 +1010,7 @@
     "title": "Gastos",
     "create": {
       "title": "Registrar gasto",
-      "description": "Registra un nuevo gasto en uno de tus sobres.",
+      "description": "Completa los detalles del gasto",
       "amount": "Monto del gasto",
       "amountPlaceholder": "$",
       "origin": "Origen del gasto",
@@ -969,6 +1032,8 @@
       "pressEnter": "Presiona Enter para crear un nuevo comercio",
       "openCalculator": "Abrir calculadora",
       "selectCategoryForBrands": "Elige un tipo de gasto para ver los comercios disponibles.",
+      "noBrandsMessage": "(Opcional) Recomendamos seleccionar comercio para mejores estadísticas",
+      "addBrandButton": "agregar comercio",
       "comment": "Comentario",
       "commentOptional": "opcional",
       "commentPlaceholder": "Ej: Almuerzo, farmacia, encargo...",

@@ -82,7 +82,7 @@ function SelectionBadge({
   onClear: () => void
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-primary bg-primary/10 px-3 py-2 min-w-0 min-h-[44px]">
+    <div className="flex items-center gap-3 rounded-xl border border-primary bg-primary/10 px-3 py-2 min-w-0">
       <div className="flex items-center gap-2 text-sm font-semibold min-w-0">
         {emoji && <span className="text-lg flex-shrink-0">{emoji}</span>}
         <span className="text-foreground truncate">{label}</span>
@@ -553,7 +553,7 @@ export function CrearGastoDrawer({
   return (
     <>
       <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[95dvh] bg-gradient-to-b from-primary/15 via-background/80 to-background">
+      <DrawerContent className="max-h-[95dvh]">
         <DrawerHeader>
           <DrawerTitle>{t('gastos.create.title')}</DrawerTitle>
           <DrawerDescription>
@@ -609,7 +609,7 @@ export function CrearGastoDrawer({
               </div>
 
               {showCompactSelections ? (
-                <div className="flex flex-wrap gap-3 items-end">
+                <div className="flex flex-wrap gap-3">
                   <div className="flex-1 basis-0 min-w-[140px] space-y-1">
                     <Label className="typography-label text-muted-foreground">
                       {t('gastos.create.category')}

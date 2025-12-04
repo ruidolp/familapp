@@ -11,6 +11,7 @@ import { ReducirPresupuestoDrawer } from '@/components/drawers/ReducirPresupuest
 import { CrearGastoDrawer } from '@/components/drawers/CrearGastoDrawer'
 import { EditarCategoriasMarcasDrawer } from '@/components/drawers/EditarCategoriasMarcasDrawer'
 import { VerDetalleTransaccionesDrawer } from '@/components/drawers/VerDetalleTransaccionesDrawer'
+import { EditarSobreDrawer } from '@/components/drawers/EditarSobreDrawer'
 import { OverspendWarningModal } from '@/components/modals/OverspendWarningModal'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useSobre, useDevolverPresupuesto } from '@/presentation/hooks/useSobres'
@@ -59,6 +60,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
   const [crearGastoOpen, setCrearGastoOpen] = useState(false)
   const [editarCategoriasOpen, setEditarCategoriasOpen] = useState(false)
   const [verDetalleOpen, setVerDetalleOpen] = useState(false)
+  const [editarSobreOpen, setEditarSobreOpen] = useState(false)
   const [sobreSeleccionado, setSobreSeleccionado] = useState<Sobre | null>(null)
   const [sobreSeleccionadoParaGasto, setSobreSeleccionadoParaGasto] = useState<string>('')
   const [categoriaPreseleccionada, setCategoriaPreseleccionada] = useState<string>('')
@@ -289,6 +291,31 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     setEditarCategoriasOpen(false)
   }
 
+  const handleEditarSobre = (sobre: Sobre) => {
+    setSobreSeleccionado(sobre)
+    setEditarSobreOpen(true)
+  }
+
+  const handleSobreUpdated = async () => {
+    // Guardar índice actual para restaurar después
+    targetIndexRef.current = selectedIndex
+    isRestoringRef.current = true
+
+    await fetchSobres()
+
+    setEditarSobreOpen(false)
+  }
+
+  const handleSobreDeleted = async () => {
+    // Guardar índice actual para restaurar después
+    targetIndexRef.current = selectedIndex
+    isRestoringRef.current = true
+
+    await fetchSobres()
+
+    setEditarSobreOpen(false)
+  }
+
   const handleTransaccionesUpdated = async () => {
     // Guardar índice actual para restaurar después
     targetIndexRef.current = selectedIndex
@@ -363,6 +390,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                       onDevolverPresupuesto={() => handleReducirPresupuesto(sobre)}
                       onEditarCategorias={() => handleEditarCategorias(sobre)}
                       onFlashGasto={(categoriaId) => handleFlashGasto(sobre.id, categoriaId)}
+                      onEditarSobre={() => handleEditarSobre(sobre)}
                       onPresupuestoUpdated={async () => {
                         // Guardar índice actual para restaurar después
                         targetIndexRef.current = selectedIndex
@@ -430,6 +458,16 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
         onTransactionsUpdated={handleTransaccionesUpdated}
+      />
+
+      <EditarSobreDrawer
+        open={editarSobreOpen}
+        onOpenChange={setEditarSobreOpen}
+        sobreId={sobreSeleccionado?.id || ''}
+        sobreNombre={sobreSeleccionado?.nombre || ''}
+        sobreColor={sobreSeleccionado?.color}
+        onSobreUpdated={handleSobreUpdated}
+        onSobreDeleted={handleSobreDeleted}
       />
 
       {/* Warning Modal */}

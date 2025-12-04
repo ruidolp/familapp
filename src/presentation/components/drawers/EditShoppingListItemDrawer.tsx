@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   Drawer,
+  DrawerBody,
   DrawerClose,
   DrawerContent,
   DrawerDescription,
@@ -17,12 +19,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { Card } from '@/components/ui/card'
 import { Minus, Plus, Trash2 } from 'lucide-react'
-import { notify } from '@/infrastructure/lib/notifications'
-import { ProductQuantityInput } from '@/components/inputs/ProductQuantityInput'
 import { quantityToDecimal, adjustQty, decimalToFraction } from '@/infrastructure/utils/quantity'
 
 interface ListItem {
@@ -59,6 +59,7 @@ export function EditShoppingListItemDrawer({
   onSave,
   onDelete,
 }: EditShoppingListItemDrawerProps) {
+  const t = useTranslations('shopping.lists.editItem')
   const [cantidad, setCantidad] = useState<number>(1)
   const [comentario, setComentario] = useState('')
   const [categoriaId, setCategoriaId] = useState<string | null>(null)
@@ -94,102 +95,105 @@ export function EditShoppingListItemDrawer({
     }
   }
 
+  const displayName = item?.nombre || t('unnamed')
+  const formattedQty = decimalToFraction(cantidad) || Math.round(cantidad)
+
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent>
+      <DrawerContent className="max-h-[95dvh]">
         <DrawerHeader>
-          <DrawerTitle>Editar {item?.nombre}</DrawerTitle>
+          <DrawerTitle>{t('title', { name: displayName })}</DrawerTitle>
           <DrawerDescription>
-            Actualiza los detalles del producto
+            {t('description')}
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="px-4 py-6 space-y-6">
-          {/* Cantidad with large +/- buttons */}
-          <div className="space-y-3">
-            <Label>Cantidad</Label>
+        <DrawerBody className="space-y-4">
+          <Card className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="typography-label-lg">{t('quantity')}</Label>
+              <span className="typography-label text-muted-foreground">{displayName}</span>
+            </div>
             <div className="flex items-center justify-center gap-4">
               <Button
                 variant="outline"
                 size="lg"
                 onClick={() => handleAdjustQuantity('down')}
-                className="h-16 w-16 text-2xl"
+                className="h-14 w-14 text-2xl"
               >
-                <Minus size={28} />
+                <Minus size={24} />
               </Button>
 
-              <div className="text-5xl font-bold min-w-[120px] text-center">
-                {decimalToFraction(cantidad) || Math.round(cantidad)}
+              <div className="text-4xl font-bold min-w-[120px] text-center">
+                {formattedQty}
               </div>
 
               <Button
                 variant="outline"
                 size="lg"
                 onClick={() => handleAdjustQuantity('up')}
-                className="h-16 w-16 text-2xl"
+                className="h-14 w-14 text-2xl"
               >
-                <Plus size={28} />
+                <Plus size={24} />
               </Button>
             </div>
-          </div>
+          </Card>
 
-          {/* Category Selector */}
           {categories.length > 0 && (
-            <div className="space-y-2">
-              <Label htmlFor="categoria">Categoría (opcional)</Label>
+            <Card className="p-4 space-y-3">
+              <Label htmlFor="categoria" className="typography-label">
+                {t('category.label')}
+              </Label>
               <Select
                 value={categoriaId || 'sin-categoria'}
                 onValueChange={(value) => setCategoriaId(value === 'sin-categoria' ? null : value)}
               >
                 <SelectTrigger id="categoria">
-                  <SelectValue placeholder="Selecciona una categoría" />
+                  <SelectValue placeholder={t('category.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sin-categoria">Sin categoría</SelectItem>
-                  {categories.map((cat) => {
-                    const typeLabel = cat._type === 'global' ? ' (Global)' : cat._type === 'user' ? ' (Personal)' : ''
-                    return (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.emoji ? `${cat.emoji} ` : ''}{cat.nombre}{typeLabel}
-                      </SelectItem>
-                    )
-                  })}
+                  <SelectItem value="sin-categoria">{t('category.none')}</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.emoji ? `${cat.emoji} ` : ''}{cat.nombre}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              {categoriaId && (
-                <p className="typography-metadata">
-                  {categories.find(c => c.id === categoriaId)?._type === 'global' ? '🌍 Categoría global' : '👤 Categoría personal'}
-                </p>
-              )}
-            </div>
+            </Card>
           )}
 
-          {/* Comentario */}
-          <div className="space-y-2">
-            <Label htmlFor="comentario">Observación (opcional)</Label>
+          <Card className="p-4 space-y-3">
+            <Label htmlFor="comentario" className="typography-label">
+              {t('comment.label')}
+            </Label>
             <textarea
               id="comentario"
-              placeholder="Ej: Marca específica, notas especiales..."
+              placeholder={t('comment.placeholder')}
               value={comentario}
               onChange={(e) => setComentario(e.target.value)}
-              className="w-full p-2 border rounded typography-body-sm"
+              className="w-full rounded-lg border border-input bg-background p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
               rows={3}
             />
-          </div>
-        </div>
+          </Card>
+        </DrawerBody>
 
-        <DrawerFooter className="flex-row gap-2 justify-between">
-          {onDelete && (
-            <Button variant="destructive" onClick={handleDelete} className="flex items-center gap-2">
-              <Trash2 size={16} />
-              Eliminar
-            </Button>
-          )}
-          <div className="flex gap-2 ml-auto">
+        <DrawerFooter className="border-t bg-muted/30">
+          <div className="flex w-full gap-2">
+            {onDelete && (
+              <Button variant="destructive" onClick={handleDelete} className="flex items-center gap-2">
+                <Trash2 size={16} />
+                {t('actions.delete')}
+              </Button>
+            )}
             <DrawerClose asChild>
-              <Button variant="outline">Cancelar</Button>
+              <Button variant="outline" className="flex-1">
+                {t('actions.cancel')}
+              </Button>
             </DrawerClose>
-            <Button onClick={handleSave}>Guardar</Button>
+            <Button onClick={handleSave} className="flex-1">
+              {t('actions.save')}
+            </Button>
           </div>
         </DrawerFooter>
       </DrawerContent>

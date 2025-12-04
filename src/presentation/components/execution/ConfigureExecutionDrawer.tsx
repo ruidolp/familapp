@@ -33,8 +33,9 @@ import {
   SelectValue,
 } from '@/presentation/components/ui/select'
 import { Card } from '@/presentation/components/ui/card'
-import { DollarSign, Store, X } from 'lucide-react'
+import { DollarSign, X } from 'lucide-react'
 import { notify } from '@/infrastructure/lib/notifications'
+import { useCurrencyInput } from '@/presentation/hooks/useCurrencyInput'
 import {
   getPreferences,
   savePreferences,
@@ -73,7 +74,7 @@ function SelectionBadge({
   onClear: () => void
 }) {
   return (
-    <div className="flex items-center justify-between rounded-xl border border-primary bg-primary/10 px-3 py-2">
+    <div className="flex items-center justify-between rounded-xl border border-primary bg-primary/10 px-3 py-2 min-h-[44px]">
       <div className="flex items-center gap-2 text-sm font-semibold">
         {emoji && <span className="text-lg">{emoji}</span>}
         <span className="text-foreground">{label}</span>
@@ -122,6 +123,7 @@ export function ConfigureExecutionDrawer({
 }: ConfigureExecutionDrawerProps) {
   const t = useTranslations('shopping.execution.configure')
   const commonT = useTranslations('common')
+  const { formatInputValue, parseInputToNumber } = useCurrencyInput()
 
   // Determinar si el usuario es invitado en una lista compartida
   const isInvitedUser = isSharedList && !isListOwner
@@ -375,7 +377,7 @@ export function ConfigureExecutionDrawer({
       subcategoria_id: subcategoriaId || undefined,
       store_name: storeName || undefined,
       budgetEnabled,
-      budgetAmount: budgetEnabled ? parseFloat(budgetAmount) : undefined,
+      budgetAmount: budgetEnabled ? parseInputToNumber(budgetAmount) : undefined,
       enablePrices: true,
       showCategories,
       showTimer,
@@ -450,7 +452,7 @@ export function ConfigureExecutionDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex h-[92vh] flex-col overflow-hidden sm:max-w-[480px]">
-        <SheetHeader className="text-left">
+        <SheetHeader className="text-left pb-2">
           <SheetTitle className="typography-h3">{t('title')}</SheetTitle>
           <SheetDescription>
             {isInvitedUser
@@ -460,8 +462,8 @@ export function ConfigureExecutionDrawer({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex-1 space-y-5 overflow-y-auto py-5">
-          <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
+        <div className="flex-1 space-y-3 overflow-y-auto py-3">
+          <Card className="mx-1 space-y-3 rounded-2xl border border-border bg-card p-3">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <p className="typography-label text-foreground">
@@ -476,7 +478,7 @@ export function ConfigureExecutionDrawer({
             </div>
 
             {registerInBudget && (
-              <div className="space-y-4 rounded-xl bg-muted/40 p-3">
+              <div className="space-y-2 rounded-xl bg-muted/40 p-3">
                 <div className="space-y-2">
                   <Label htmlFor="sobre" className="typography-caption text-muted-foreground">
                     {t('register.envelopeLabel')}
@@ -501,81 +503,117 @@ export function ConfigureExecutionDrawer({
                   </Select>
                 </div>
 
-                {sobreId && (
-                  <div className="space-y-2">
-                    <Label htmlFor="categoria" className="typography-caption text-muted-foreground">
-                      {t('register.categoryLabel')}
-                    </Label>
-                    <Select value={categoriaId} onValueChange={setCategoriaId}>
-                      <SelectTrigger id="categoria">
-                        <SelectValue placeholder={t('register.categoryPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categorias.map(c => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.emoji && <span className="mr-1">{c.emoji}</span>}
-                            <span className="truncate">{c.nombre}</span>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {categoriaId && (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <Label className="flex items-center gap-2 typography-caption text-muted-foreground">
-                        <Store className="h-3.5 w-3.5" /> {t('register.brandLabel')}
+                {sobreId && categoriaId && subcategoriaId && selectedSubcategoria ? (
+                  // Vista compacta: ambos seleccionados
+                  <div className="flex flex-wrap gap-3 items-end">
+                    <div className="flex-1 basis-0 min-w-[140px] space-y-1">
+                      <Label className="typography-caption text-muted-foreground">
+                        {t('register.categoryLabel')}
                       </Label>
-                      <button
-                        type="button"
-                        className="typography-caption text-primary hover:underline disabled:opacity-60"
-                        onClick={toggleCreateBrand}
-                        disabled={!categoriaId}
-                      >
-                        {showCreateBrand ? commonT('cancel') : t('register.createBrand')}
-                      </button>
+                      <SelectionBadge
+                        emoji={categorias.find(c => c.id === categoriaId)?.emoji}
+                        label={categorias.find(c => c.id === categoriaId)?.nombre || ''}
+                        onClear={() => setCategoriaId('')}
+                      />
                     </div>
-                    {subcategoriaId && selectedSubcategoria ? (
+                    <div className="flex-1 basis-0 min-w-[140px] space-y-1">
+                      <Label className="typography-caption text-muted-foreground">
+                        {t('register.brandLabel')}
+                      </Label>
                       <SelectionBadge
                         emoji={selectedSubcategoria.emoji}
                         label={selectedSubcategoria.nombre}
                         onClear={() => setSubcategoriaId('')}
                       />
-                    ) : subcategorias.length > 0 ? (
-                      <div className="grid grid-cols-2 gap-2">
-                        {subcategorias.map(s => (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => setSubcategoriaId(s.id)}
-                            className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
-                          >
-                            <div className="flex items-center gap-2">
-                              {s.emoji && <span className="text-lg">{s.emoji}</span>}
-                              <span className="flex-1">{s.nombre}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="typography-metadata text-muted-foreground italic">
-                        {t('register.brandPlaceholder')}
-                      </p>
-                    )}
-                    {showCreateBrand && brandCreationForm}
+                    </div>
                   </div>
+                ) : (
+                  // Vista expandida: solo uno o ninguno seleccionado
+                  <>
+                    {sobreId && !categoriaId && (
+                      <div className="space-y-2">
+                        <Label htmlFor="categoria" className="typography-caption text-muted-foreground">
+                          {t('register.categoryLabel')}
+                        </Label>
+                        <Select value={categoriaId} onValueChange={setCategoriaId}>
+                          <SelectTrigger id="categoria">
+                            <SelectValue placeholder={t('register.categoryPlaceholder')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {categorias.map(c => (
+                              <SelectItem key={c.id} value={c.id}>
+                                {c.emoji && <span className="mr-1">{c.emoji}</span>}
+                                <span className="truncate">{c.nombre}</span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    {sobreId && categoriaId && (
+                      <div className="space-y-2">
+                        <Label className="typography-caption text-muted-foreground">
+                          {t('register.categoryLabel')}
+                        </Label>
+                        <SelectionBadge
+                          emoji={categorias.find(c => c.id === categoriaId)?.emoji}
+                          label={categorias.find(c => c.id === categoriaId)?.nombre || ''}
+                          onClear={() => setCategoriaId('')}
+                        />
+                      </div>
+                    )}
+
+                    {categoriaId && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="typography-caption text-muted-foreground">
+                            {t('register.brandLabel')}
+                          </Label>
+                          <button
+                            type="button"
+                            className="typography-caption text-primary hover:underline disabled:opacity-60"
+                            onClick={toggleCreateBrand}
+                            disabled={!categoriaId}
+                          >
+                            {showCreateBrand ? commonT('cancel') : t('register.createBrand')}
+                          </button>
+                        </div>
+                        {subcategorias.length > 0 ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            {subcategorias.map(s => (
+                              <button
+                                key={s.id}
+                                type="button"
+                                onClick={() => setSubcategoriaId(s.id)}
+                                className="min-h-[44px] w-full rounded-xl border border-transparent bg-muted px-3 py-2 text-left text-sm font-medium leading-tight text-foreground transition-all hover:bg-muted/80"
+                              >
+                                <div className="flex items-center gap-2">
+                                  {s.emoji && <span className="text-lg">{s.emoji}</span>}
+                                  <span className="flex-1">{s.nombre}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="typography-metadata text-muted-foreground italic">
+                            {t('register.brandPlaceholder')}
+                          </p>
+                        )}
+                        {showCreateBrand && brandCreationForm}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
 
             {!registerInBudget && (
-              <div className="space-y-3 rounded-xl bg-muted/40 p-3">
+              <div className="space-y-2 rounded-xl bg-muted/40 p-3">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
-                    <Label className="flex items-center gap-2 typography-caption text-muted-foreground">
-                      <Store className="h-3.5 w-3.5" /> {t('register.brandLabel')}
+                    <Label className="typography-caption text-muted-foreground">
+                      {t('register.brandLabel')}
                     </Label>
                     <button
                       type="button"
@@ -620,7 +658,7 @@ export function ConfigureExecutionDrawer({
             )}
           </Card>
 
-          <Card className="mx-1 space-y-4 rounded-2xl border border-border bg-card p-4">
+          <Card className="mx-1 space-y-3 rounded-2xl border border-border bg-card p-3">
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
                 <p className="typography-label text-foreground">{t('budget.title')}</p>
@@ -635,11 +673,11 @@ export function ConfigureExecutionDrawer({
                   <DollarSign className="h-3.5 w-3.5" /> {t('budget.amountLabel')}
                 </Label>
                 <Input
-                  type="number"
+                  type="text"
                   inputMode="decimal"
                   placeholder={t('budget.amountPlaceholder')}
                   value={budgetAmount}
-                  onChange={e => setBudgetAmount(e.target.value)}
+                  onChange={e => setBudgetAmount(formatInputValue(e.target.value))}
                   className="typography-body-lg"
                 />
                 <p className="typography-metadata text-foreground">{t('budget.note')}</p>

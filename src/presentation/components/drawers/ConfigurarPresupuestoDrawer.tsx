@@ -27,6 +27,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CalculatorDrawer } from '@/components/execution/CalculatorDrawer'
 import { useCurrency } from '@/presentation/providers/currency-provider'
+import { useCurrencyInput } from '@/presentation/hooks/useCurrencyInput'
 import { notify } from '@/infrastructure/lib/notifications'
 
 interface Categoria {
@@ -88,6 +89,7 @@ export function ConfigurarPresupuestoDrawer({
 }: ConfigurarPresupuestoDrawerProps) {
   const t = useTranslations('presupuesto')
   const { formatNumber, simbolo, decimales, locale } = useCurrency()
+  const { formatInputValue, parseInputToNumber } = useCurrencyInput()
 
   const [loading, setLoading] = useState(false)
   const [montoGlobal, setMontoGlobal] = useState('')
@@ -99,10 +101,6 @@ export function ConfigurarPresupuestoDrawer({
   const [presupuestoEnabled, setPresupuestoEnabled] = useState(false)
 
   const isEditing = presupuestoEnabled && !!(presupuestoActual?.enabled ?? presupuestoActual?.presupuesto_enabled)
-  const { decimalSeparator, groupSeparator } = useMemo(
-    () => getLocaleSeparators(locale),
-    [locale]
-  )
 
   const numberFormatter = useMemo(
     () =>
@@ -122,62 +120,6 @@ export function ConfigurarPresupuestoDrawer({
       return numberFormatter.format(value)
     },
     [numberFormatter]
-  )
-
-  const formatInputValue = useCallback(
-    (value: string) => {
-      if (!value) return ''
-
-      const sanitizeRegex = new RegExp(`[^0-9${escapeRegExp(decimalSeparator)}]`, 'g')
-      let sanitized = value.replace(sanitizeRegex, '')
-      if (!sanitized) return ''
-
-      let endsWithDecimal = decimales > 0 && sanitized.endsWith(decimalSeparator)
-      const [rawInteger, ...rawDecimals] = sanitized.split(decimalSeparator)
-      let integerPart = rawInteger || '0'
-      let decimalPart = rawDecimals.join('')
-
-      if (decimales === 0) {
-        decimalPart = ''
-        endsWithDecimal = false
-      } else if (decimalPart.length > decimales) {
-        decimalPart = decimalPart.slice(0, decimales)
-      }
-
-      if (integerPart) {
-        integerPart = integerPart.replace(/^0+(?=\d)/, '') || '0'
-      }
-
-      const groupedInteger = integerPart
-        ? integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, groupSeparator)
-        : ''
-
-      if (decimalPart) {
-        return `${groupedInteger}${decimalSeparator}${decimalPart}`
-      }
-
-      if (endsWithDecimal) {
-        return `${groupedInteger}${decimalSeparator}`
-      }
-
-      return groupedInteger
-    },
-    [decimales, decimalSeparator, groupSeparator]
-  )
-
-  const parseInputToNumber = useCallback(
-    (value: string) => {
-      if (!value) return 0
-      const groupRegex = new RegExp(escapeRegExp(groupSeparator), 'g')
-      const decimalRegex = new RegExp(escapeRegExp(decimalSeparator), 'g')
-      const normalized = value
-        .replace(/\s+/g, '')
-        .replace(groupRegex, '')
-        .replace(decimalRegex, '.')
-      const parsed = parseFloat(normalized)
-      return isNaN(parsed) ? 0 : parsed
-    },
-    [decimalSeparator, groupSeparator]
   )
 
   const updateCuotaValue = useCallback((categoriaId: string, value: string) => {

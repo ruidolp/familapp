@@ -47,41 +47,47 @@ export function ListOptionsDrawer({
           </DrawerDescription>
         </DrawerHeader>
 
-        <div className="px-4 py-6 space-y-6">
-          {/* Agrupar por categoría */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="group-category" className="typography-body">
-              {t('shopping.lists.options.groupByCategory')}
-            </Label>
-            <Switch
-              id="group-category"
-              checked={groupByCategory}
-              onCheckedChange={onGroupByCategoryChange}
-            />
-          </div>
+        <div className="px-4 py-6">
+          <div className="rounded-lg border border-border overflow-hidden">
+            {/* Agrupar por categoría */}
+            <div className="flex items-center justify-between p-4">
+              <Label htmlFor="group-category" className="typography-body">
+                {t('shopping.lists.options.groupByCategory')}
+              </Label>
+              <Switch
+                id="group-category"
+                checked={groupByCategory}
+                onCheckedChange={onGroupByCategoryChange}
+              />
+            </div>
 
-          {/* Mostrar controles de cantidad */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="show-qty-buttons" className="typography-body">
-              {t('shopping.lists.options.showControls')}
-            </Label>
-            <Switch
-              id="show-qty-buttons"
-              checked={!showInlineQty}
-              onCheckedChange={(checked) => onShowInlineQtyChange(!checked)}
-            />
-          </div>
+            <div className="border-t border-border" />
 
-          {/* Listado plano */}
-          <div className="flex items-center justify-between">
-            <Label htmlFor="flat-list-mode" className="typography-body">
-              {t('shopping.lists.options.flatList')}
-            </Label>
-            <Switch
-              id="flat-list-mode"
-              checked={flatListMode}
-              onCheckedChange={onFlatListModeChange}
-            />
+            {/* Mostrar controles de cantidad */}
+            <div className="flex items-center justify-between p-4">
+              <Label htmlFor="show-qty-buttons" className="typography-body">
+                {t('shopping.lists.options.showControls')}
+              </Label>
+              <Switch
+                id="show-qty-buttons"
+                checked={!showInlineQty}
+                onCheckedChange={(checked) => onShowInlineQtyChange(!checked)}
+              />
+            </div>
+
+            <div className="border-t border-border" />
+
+            {/* Listado plano */}
+            <div className="flex items-center justify-between p-4">
+              <Label htmlFor="flat-list-mode" className="typography-body">
+                {t('shopping.lists.options.flatList')}
+              </Label>
+              <Switch
+                id="flat-list-mode"
+                checked={flatListMode}
+                onCheckedChange={onFlatListModeChange}
+              />
+            </div>
           </div>
         </div>
 
