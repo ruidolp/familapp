@@ -20,6 +20,7 @@ import { CurrencyProvider } from '@/presentation/providers/currency-provider'
 import { ThemeProvider } from '@/presentation/providers/theme-provider'
 import { QueryProvider } from '@/presentation/providers/query-provider'
 import { CategoryProvider } from '@/presentation/providers/category-context'
+import { SessionRedirectProvider } from '@/presentation/providers/session-redirect-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { Toaster as SonnerToaster } from 'sonner'
 import { getActiveThemes, getUserThemePreference } from '@/infrastructure/database/queries'
@@ -124,39 +125,41 @@ export default async function LocaleLayout({
         <meta name="apple-mobile-web-app-title" content="FamilApp" />
       </head>
       <body className="bg-background text-foreground font-sans antialiased">
-        <QueryProvider>
-          <ThemeProvider defaultTheme={defaultTheme} themes={themes}>
-            <SessionProvider>
-              <UserConfigProvider>
-                <CurrencyProvider>
-                  <CategoryProvider>
-                    <NextIntlClientProvider messages={messages}>
-                      <PWAInstaller />
-                      {children}
-                      <Toaster />
-                      <SonnerToaster
-                        position="top-center"
-                        toastOptions={{
-                          classNames: {
-                            toast: 'bg-background text-foreground border-border',
-                            title: 'text-foreground',
-                            description: 'text-muted-foreground',
-                            actionButton: 'bg-primary text-primary-foreground',
-                            cancelButton: 'bg-muted text-muted-foreground',
-                            error: 'bg-destructive text-destructive-foreground border-destructive',
-                            success: 'bg-success text-success-foreground border-success',
-                            warning: 'bg-warning text-warning-foreground border-warning',
-                            info: 'bg-info text-info-foreground border-info',
-                          },
-                        }}
-                      />
-                    </NextIntlClientProvider>
-                  </CategoryProvider>
-                </CurrencyProvider>
-              </UserConfigProvider>
-            </SessionProvider>
-          </ThemeProvider>
-        </QueryProvider>
+        <NextIntlClientProvider messages={messages}>
+          <QueryProvider>
+            <ThemeProvider defaultTheme={defaultTheme} themes={themes}>
+              <SessionProvider>
+                <SessionRedirectProvider>
+                  <UserConfigProvider>
+                    <CurrencyProvider>
+                      <CategoryProvider>
+                        <PWAInstaller />
+                        {children}
+                        <Toaster />
+                        <SonnerToaster
+                          position="top-center"
+                          toastOptions={{
+                            classNames: {
+                              toast: 'bg-background text-foreground border-border',
+                              title: 'text-foreground',
+                              description: 'text-muted-foreground',
+                              actionButton: 'bg-primary text-primary-foreground',
+                              cancelButton: 'bg-muted text-muted-foreground',
+                              error: 'bg-destructive text-destructive-foreground border-destructive',
+                              success: 'bg-success text-success-foreground border-success',
+                              warning: 'bg-warning text-warning-foreground border-warning',
+                              info: 'bg-info text-info-foreground border-info',
+                            },
+                          }}
+                        />
+                      </CategoryProvider>
+                    </CurrencyProvider>
+                  </UserConfigProvider>
+                </SessionRedirectProvider>
+              </SessionProvider>
+            </ThemeProvider>
+          </QueryProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

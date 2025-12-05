@@ -9,7 +9,6 @@
 'use client'
 
 import { Menu, LogOut, Palette, Check, Mail } from 'lucide-react'
-import { signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -152,7 +151,11 @@ export function Header({ activeTab, sobreNombre, sobreEmoji, sobrePresupuesto }:
 
           {/* Logout */}
           <DropdownMenuItem
-            onClick={() => signOut({ callbackUrl: '/auth/login' })}
+            onClick={async () => {
+              // Use force logout endpoint
+              await fetch('/api/logout', { method: 'POST' })
+              window.location.href = '/auth/login'
+            }}
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <div className="flex items-center gap-2 w-full">

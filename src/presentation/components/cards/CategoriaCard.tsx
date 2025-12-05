@@ -28,6 +28,10 @@ export function CategoriaCard({
   const t = useTranslations('sobres.categoryCard')
   const gastadoNum = Number(gastado) || 0
   const metaNum = meta ? Number(meta) : undefined
+  const comprasNum = Number(compras) || 0
+  const showCompras = comprasNum > 0
+  const comprasLabel =
+    comprasNum === 1 ? t('purchaseSingular') : t('purchases', { count: comprasNum })
 
   return (
     <button
@@ -57,9 +61,13 @@ export function CategoriaCard({
       </div>
 
       <div className="mt-1 flex items-center justify-between gap-3">
-        <span className="typography-caption font-semibold text-muted-foreground">
-          {t('purchases', { count: compras })}
-        </span>
+        {showCompras ? (
+          <span className="typography-caption font-semibold text-muted-foreground">
+            {comprasLabel}
+          </span>
+        ) : (
+          <span />
+        )}
         {metaNum !== undefined && (
           <span className="shrink-0 tabular-nums typography-caption font-semibold text-muted-foreground">
             {t('goal')}: {formatNumber(metaNum)}

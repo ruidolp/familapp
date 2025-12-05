@@ -72,12 +72,16 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
       clearTimeout(saveTimeoutRef.current)
     }
 
+    console.log('💾 Auto-save scheduled for execution:', execution.localId, 'Items:', execution.items.length)
+
     saveTimeoutRef.current = setTimeout(async () => {
       setAutoSaving(true)
       try {
+        console.log('💾 Auto-saving execution with', execution.items.length, 'items')
         await ExecutionStorage.update(execution.localId, execution)
+        console.log('✅ Auto-save complete')
       } catch (err) {
-        console.error('Auto-save failed:', err)
+        console.error('❌ Auto-save failed:', err)
       } finally {
         setAutoSaving(false)
       }
@@ -115,71 +119,23 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
 
   // Mark item with new status
   const markItemAs = useCallback(async (itemLocalId: string, status: ItemStatus) => {
-    if (!execution) return
+    console.log('🔄 markItemAs called for:', itemLocalId, 'status:', status)
 
-    const updatedItems = execution.items.map(item => {
-      if (item.localId !== itemLocalId) return item
-      return {
-        ...item,
-        status,
-        updated_at: new Date(),
-        // Clear prices if discarding
-        ...(status === 'discarded' && {
-          precio_unitario: undefined,
-          precio_total: undefined,
-          razon_no_comprado: 'DESCARTADO' as const,
-        }),
-      }
-    })
+    setExecution(prev => {
+      if (!prev) return null
 
-    // Recalculate total spent
-    const totalSpent = updatedItems
-      .filter(i => i.status === 'purchased' && i.precio_total)
-      .reduce((sum, i) => sum + (i.precio_total || 0), 0)
-
-    setExecution(prev =>
-      prev
-        ? {
-            ...prev,
-            items: updatedItems,
-            totalSpent,
-            updated_at: new Date(),
-          }
-        : null
-    )
-  }, [execution])
-
-  // Update item price
-  const updateItemPrice = useCallback(
-    async (
-      itemLocalId: string,
-      price: { unitario?: number; total?: number; cantidad?: number }
-    ) => {
-      if (!execution) return
-
-      const updatedItems = execution.items.map(item => {
+      const updatedItems = prev.items.map(item => {
         if (item.localId !== itemLocalId) return item
-
-        let precioUnitario = price.unitario
-        let precioTotal = price.total
-        const cantidad = price.cantidad ?? item.cantidad_comprada ?? item.cantidad_planeada
-
-        // If total is provided, calculate unitario
-        if (precioTotal !== undefined && cantidad > 0) {
-          precioUnitario = precioTotal / cantidad
-        }
-        // If unitario is provided, calculate total
-        else if (precioUnitario !== undefined) {
-          precioTotal = precioUnitario * cantidad
-        }
-
         return {
           ...item,
-          cantidad_comprada: cantidad,
-          precio_unitario: precioUnitario,
-          precio_total: precioTotal,
-          status: 'purchased' as ItemStatus,
+          status,
           updated_at: new Date(),
+          // Clear prices if discarding
+          ...(status === 'discarded' && {
+            precio_unitario: undefined,
+            precio_total: undefined,
+            razon_no_comprado: 'DESCARTADO' as const,
+          }),
         }
       })
 
@@ -188,24 +144,85 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
         .filter(i => i.status === 'purchased' && i.precio_total)
         .reduce((sum, i) => sum + (i.precio_total || 0), 0)
 
-      setExecution(prev =>
-        prev
-          ? {
-              ...prev,
-              items: updatedItems,
-              totalSpent,
-              updated_at: new Date(),
-            }
-          : null
-      )
+      console.log('✅ markItemAs updated, items:', updatedItems.length)
+
+      return {
+        ...prev,
+        items: updatedItems,
+        totalSpent,
+        updated_at: new Date(),
+      }
+    })
+  }, [])
+
+  // Update item price
+  const updateItemPrice = useCallback(
+    async (
+      itemLocalId: string,
+      price: { unitario?: number; total?: number; cantidad?: number }
+    ) => {
+      console.log('💰 updateItemPrice called for:', itemLocalId, price)
+
+      setExecution(prev => {
+        if (!prev) {
+          console.log('❌ No execution found in updateItemPrice')
+          return null
+        }
+
+        console.log('📝 Current items before update:', prev.items.length)
+
+        const updatedItems = prev.items.map(item => {
+          if (item.localId !== itemLocalId) return item
+
+          console.log('🎯 Found item to update:', item.product_name)
+
+          let precioUnitario = price.unitario
+          let precioTotal = price.total
+          const cantidad = price.cantidad ?? item.cantidad_comprada ?? item.cantidad_planeada
+
+          // If total is provided, calculate unitario
+          if (precioTotal !== undefined && cantidad > 0) {
+            precioUnitario = precioTotal / cantidad
+          }
+          // If unitario is provided, calculate total
+          else if (precioUnitario !== undefined) {
+            precioTotal = precioUnitario * cantidad
+          }
+
+          return {
+            ...item,
+            cantidad_comprada: cantidad,
+            precio_unitario: precioUnitario,
+            precio_total: precioTotal,
+            status: 'purchased' as ItemStatus,
+            updated_at: new Date(),
+          }
+        })
+
+        // Recalculate total spent
+        const totalSpent = updatedItems
+          .filter(i => i.status === 'purchased' && i.precio_total)
+          .reduce((sum, i) => sum + (i.precio_total || 0), 0)
+
+        console.log('✅ Items after update:', updatedItems.length, 'Total spent:', totalSpent)
+
+        return {
+          ...prev,
+          items: updatedItems,
+          totalSpent,
+          updated_at: new Date(),
+        }
+      })
     },
-    [execution]
+    []
   )
 
   // Add item on the fly
   const addItemOnTheFly = useCallback(
     async (item: AddItemOnTheFlyInput): Promise<string> => {
       if (!execution) throw new Error('No execution found')
+
+      console.log('🚀 Adding item on the fly:', item.product_name)
 
       const itemLocalId = `item_fly_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
       const maxOrder = Math.max(...execution.items.map(i => i.item_order), 0)
@@ -228,15 +245,25 @@ export function useExecutionState(executionId: string): UseExecutionStateReturn 
         updated_at: new Date(),
       }
 
-      setExecution(prev =>
-        prev
-          ? {
-              ...prev,
-              items: [...prev.items, newItem],
-              updated_at: new Date(),
-            }
-          : null
-      )
+      console.log('✅ New item created:', {
+        localId: itemLocalId,
+        product_name: item.product_name,
+        status: 'pending',
+        addedOnTheFly: true,
+      })
+
+      setExecution(prev => {
+        if (!prev) return null
+
+        const updated = {
+          ...prev,
+          items: [...prev.items, newItem],
+          updated_at: new Date(),
+        }
+
+        console.log('📝 Updated execution items count:', updated.items.length)
+        return updated
+      })
 
       return itemLocalId
     },

@@ -15,26 +15,40 @@ export async function createShoppingList(
   nombre: string,
   descripcion?: string | null
 ) {
-  return db
-    .insertInto('shopping_lists')
-    .values({
-      user_id: userId,
-      nombre,
-      descripcion,
-      list_order: 0,
-      created_at: new Date(),
-      updated_at: new Date(),
+  try {
+    console.log('🔍 createShoppingList - attempting insert with:', { userId, nombre })
+    const result = await db
+      .insertInto('shopping_lists')
+      .values({
+        user_id: userId,
+        nombre,
+        descripcion,
+        list_order: 0,
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .returning([
+        'id',
+        'user_id',
+        'nombre',
+        'descripcion',
+        'purchase_count',
+        'created_at',
+        'updated_at',
+      ])
+      .executeTakeFirstOrThrow()
+    console.log('✅ createShoppingList - insert successful:', result)
+    return result
+  } catch (error: any) {
+    console.error('❌ createShoppingList - error:', error)
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      constraint: error.constraint,
+      detail: error.detail,
     })
-    .returning([
-      'id',
-      'user_id',
-      'nombre',
-      'descripcion',
-      'purchase_count',
-      'created_at',
-      'updated_at',
-    ])
-    .executeTakeFirstOrThrow()
+    throw error
+  }
 }
 
 export async function getShoppingListsByUser(userId: string) {
@@ -551,6 +565,8 @@ export async function getExecutionItems(executionId: string) {
       'shopping_execution_items.precio_total',
       'shopping_execution_items.es_comprado',
       'shopping_execution_items.razon_no_comprado',
+      'shopping_execution_items.es_agregado_vuelo',
+      'shopping_execution_items.agregado_por',
       'shopping_execution_items.categoria_producto_id',
       'shopping_execution_items.categoria_global_id',
       'shopping_execution_items.created_at',

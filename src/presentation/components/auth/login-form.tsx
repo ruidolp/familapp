@@ -45,9 +45,10 @@ interface AuthConfig {
 interface LoginFormProps {
   inviteListaCode?: string
   inviteSobreCode?: string
+  reason?: string
 }
 
-export function LoginForm({ inviteListaCode, inviteSobreCode }: LoginFormProps = {}) {
+export function LoginForm({ inviteListaCode, inviteSobreCode, reason }: LoginFormProps = {}) {
   const router = useRouter()
   const locale = useLocale()
   const { toast } = useToast()
@@ -78,6 +79,15 @@ export function LoginForm({ inviteListaCode, inviteSobreCode }: LoginFormProps =
       })
       .catch(console.error)
   }, [])
+
+  useEffect(() => {
+    if (reason === 'session_expired') {
+      toast({
+        title: t('sessionExpiredTitle'),
+        description: t('sessionExpiredDescription'),
+      })
+    }
+  }, [reason, toast, t])
 
   const onSubmit = async (data: LoginInput) => {
     setIsLoading(true)

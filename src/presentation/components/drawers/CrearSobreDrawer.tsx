@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { notify } from '@/infrastructure/lib/notifications'
 import { useInputFocus } from '@/presentation/hooks/useInputFocus'
+import { useCurrency } from '@/presentation/providers/currency-provider'
 
 interface CrearSobreDrawerProps {
   open: boolean
@@ -41,15 +42,6 @@ const COLORES_SUGERIDOS = [
   '#FF6F61',
 ]
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-5 w-1 bg-primary rounded-full" />
-      <h3 className="font-semibold typography-body-sm text-foreground">{children}</h3>
-    </div>
-  )
-}
-
 export function CrearSobreDrawer({
   open,
   onOpenChange,
@@ -58,6 +50,7 @@ export function CrearSobreDrawer({
 }: CrearSobreDrawerProps) {
   const router = useRouter()
   const t = useTranslations('sobres.create')
+  const { formatNumber } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [sobreName, setSobreName] = useState('')
   const [sobreColor, setSobreColor] = useState(COLORES_SUGERIDOS[0])
@@ -158,11 +151,11 @@ export function CrearSobreDrawer({
             {/* PREVIEW - Card Accent */}
             <Card className="p-5 bg-card-accent">
               <div className="flex items-center gap-4">
-                <div 
+                <div
                   className="w-16 h-16 rounded-xl flex items-center justify-center text-white typography-h2 transition-colors"
                   style={{ backgroundColor: sobreColor }}
                 >
-                  {sobreName.trim() ? sobreName.trim().charAt(0).toUpperCase() : '📁'}
+                  {sobreName.trim() ? sobreName.trim().charAt(0).toUpperCase() : '?'}
                 </div>
                 <div className="flex-1">
                   <p className="typography-metadata uppercase tracking-wide mb-1">
@@ -172,7 +165,7 @@ export function CrearSobreDrawer({
                     {sobreName.trim() || t('form.envelopeName')}
                   </p>
                   <p className="typography-body-sm text-muted-foreground">
-                    {t('form.budget')}: $0.00
+                    {t('form.spendingGoal')}: {formatNumber(0)}
                   </p>
                 </div>
               </div>
@@ -180,8 +173,6 @@ export function CrearSobreDrawer({
 
             {/* IDENTIDAD */}
             <div className="space-y-3">
-              <SectionTitle>{t('sections.identity')}</SectionTitle>
-              
               <Card className="p-4 space-y-4 bg-card-elevated">
                 {/* Nombre */}
                 <div className="space-y-2">

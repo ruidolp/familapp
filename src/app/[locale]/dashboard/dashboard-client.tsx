@@ -26,13 +26,16 @@ interface DashboardClientProps {
 
 interface PendingInvitation {
   id: string
-  tipo: 'sobre' | 'lista'
+  tipo: 'sobre' | 'lista' | 'notificacion'
   nombre: string
   emoji?: string
   descripcion?: string | null
-  rol: string
+  rol?: string
   inviter_name?: string
   inviter_image?: string
+  notificacion_tipo?: string
+  notificacion_titulo?: string
+  notificacion_mensaje?: string
 }
 
 export function DashboardClient({ locale, user }: DashboardClientProps) {
@@ -80,13 +83,15 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
 
   const checkPendingInvitations = async () => {
     try {
-      const [sobresRes, listasRes] = await Promise.all([
+      const [sobresRes, listasRes, notificacionesRes] = await Promise.all([
         fetch('/api/sobres/invitations'),
         fetch('/api/shopping-lists/invitations'),
+        fetch('/api/notifications?unread=true'),
       ])
 
       const sobresPendientes: PendingInvitation[] = []
       const listasPendientes: PendingInvitation[] = []
+      const notificacionesPendientes: PendingInvitation[] = []
 
       if (sobresRes.ok) {
         const sobresData = await sobresRes.json()
@@ -120,7 +125,24 @@ export function DashboardClient({ locale, user }: DashboardClientProps) {
         })
       }
 
-      const combined = [...sobresPendientes, ...listasPendientes]
+      if (notificacionesRes.ok) {
+        const notificacionesData = await notificacionesRes.json()
+        const notificaciones = notificacionesData.notificaciones || []
+        notificaciones.forEach((notif: any) => {
+          const metadata = notif.metadata ? JSON.parse(notif.metadata) : {}
+          notificacionesPendientes.push({
+            id: notif.id,
+            tipo: 'notificacion',
+            nombre: metadata.sobre_nombre || metadata.lista_nombre || 'Item',
+            emoji: metadata.sobre_emoji || metadata.lista_emoji,
+            notificacion_tipo: notif.tipo,
+            notificacion_titulo: notif.titulo,
+            notificacion_mensaje: notif.mensaje,
+          })
+        })
+      }
+
+      const combined = [...sobresPendientes, ...listasPendientes, ...notificacionesPendientes]
       setPendingInvitations(combined)
       setInvitationsDialogOpen(combined.length > 0)
     } catch (error) {

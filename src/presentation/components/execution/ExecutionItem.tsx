@@ -11,7 +11,7 @@
 
 import { useState, useRef } from 'react'
 import { useTranslations } from 'next-intl'
-import { Check, X, Tag } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { cn } from '@/infrastructure/lib/utils'
 import { useCurrency } from '@/presentation/providers/currency-provider'
 import { decimalToFraction } from '@/infrastructure/utils/quantity'
@@ -37,6 +37,7 @@ export function ExecutionItem({
   onPointerMove,
 }: ExecutionItemProps) {
   const t = useTranslations('shopping.execution.finalize')
+  const tItem = useTranslations('shopping.execution.item')
   const { formatNumber } = useCurrency()
   const [pressing, setPressing] = useState(false)
   const longPressTimer = useRef<NodeJS.Timeout | null>(null)
@@ -136,11 +137,6 @@ export function ExecutionItem({
   const isPending = item.status === 'pending'
   const isPurchased = item.status === 'purchased'
   const isDiscarded = item.status === 'discarded'
-  const statusLabel = isPurchased
-    ? t('purchased')
-    : isDiscarded
-      ? t('discarded')
-      : null
 
   // Flat list mode - simplified view like editor
   if (flatListMode) {
@@ -173,19 +169,13 @@ export function ExecutionItem({
             {item.product_name}
             {(item.unidad_medida || item.marca) && (
               <span className="text-muted-foreground">
-                {item.unidad_medida && ` (${item.unidad_medida})`}
                 {item.marca && ` - ${item.marca}`}
               </span>
             )}
           </span>
-          {statusLabel && (
-            <span className={cn(
-              'ml-2 inline-flex items-center rounded-full border px-2 text-[10px] font-semibold uppercase tracking-tight',
-              isPurchased
-                ? 'border-success/40 bg-success/10 text-success'
-                : 'border-destructive/30 bg-destructive/10 text-destructive'
-            )}>
-              {statusLabel}
+          {item.addedOnTheFly && (
+            <span className="ml-2 inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-2 text-[10px] font-semibold uppercase tracking-tight text-primary">
+              {tItem('addedDuringPurchase')}
             </span>
           )}
         </span>
@@ -232,53 +222,39 @@ export function ExecutionItem({
           )}>
             {item.product_name}
           </p>
-          {statusLabel && (
-            <span className={cn(
-              'inline-flex items-center rounded-full border px-2 text-[10px] font-semibold uppercase tracking-tight',
-              isPurchased
-                ? 'border-success/40 bg-success/10 text-success'
-                : 'border-destructive/40 bg-destructive/10 text-destructive'
-            )}>
-              {statusLabel}
+          {item.addedOnTheFly && (
+            <span className="inline-flex items-center rounded-full border border-primary/40 bg-primary/10 px-2 text-[10px] font-semibold uppercase tracking-tight text-primary">
+              {tItem('addedDuringPurchase')}
             </span>
           )}
         </div>
 
         {/* Metadata (unidad, marca, agregado) and Price on same line */}
         <div className="flex flex-wrap items-center gap-x-2 typography-metadata">
-          {item.unidad_medida && (
-            <span>{item.unidad_medida}</span>
-          )}
-
-          {item.marca && (
-            <>
-              {item.unidad_medida && <span>•</span>}
-              <span>{item.marca}</span>
-            </>
-          )}
-
-          {item.addedOnTheFly && (
-            <>
-              <span>•</span>
-              <span className="text-primary font-medium">Agregado</span>
-            </>
-          )}
-
-          {/* Price info inline */}
-          {isPurchased && item.precio_total && (
-            <>
-              <span>•</span>
-              <span className="flex items-center gap-1 font-semibold text-success">
-                <Tag className="h-2.5 w-2.5" />
-                {formatNumber(item.precio_total)}
-                {item.precio_unitario && (
-                  <span className="font-normal text-muted-foreground">
-                    ({formatNumber(item.precio_unitario)}/un)
+          {[
+            item.marca
+              ? <span key="marca">{item.marca}</span>
+              : null,
+            isPurchased && item.precio_total
+              ? (
+                  <span key="precio" className="flex items-center gap-1 font-semibold text-success">
+                    Total: {formatNumber(item.precio_total)}
+                    {item.precio_unitario && (
+                      <span className="font-normal text-muted-foreground">
+                        ({formatNumber(item.precio_unitario)}/un)
+                      </span>
+                    )}
                   </span>
-                )}
+                )
+              : null,
+          ]
+            .filter(Boolean)
+            .map((node, index, arr) => (
+              <span key={index} className="flex items-center gap-1">
+                {index > 0 && <span>•</span>}
+                {node}
               </span>
-            </>
-          )}
+            ))}
         </div>
       </div>
 

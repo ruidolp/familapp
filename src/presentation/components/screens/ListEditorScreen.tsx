@@ -26,6 +26,7 @@ import {
   ConfigureExecutionDrawer,
   type ExecutionConfig,
 } from '@/presentation/components/execution/ConfigureExecutionDrawer'
+import { AddOnTheFlyProductsModal } from '@/presentation/components/listas/AddOnTheFlyProductsModal'
 import { ExecutionStorage } from '@/infrastructure/utils/execution-storage'
 import {
   getPreferences,
@@ -125,6 +126,11 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   const { data: session } = useSession()
   const userId = session?.user?.id || ''
 
+  // On-the-fly products modal state
+  const [onTheFlyModalOpen, setOnTheFlyModalOpen] = useState(false)
+  const [onTheFlyProducts, setOnTheFlyProducts] = useState<any[]>([])
+  const [addingOnTheFlyProducts, setAddingOnTheFlyProducts] = useState(false)
+
   // Save state per item
   const [itemSaveState, setItemSaveState] = useState<ItemSaveState>({})
 
@@ -134,6 +140,17 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
   // Touch/pointer tracking for scroll detection
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
   const MOVEMENT_THRESHOLD = 10 // pixels - if movement exceeds this, it's a scroll, not a click
+
+  const availableProductsForExecution = useMemo(() => {
+    const catalogProducts = (data?.catalog || []).map((p) => ({ id: p.id, nombre: p.nombre, is_catalog: true }))
+    const catalogNames = new Set(catalogProducts.map(p => p.nombre.toLowerCase()))
+
+    const uniqueCustomProducts = (data?.customProducts || [])
+      .filter(p => !catalogNames.has(p.nombre.toLowerCase()))
+      .map((p) => ({ id: p.id, nombre: p.nombre, is_catalog: false }))
+
+    return [...catalogProducts, ...uniqueCustomProducts]
+  }, [data?.catalog, data?.customProducts])
 
   const totalQuantity = useMemo(() => {
     return items.reduce((sum, item) => {
@@ -290,6 +307,9 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         setItems(data.items)
         // Clear any draft conflict indicators
         setItemSaveState({})
+
+        // Load on-the-fly products after data loads
+        loadPendingOnTheFlyProducts()
       } else {
         notify.error('Error al cargar datos', { position: 'bottom-center' })
         router.back()
@@ -300,6 +320,63 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       router.back()
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadPendingOnTheFlyProducts = async () => {
+    try {
+      console.log('🔍 Checking for on-the-fly products...')
+      const response = await fetch(`/api/shopping-lists/${listId}/pending-onthefly-items`)
+      console.log('📡 Response status:', response.status)
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log('📦 API Result:', result)
+
+        if (result.success && result.products.length > 0) {
+          console.log('✅ Found', result.products.length, 'on-the-fly products, opening modal')
+          setOnTheFlyProducts(result.products)
+          setOnTheFlyModalOpen(true)
+        } else {
+          console.log('ℹ️ No on-the-fly products found')
+        }
+      } else {
+        console.log('❌ API error:', response.statusText)
+      }
+    } catch (error) {
+      console.error('❌ Error loading on-the-fly products:', error)
+      // Silently fail - this is not critical
+    }
+  }
+
+  const handleAddOnTheFlyProducts = async (selectedProducts: any[]) => {
+    if (selectedProducts.length === 0) return
+
+    setAddingOnTheFlyProducts(true)
+    try {
+      // Add each selected product to the list
+      for (const product of selectedProducts) {
+        await addItemToList(
+          product.product_name,
+          0, // isCatalog = false (will be created as custom product)
+          String(product.cantidad_comprada || 1),
+          product.unidad_medida
+        )
+      }
+
+      notify.success(
+        `${selectedProducts.length} producto${selectedProducts.length !== 1 ? 's' : ''} agregado${selectedProducts.length !== 1 ? 's' : ''}`,
+        undefined,
+        { position: 'bottom-center' }
+      )
+
+      // Reload data to show the new items
+      await loadEditorData()
+    } catch (error) {
+      console.error('Error adding on-the-fly products:', error)
+      notify.error('Error al agregar productos', { position: 'bottom-center' })
+    } finally {
+      setAddingOnTheFlyProducts(false)
     }
   }
 
@@ -748,6 +825,7 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
       const input: CreateLocalExecutionInput = {
         shopping_list_id: listId,
         user_id: userId,
+        availableProducts: availableProductsForExecution,
         items: items.map((item, index) => ({
           shopping_list_item_id: item.id.startsWith('temp-') ? undefined : item.id,
           product_id: item.product_id ?? undefined,
@@ -1217,6 +1295,14 @@ export function ListEditorScreen({ listId }: ListEditorScreenProps) {
         onConfirm={handleExecutePurchase}
         isSharedList={data?.listInfo?.user_role !== undefined && data?.listInfo?.user_role !== 'OWNER'}
         isListOwner={data?.listInfo?.is_owner ?? true}
+      />
+
+      {/* On-the-fly Products Modal */}
+      <AddOnTheFlyProductsModal
+        isOpen={onTheFlyModalOpen}
+        onOpenChange={setOnTheFlyModalOpen}
+        products={onTheFlyProducts}
+        onAddToList={handleAddOnTheFlyProducts}
       />
     </div>
   )

@@ -119,6 +119,13 @@ export function getColorShades(hexColor: string) {
   }
 }
 
+export function getHslFromHex(hexColor: string) {
+  const { r, g, b } = hexToRgb(hexColor)
+  const { h, s, l } = rgbToHsl(r, g, b)
+  const round = (value: number) => Math.round(value)
+  return `${round(h)} ${round(s)}% ${round(l)}%`
+}
+
 export function getContrastColor(hexColor: string): 'white' | 'black' {
   const { r, g, b } = hexToRgb(hexColor)
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255

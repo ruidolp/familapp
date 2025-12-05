@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useEffect, useState, useRef, useCallback } from 'react'
+import { useMemo, useEffect, useState, useRef, useCallback, type CSSProperties, type ReactNode } from 'react'
 import { Sliders, Wallet, List, UserPlus, Users, Settings2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Card } from '@/components/ui/card'
@@ -25,7 +25,7 @@ import { ManageInvitationsDrawer } from '@/components/sobres/manage-invitations-
 import { ConfigurarPresupuestoDrawer } from '@/components/drawers/ConfigurarPresupuestoDrawer'
 import { useTheme } from '@/presentation/providers/theme-provider'
 import { cn } from '@/infrastructure/lib/utils'
-import { getColorShades, getContrastColor } from '@/infrastructure/utils/color-utils'
+import { getHslFromHex } from '@/infrastructure/utils/color-utils'
 
 interface Billetera {
   id: string
@@ -100,6 +100,26 @@ const useAutoScaleNumber = (text: string) => {
 
   return { ref, scale }
 }
+
+const DrawerSection = ({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: string
+  children: ReactNode
+}) => (
+  <Card className="bg-muted/40 p-4">
+    <div className="space-y-1 pb-3">
+      <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
+        {title}
+      </p>
+      {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
+    </div>
+    <div className="space-y-3">{children}</div>
+  </Card>
+)
 
 export function SobreCard({
   id,
@@ -233,16 +253,25 @@ export function SobreCard({
   }, [categorias])
 
   const accentColor = color || '#3b82f6'
-  const { color700, color600 } = getColorShades(accentColor)
-  const contrastColor = getContrastColor(color600)
-  const primaryTextClass = contrastColor === 'white' ? 'text-white' : 'text-black'
-  const mutedText70 = contrastColor === 'white' ? 'text-white/70' : 'text-black/70'
-  const mutedText80 = contrastColor === 'white' ? 'text-white/80' : 'text-black/80'
-  const mutedText85 = contrastColor === 'white' ? 'text-white/85' : 'text-black/85'
-  const overBudgetTextClass = contrastColor === 'white' ? 'text-red-100' : 'text-red-600'
-  const sliderTriggerClasses = contrastColor === 'white'
-    ? 'text-white/80 hover:text-white'
-    : 'text-black/80 hover:text-black'
+  const accentHsl = useMemo(() => getHslFromHex(accentColor), [accentColor])
+  const cardStyle = useMemo(
+    () =>
+      ({
+        '--accent-color': accentHsl,
+        '--background-color': 'var(--background)',
+        background:
+          'linear-gradient(180deg, hsl(var(--accent-color) / 0.36) 0%, hsl(var(--accent-color) / 0.30) 22%, hsl(var(--accent-color) / 0.26) 45%, hsl(var(--accent-color) / 0.20) 70%, hsl(var(--accent-color) / 0.16) 100%)',
+        border: '1px solid hsl(var(--accent-color) / 0.35)',
+        boxShadow: 'inset 0 1px 2px hsl(var(--accent-color) / 0.12)',
+      }) as CSSProperties,
+    [accentHsl]
+  )
+  const primaryTextClass = 'text-foreground'
+  const mutedText70 = 'text-foreground'
+  const mutedText80 = 'text-foreground'
+  const mutedText85 = 'text-foreground'
+  const overBudgetTextClass = 'text-red-600 dark:text-red-200'
+  const sliderTriggerClasses = 'text-foreground/80 hover:text-foreground'
   const libreEsPositivo = presupuestoLibre >= 0
   const usadoFormatted = useMemo(() => formatNumber(gastadoNum), [formatNumber, gastadoNum])
   const libreFormatted = useMemo(
@@ -259,19 +288,15 @@ export function SobreCard({
     <div className="flex min-h-[calc(100vh-14rem)] flex-col gap-3">
       <Card
         className={cn(
-          'relative overflow-hidden rounded-xl border border-transparent px-5 pt-4 pb-4 shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:shadow-none transition-shadow',
-          primaryTextClass
+          'relative overflow-hidden rounded-xl border border-transparent px-5 pt-4 pb-4 shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:shadow-none transition-shadow'
         )}
-        style={{
-          backgroundImage: `linear-gradient(to bottom right, ${color700}, ${color600})`,
-        }}
+        style={cardStyle}
         onClick={onVerDetalle}
       >
-        <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/5" />
-        <div className="relative z-10">
+        <div className={cn('relative z-10', primaryTextClass)}>
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className={cn('text-xs tracking-wide opacity-70', mutedText70)}>{periodLabel}</p>
+              <p className={cn('text-xs tracking-wide opacity-70 font-medium', mutedText70)}>{periodLabel}</p>
               <div className="mt-0.5 flex items-center gap-2">
                 <h2 className="text-[26px] font-semibold leading-tight">{nombre}</h2>
                 {isCompartido && (
@@ -281,11 +306,11 @@ export function SobreCard({
                   />
                 )}
               </div>
-              <p className={cn('text-xs tracking-wide opacity-70 mt-1', mutedText70)}>
-                {presupuestoEnabled
-                  ? `${formatNumber(presupuesto)} ${t('monthlyGoal')}`
-                  : t('card.noGoal')}
-              </p>
+              {presupuestoEnabled && (
+                <p className={cn('text-xs tracking-wide opacity-70 font-medium mt-0.5', mutedText70)}>
+                  {`${formatNumber(presupuesto)} ${t('monthlyGoal')}`}
+                </p>
+              )}
             </div>
             <Drawer open={accionesOpen} onOpenChange={setAccionesOpen}>
               <Button
@@ -301,134 +326,124 @@ export function SobreCard({
                 <span className="sr-only">{t('card.accessibility.actions')}</span>
               </Button>
               <DrawerContent>
-                  <DrawerHeader>
-                    <DrawerTitle>{t('card.actions.title', { name: nombre })}</DrawerTitle>
-                    <DrawerDescription>{t('card.actions.description')}</DrawerDescription>
-                  </DrawerHeader>
-                  <DrawerBody className="space-y-4">
+                <DrawerHeader>
+                  <DrawerTitle>{t('card.actions.title', { name: nombre })}</DrawerTitle>
+                  <DrawerDescription>{t('card.actions.description')}</DrawerDescription>
+                </DrawerHeader>
+                <DrawerBody className="space-y-4">
                   {showGestionSobreCard && (
-                    <Card className="p-4 space-y-3 bg-muted/40">
-                      <div className="space-y-1">
-                        <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
-                          {t('card.sections.manageEnvelope')}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{t('card.actions.description')}</p>
-                      </div>
-                      <div className="space-y-3">
-                        {isOwner && (
-                          <div className="space-y-2">
-                            <Button
-                              variant={drawerButtonVariant}
-                              className={drawerButtonClassName}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setAccionesOpen(false)
-                                onEditarSobre?.()
-                              }}
-                            >
-                              <Settings2 className="h-4 w-4" />
-                              Editar sobre
-                            </Button>
-                          </div>
-                        )}
-                        {canManageBudget && (
-                          <div className={cn('space-y-2', isOwner && 'border-t border-border/70 pt-3')}>
-                            <Button
-                              variant={drawerButtonVariant}
-                              className={drawerButtonClassName}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleOpenConfigurarPresupuesto()
-                              }}
-                              disabled={loadingPresupuesto}
-                            >
-                              <Settings2 className="h-4 w-4" />
-                              {loadingPresupuesto
-                                ? 'Cargando...'
-                                : presupuestoEnabled
-                                  ? t('card.actions.configureBudget')
-                                  : t('card.actions.enableBudget')
-                              }
-                            </Button>
-                          </div>
-                        )}
-                        {canManageCategories && (
-                          <div className={cn('space-y-2', (isOwner || canManageBudget) && 'border-t border-border/70 pt-3')}>
-                            <Button
-                              variant={drawerButtonVariant}
-                              className={drawerButtonClassName}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setAccionesOpen(false)
-                                onEditarCategorias?.()
-                              }}
-                            >
-                              <Wallet className="h-4 w-4" />
-                              {t('card.actions.categoriesAndBrands')}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
+                    <DrawerSection
+                      title={t('card.sections.manageEnvelope')}
+                      description={t('card.actions.description')}
+                    >
+                      {isOwner && (
+                        <div className="space-y-2">
+                          <Button
+                            variant={drawerButtonVariant}
+                            className={drawerButtonClassName}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setAccionesOpen(false)
+                              onEditarSobre?.()
+                            }}
+                          >
+                            <Settings2 className="h-4 w-4" />
+                            Editar sobre
+                          </Button>
+                        </div>
+                      )}
+                      {canManageBudget && (
+                        <div className={cn('space-y-2', isOwner && 'border-t border-border/70 pt-3')}>
+                          <Button
+                            variant={drawerButtonVariant}
+                            className={drawerButtonClassName}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenConfigurarPresupuesto()
+                            }}
+                            disabled={loadingPresupuesto}
+                          >
+                            <Settings2 className="h-4 w-4" />
+                            {loadingPresupuesto
+                              ? 'Cargando...'
+                              : presupuestoEnabled
+                                ? t('card.actions.configureBudget')
+                                : t('card.actions.enableBudget')
+                            }
+                          </Button>
+                        </div>
+                      )}
+                      {canManageCategories && (
+                        <div className={cn('space-y-2', (isOwner || canManageBudget) && 'border-t border-border/70 pt-3')}>
+                          <Button
+                            variant={drawerButtonVariant}
+                            className={drawerButtonClassName}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setAccionesOpen(false)
+                              onEditarCategorias?.()
+                            }}
+                          >
+                            <Wallet className="h-4 w-4" />
+                            {t('card.actions.categoriesAndBrands')}
+                          </Button>
+                        </div>
+                      )}
+                    </DrawerSection>
                   )}
 
                   {showAccionesCard && (
-                    <Card className="p-4 space-y-3 bg-muted/40">
-                      <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
-                        {t('card.sections.actionsAndCollaboration')}
-                      </p>
-                      <div className="space-y-3">
-                        {canManageBudget && (
-                          <div className="space-y-2">
+                    <DrawerSection title={t('card.sections.actionsAndCollaboration')}>
+                      {canManageBudget && (
+                        <div className="space-y-2">
+                          <Button
+                            variant={drawerButtonVariant}
+                            className={drawerButtonClassName}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setAccionesOpen(false)
+                              onVerDetalle?.()
+                            }}
+                          >
+                            <List className="h-4 w-4" />
+                            {t('card.actions.transactions')}
+                          </Button>
+                        </div>
+                      )}
+                      {isOwner && (
+                        <div className={cn('space-y-2', canManageBudget && 'border-t border-border/70 pt-3')}>
+                          {isCompartido && (
                             <Button
                               variant={drawerButtonVariant}
                               className={drawerButtonClassName}
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setAccionesOpen(false)
-                                onVerDetalle?.()
+                                handleOpenManageInvites()
                               }}
                             >
-                              <List className="h-4 w-4" />
-                              {t('card.actions.transactions')}
+                              <Users className="h-4 w-4" />
+                              Gestionar Invitados
                             </Button>
-                          </div>
-                        )}
-                        {isOwner && (
-                          <div className={cn('space-y-2', canManageBudget && 'border-t border-border/70 pt-3')}>
-                            {isCompartido && (
-                              <Button
-                                variant={drawerButtonVariant}
-                                className={drawerButtonClassName}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  handleOpenManageInvites()
-                                }}
-                              >
-                                <Users className="h-4 w-4" />
-                                Gestionar Invitados
-                              </Button>
-                            )}
-                            {!isCompartido && (
-                              <p className="text-xs font-semibold text-muted-foreground">
-                                Aún no has compartido este sobre, invita a alguien para colaborar.
-                              </p>
-                            )}
-                            <Button
-                              variant={drawerButtonVariant}
-                              className={drawerButtonClassName}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleInvitePerson()
-                              }}
-                            >
-                              <UserPlus className="h-4 w-4" />
-                              Invitar una persona
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
+                          )}
+                          {!isCompartido && (
+                            <p className="text-xs font-semibold text-muted-foreground">
+                              Aún no has compartido este sobre, invita a alguien para colaborar.
+                            </p>
+                          )}
+                          <Button
+                            variant={drawerButtonVariant}
+                            className={drawerButtonClassName}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleInvitePerson()
+                            }}
+                          >
+                            <UserPlus className="h-4 w-4" />
+                            Invitar una persona
+                          </Button>
+                        </div>
+                      )}
+                    </DrawerSection>
                   )}
                 </DrawerBody>
                 <DrawerFooter>
@@ -484,24 +499,6 @@ export function SobreCard({
             <p className="typography-caption font-semibold uppercase tracking-wide text-muted-foreground">
               {t('categories.title')}
             </p>
-
-            {presupuesto <= 0 && (
-              <div className="space-y-3 rounded-2xl border border-dashed border-border bg-muted/40 p-4 text-center">
-                <p className="typography-caption font-semibold text-muted-foreground">
-                  {t('emptyBudget.message')}
-                </p>
-                <Button
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onAgregarPresupuesto?.()
-                  }}
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                >
-                  {t('emptyBudget.button')}
-                </Button>
-              </div>
-            )}
           </div>
 
           <div className="flex-1 overflow-y-auto">

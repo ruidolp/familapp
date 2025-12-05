@@ -166,6 +166,7 @@ export const ExecutionStorage = {
       localId,
       shopping_list_id: input.shopping_list_id,
       user_id: input.user_id,
+      availableProducts: input.availableProducts,
       syncStatus: 'local',
       status: 'IN_PROGRESS',
       started_at: now,

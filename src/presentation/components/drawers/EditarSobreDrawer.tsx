@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { HexColorPicker } from 'react-colorful'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -157,7 +157,6 @@ export function EditarSobreDrawer({
           <form onSubmit={handleActualizarSobre} className="space-y-6">
             {/* Nombre */}
             <Card className="p-4 space-y-3 bg-card">
-              <SectionTitle>{t('name')}</SectionTitle>
               <div className="space-y-2">
                 <Label htmlFor="nombre" className="typography-label text-muted-foreground">
                   {t('name')}
@@ -177,7 +176,6 @@ export function EditarSobreDrawer({
 
             {/* Color */}
             <Card className="p-4 space-y-3 bg-card">
-              <SectionTitle>{t('color')}</SectionTitle>
               <div className="space-y-3">
                 <Label className="typography-label text-muted-foreground">{t('colorLabel')}</Label>
 
@@ -213,20 +211,34 @@ export function EditarSobreDrawer({
 
                 {/* Color picker */}
                 {showColorPicker && (
-                  <div className="space-y-2 rounded-lg border border-border bg-muted/30 p-3">
-                    <div className="flex justify-center">
+                  <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-border/50">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Selector de color personalizado
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setShowColorPicker(false)}
+                        className="p-1 hover:bg-muted/50 rounded-md transition-colors"
+                        title="Cerrar selector"
+                      >
+                        <X className="h-4 w-4 text-muted-foreground" />
+                      </button>
+                    </div>
+                    <div className="flex justify-center pt-2">
                       <HexColorPicker color={sobreColorLocal} onChange={setSobreColorLocal} />
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 pt-2">
                       <div
-                        className="h-9 w-9 rounded-lg border border-border"
+                        className="h-10 w-10 rounded-lg border-2 border-border flex-shrink-0"
                         style={{ backgroundColor: sobreColorLocal }}
                       />
                       <Input
                         type="text"
                         value={sobreColorLocal}
                         onChange={(e) => setSobreColorLocal(e.target.value)}
-                        className="flex-1 font-mono h-10"
+                        className="flex-1 font-mono h-10 text-xs"
+                        placeholder="#000000"
                       />
                     </div>
                   </div>
@@ -246,65 +258,58 @@ export function EditarSobreDrawer({
             </Card>
 
             {/* Delete section */}
-            <Card className="p-4 space-y-3 bg-destructive/5 border-destructive/20">
-              <SectionTitle className="text-destructive">{t('deleteSection')}</SectionTitle>
-
-              {!showDeleteConfirm ? (
-                <button
-                  type="button"
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="w-full flex items-center justify-between p-3 rounded-lg bg-destructive/10 hover:bg-destructive/15 border border-destructive/20 transition-colors"
-                >
-                  <div className="text-left">
-                    <p className="typography-body-sm font-medium text-destructive">
-                      {t('deleteLabel')}
-                    </p>
-                    <p className="typography-metadata text-destructive/70 mt-1">
-                      {t('deleteDescription')}
-                    </p>
-                  </div>
-                  <ChevronDown
-                    className={cn(
-                      'h-5 w-5 text-destructive transition-transform flex-shrink-0 ml-2'
-                    )}
-                  />
-                </button>
-              ) : (
-                <div className="space-y-3">
-                  <Alert className="bg-destructive/10 border-destructive/20">
-                    <AlertDescription className="text-destructive">
-                      {t('deleteWarning')}
-                    </AlertDescription>
-                  </Alert>
-
-                  <div className="space-y-2">
-                    <p className="typography-body-sm font-medium text-destructive">
-                      {t('deleteTitle', { name: sobreName })}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => setShowDeleteConfirm(false)}
-                        disabled={deletingConfirm}
-                      >
-                        {t('deleteCancel')}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        className="flex-1"
-                        onClick={handleEliminarSobre}
-                        disabled={deletingConfirm}
-                      >
-                        {deletingConfirm ? t('editing') : t('deleteConfirm')}
-                      </Button>
-                    </div>
-                  </div>
+            {!showDeleteConfirm ? (
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-full p-4 rounded-lg border border-destructive/30 bg-destructive/5 hover:bg-destructive/10 transition-colors text-left"
+              >
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-destructive">{t('deleteSection')}</p>
+                  <p className="text-xs text-destructive/70">{t('deleteLabel')}</p>
                 </div>
-              )}
-            </Card>
+              </button>
+            ) : (
+              <Card className="p-4 space-y-4 bg-destructive/5 border-destructive/20">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-destructive">
+                    {t('deleteSection')}
+                  </p>
+                  <p className="text-sm font-medium text-destructive">
+                    {t('deleteTitle', { name: sobreName })}
+                  </p>
+                </div>
+
+                <Alert className="bg-destructive/10 border-destructive/20">
+                  <AlertDescription className="text-destructive text-xs">
+                    {t('deleteWarning')}
+                  </AlertDescription>
+                </Alert>
+
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deletingConfirm}
+                  >
+                    {t('deleteCancel')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleEliminarSobre}
+                    disabled={deletingConfirm}
+                  >
+                    {deletingConfirm ? t('editing') : t('deleteConfirm')}
+                  </Button>
+                </div>
+              </Card>
+            )}
           </form>
         </DrawerBody>
 

@@ -239,6 +239,27 @@ export interface Monedas {
   updated_at: Generated<Timestamp>;
 }
 
+export interface Notificaciones {
+  created_at: Generated<Timestamp | null>;
+  id: Generated<string>;
+  /**
+   * Indica si el usuario ya leyó la notificación
+   */
+  leida: Generated<boolean | null>;
+  mensaje: string;
+  /**
+   * Datos adicionales en formato JSON (sobre_id, sobre_historico_id, lista_id, etc.)
+   */
+  metadata: Json | null;
+  /**
+   * Tipo de notificación: PERDIDA_ACCESO_SOBRE, PERDIDA_ACCESO_LISTA, etc.
+   */
+  tipo: string;
+  titulo: string;
+  updated_at: Generated<Timestamp | null>;
+  usuario_id: string;
+}
+
 export interface PaymentProducts {
   active: Generated<boolean>;
   created_at: Generated<Timestamp>;
@@ -886,6 +907,7 @@ export interface DB {
   invitation_codes: InvitationCodes;
   linked_users: LinkedUsers;
   monedas: Monedas;
+  notificaciones: Notificaciones;
   payment_products: PaymentProducts;
   pending_purchases: PendingPurchases;
   periodos: Periodos;

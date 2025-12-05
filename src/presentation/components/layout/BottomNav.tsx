@@ -9,8 +9,9 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { ListCheck, MailOpen, Plus, CircleChevronUp, Settings, ReceiptText, Tags } from 'lucide-react'
+import { ListCheck, MailOpen, Plus, CircleChevronUp, Settings, ReceiptText, Tags, FolderPlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import {
   Drawer,
   DrawerContent,
@@ -74,57 +75,14 @@ export function BottomNav({
 
       {/* BOTÓN CONTEXTUAL CENTRAL */}
       {activeTab === 'sobres' ? (
-        <Drawer open={sobresDrawerOpen} onOpenChange={setSobresDrawerOpen}>
-          <DrawerTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <CircleChevronUp className="h-6 w-6" />
-            </Button>
-          </DrawerTrigger>
-          <DrawerContent className="pb-6">
-            <div className="mx-auto w-full max-w-md pt-2">
-              <DrawerHeader className="pb-0 text-center">
-                <DrawerTitle className="typography-label-lg">
-                  {t('title')}
-                </DrawerTitle>
-                <DrawerDescription>{description}</DrawerDescription>
-              </DrawerHeader>
-
-              <div className="flex flex-col gap-4 px-4 py-6">
-                <div className="rounded-3xl border border-border bg-card/60 p-4 space-y-4">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Button
-                      variant="secondary"
-                      className="h-14 rounded-2xl border border-border bg-background px-4 text-left typography-body-sm font-semibold text-foreground"
-                      onClick={() => handleSobresAction('nueva-categoria')}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Tags className="h-4 w-4 text-primary" />
-                        Agregar Categorías
-                      </div>
-                    </Button>
-
-                    <Button
-                      className={cn(
-                        'h-14 rounded-2xl px-4 text-left typography-body-sm font-semibold',
-                        isRosadoTheme && 'bg-primary text-primary-foreground hover:bg-primary/90'
-                      )}
-                      onClick={() => handleSobresAction('nuevo-gasto')}
-                    >
-                      <div className="flex items-center gap-3">
-                        <ReceiptText className="h-5 w-5" />
-                        Registrar Gasto
-                      </div>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DrawerContent>
-        </Drawer>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => onContextualAction('nuevo-gasto')}
+          className="h-12 w-12 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
       ) : activeTab === 'metricas' ? (
         <Button
           variant="ghost"

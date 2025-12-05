@@ -115,6 +115,7 @@ export async function syncExecutionToServer(
       shopping_list_item_id: item.shopping_list_item_id,
       product_id: item.product_id,
       product_custom_id: item.product_custom_id,
+      product_name: item.product_name, // Include product name for on-the-fly items
       is_catalog: item.is_catalog,
       cantidad_comprada: item.cantidad_comprada || item.cantidad_planeada,
       unidad_medida: item.unidad_medida,
@@ -127,6 +128,13 @@ export async function syncExecutionToServer(
       categoria_producto_id: item.categoria_producto_id,
       categoria_global_id: item.categoria_global_id,
     }))
+
+    console.log('📦 Syncing items:', itemsPayload.length)
+    const onTheFlyCount = itemsPayload.filter(i => i.es_agregado_vuelo).length
+    console.log('✨ On-the-fly items:', onTheFlyCount)
+    if (onTheFlyCount > 0) {
+      console.log('🔍 On-the-fly items details:', itemsPayload.filter(i => i.es_agregado_vuelo))
+    }
 
     const createItemsResponse = await fetchWithRetry(
       `/api/shopping-executions/${serverExecutionId}/items/batch`,

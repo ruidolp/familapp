@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:types": "kysely-codegen --dialect postgres --out-file src/infrastructure/database/types.ts"
+    "db:types": "kysely-codegen --dialect postgres --out-file src/infrastructure/database/types.ts",
+    "user:create": "node scripts/create-user.js"
   },
   "dependencies": {
     "@capacitor/android": "^6.1.2",

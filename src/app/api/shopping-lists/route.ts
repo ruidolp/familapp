@@ -156,7 +156,9 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    console.log('📝 Creating shopping list:', { userId: session.user.id, nombre, descripcion })
     const newList = await createShoppingList(session.user.id, nombre, descripcion)
+    console.log('✅ Shopping list created:', newList)
 
     return NextResponse.json({
       success: true,
@@ -164,8 +166,15 @@ export async function POST(req: NextRequest) {
     }, { status: 201 })
   } catch (error: any) {
     console.error('❌ POST /api/shopping-lists error:', error)
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      constraint: error.constraint,
+      detail: error.detail,
+      stack: error.stack,
+    })
     return NextResponse.json(
-      { error: error.message || 'Error al crear lista' },
+      { error: error.message || 'Error al crear lista', details: error.detail },
       { status: 500 }
     )
   }

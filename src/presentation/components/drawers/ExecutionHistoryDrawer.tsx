@@ -128,7 +128,12 @@ export function ExecutionHistoryDrawer({
 
   const normalizeItem = (item: any) => {
     // Si es un item local, ya tiene el formato correcto
-    if (item.localId) return item
+    if (item.localId) {
+      return {
+        ...item,
+        addedOnTheFly: item.addedOnTheFly || false,
+      }
+    }
 
     // Normalizar item del servidor a formato esperado
     return {
@@ -140,10 +145,16 @@ export function ExecutionHistoryDrawer({
       precio_unitario: item.precio_unitario ? parseFloat(String(item.precio_unitario)) : undefined,
       precio_total: item.precio_total ? parseFloat(String(item.precio_total)) : undefined,
       marca: item.marca,
+      addedOnTheFly: item.es_agregado_vuelo || false,
     }
   }
 
   const normalizedItems = items.map(normalizeItem)
+
+  // Separar items normales de items agregados on-the-fly
+  const regularItems = normalizedItems.filter((item: any) => !item.addedOnTheFly)
+  const onTheFlyItems = normalizedItems.filter((item: any) => item.addedOnTheFly)
+
   const itemsTotal = normalizedItems.reduce(
     (sum: number, item: any) => sum + (item.precio_total || 0),
     0
@@ -190,8 +201,31 @@ export function ExecutionHistoryDrawer({
   const budgetStatus =
     budgetDelta !== null ? (budgetDelta > 0 ? 'over' : 'under') : null
 
-  const storeName = (execution as any).store_name
   const estimatedBudget = budgetReference
+  const onTheFlyTotal = onTheFlyItems.reduce(
+    (sum: number, item: any) => sum + (item.precio_total || 0),
+    0
+  )
+
+  const projectedTotal =
+    estimatedBudget ??
+    calculatedTotal ??
+    manualTotal ??
+    (purchaseTotal - onTheFlyTotal > 0 ? purchaseTotal - onTheFlyTotal : null)
+
+  const additionalPercent =
+    projectedTotal && projectedTotal > 0
+      ? ((purchaseTotal - projectedTotal) / projectedTotal) * 100
+      : null
+
+  const clampTwoLines = {
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical' as const,
+    overflow: 'hidden',
+  }
+
+  const storeName = (execution as any).store_name
   const formattedDateTime = formatDateTime(startDate)
 
   // Budget registration info
@@ -202,7 +236,7 @@ export function ExecutionHistoryDrawer({
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full max-h-[90vh] sm:max-h-[82vh] sm:max-w-5xl sm:mx-auto sm:rounded-3xl sm:border sm:border-border/80 sm:px-0 sm:shadow-2xl bg-background">
+      <SheetContent className="flex w-full max-h-[90vh] flex-col overflow-hidden bg-gradient-to-b from-primary/10 via-background to-background sm:mx-auto sm:max-h-[82vh] sm:max-w-5xl sm:rounded-3xl sm:border sm:border-border/80 sm:px-0 sm:shadow-2xl">
         <SheetHeader className="px-4 pb-2 pt-3 sm:px-8">
           <SheetTitle className="flex items-center gap-2 typography-label-lg">
             <ReceiptText className="h-5 w-5 text-muted-foreground" />
@@ -250,10 +284,11 @@ export function ExecutionHistoryDrawer({
           )}
         </SheetHeader>
 
-        <SheetBody className="space-y-5 px-4 pb-4 sm:px-8">
-          <Card className="rounded-2xl border border-primary/40 bg-primary/5 p-4 shadow-sm">
+        <SheetBody className="flex-1 space-y-5 overflow-y-auto px-4 pb-6 sm:px-8">
+          <Card className="relative overflow-hidden rounded-2xl border border-primary/40 bg-card/90 p-4 shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
             <div className="flex flex-col gap-3">
-              <div className="flex items-start justify-between gap-3">
+              <div className="relative flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase text-muted-foreground">Total de la compra</p>
                   <p className="text-4xl font-bold text-foreground leading-tight">
@@ -273,106 +308,209 @@ export function ExecutionHistoryDrawer({
                         : 'bg-emerald-600/10 text-emerald-700 dark:text-emerald-200'
                     }`}
                   >
-                      {budgetStatus === 'over' ? 'Sobre presupuesto' : 'Dentro del presupuesto'}
-                    </span>
-                  )}
+                    {budgetStatus === 'over' ? 'Sobre presupuesto' : 'Dentro del presupuesto'}
+                  </span>
+                )}
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="relative grid gap-3 sm:grid-cols-3">
                 {estimatedBudget !== null && (
-                  <div className="rounded-xl border border-border/60 bg-background px-3 py-3">
-                    <p className="text-[11px] uppercase text-muted-foreground">Presupuesto asignado</p>
+                  <div className="rounded-xl border border-border/60 bg-background/80 px-3 py-3 shadow-sm">
+                    <p className="text-[11px] uppercase text-muted-foreground">Proyección</p>
                     <p className="typography-label-lg text-foreground">
                       {formatNumber(estimatedBudget)}
                     </p>
                     {budgetDelta !== null && (
-                      <p className="typography-metadata mt-1">
+                      <p className="typography-metadata mt-1 text-muted-foreground">
                         {budgetDelta > 0
                           ? `Te pasaste por ${formatNumber(budgetDelta)}`
                           : `Ahorro de ${formatNumber(Math.abs(budgetDelta))}`}
                       </p>
                     )}
                   </div>
-                    )}
+                )}
 
+                {onTheFlyItems.length > 0 && (
+                  <div className="rounded-xl border border-primary/30 bg-primary/5 px-3 py-3 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <p className="text-[11px] uppercase text-primary">Agregados en tienda</p>
+                      <Badge variant="secondary" className="border border-primary/40 bg-primary/10 text-primary">
+                        {onTheFlyItems.length}
+                      </Badge>
+                    </div>
+                    <p className="typography-label-lg text-foreground">
+                      {formatNumber(onTheFlyTotal)}
+                    </p>
+                    <p className="typography-metadata mt-1 text-muted-foreground">
+                      Total de productos agregados durante la compra
+                    </p>
+                  </div>
+                )}
+
+                {onTheFlyItems.length > 0 && (
+                  <div className="rounded-xl border border-border/60 bg-background/80 px-3 py-3 shadow-sm">
+                    <p className="text-[11px] uppercase text-muted-foreground">Adicional vs proyección</p>
+                    <p
+                      className={`typography-label-lg ${
+                        additionalPercent !== null && additionalPercent > 0
+                          ? 'text-destructive'
+                          : 'text-emerald-600 dark:text-emerald-200'
+                      }`}
+                    >
+                      {additionalPercent !== null
+                        ? `${additionalPercent > 0 ? '+' : ''}${additionalPercent.toFixed(1)}%`
+                        : '—'}
+                    </p>
+                    <p className="typography-metadata mt-1 text-muted-foreground">
+                      Referencia: {projectedTotal ? formatNumber(projectedTotal) : 'sin proyección'}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </Card>
 
-          <div className="rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="typography-body-sm font-semibold text-foreground">
-                {t('purchasedProducts')} ({normalizedItems.length})
-              </h3>
-              {loadingItems && <span className="typography-metadata">Cargando...</span>}
-            </div>
+          {/* Regular Products */}
+          {regularItems.length > 0 && (
+            <Card className="rounded-2xl border border-border/80 bg-card/90 p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="typography-body-sm font-semibold text-foreground">
+                  {t('purchasedProducts')} ({regularItems.length})
+                </h3>
+                {loadingItems && <span className="typography-metadata">Cargando...</span>}
+              </div>
 
-            <div className="space-y-3">
               {loadingItems ? (
                 <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 typography-body-sm text-muted-foreground">
                   Cargando productos...
                 </Card>
-              ) : normalizedItems.length > 0 ? (
-                normalizedItems.map((item: any) => (
-                  <Card key={item.localId} className="rounded-xl border border-border bg-background p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 space-y-2">
+              ) : (
+                <div className="divide-y divide-border/70">
+                  {regularItems.map((item: any) => (
+                    <div key={item.localId} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                      <div className="flex-1 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-semibold typography-body-sm text-foreground">{item.product_name}</p>
+                          <p className="font-semibold typography-body-sm text-foreground" style={clampTwoLines}>
+                            {item.product_name}
+                          </p>
                           {item.marca && (
                             <Badge variant="secondary" className="border border-primary/40 bg-primary/10 text-primary">
                               {item.marca}
                             </Badge>
                           )}
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 typography-metadata">
                           {item.categoria_producto_nombre && (
                             <Badge variant="outline" className="border-border/70 text-xs">
                               {item.categoria_producto_nombre}
                             </Badge>
                           )}
-                          {item.unidad_medida && (
-                            <span className="rounded-full bg-muted px-2 py-1">
-                              {item.unidad_medida}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          {item.cantidad_comprada && (
+                            <span>
+                              {item.cantidad_comprada}
+                              {item.unidad_medida ? ` ${item.unidad_medida}` : ''}
+                            </span>
+                          )}
+                          {item.precio_unitario && (
+                            <span className="inline-flex items-center gap-1">
+                              <Separator orientation="vertical" className="h-4" />
+                              {simbolo ?? ''}
+                              {item.precio_unitario.toFixed(decimales)}
+                              {item.unidad_medida ? ` · ${item.unidad_medida}` : ''}
                             </span>
                           )}
                         </div>
                       </div>
-                      {item.precio_total && (
-                        <span className="typography-label-lg text-foreground">
-                          {simbolo ?? ''}{item.precio_total.toFixed(decimales)}
-                        </span>
-                      )}
+                      <div className="text-right">
+                        {item.precio_total ? (
+                          <p className="typography-label-lg text-foreground">
+                            {simbolo ?? ''}
+                            {item.precio_total.toFixed(decimales)}
+                          </p>
+                        ) : (
+                          <p className="typography-body-sm text-muted-foreground">—</p>
+                        )}
+                      </div>
                     </div>
-                    <Separator className="my-3" />
-                    <div className="grid gap-3 sm:grid-cols-2 typography-metadata">
-                      {item.cantidad_comprada && (
-                        <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-                          <p className="text-[11px] uppercase">Cantidad</p>
-                          <p className="typography-body-sm font-semibold text-foreground">
+                  ))}
+                </div>
+              )}
+            </Card>
+          )}
+
+          {/* On-the-fly Products - Special Section */}
+          {onTheFlyItems.length > 0 && (
+            <Card className="rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 p-4 shadow-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <h3 className="typography-body-sm font-semibold text-foreground">
+                    Agregados durante la compra
+                  </h3>
+                  <Badge variant="secondary" className="border border-primary/40 bg-primary/10 text-primary">
+                    {onTheFlyItems.length}
+                  </Badge>
+                </div>
+                <p className="typography-metadata text-muted-foreground">
+                  Total: {formatNumber(onTheFlyTotal)}
+                </p>
+              </div>
+
+              <div className="divide-y divide-primary/20">
+                {onTheFlyItems.map((item: any) => (
+                  <div key={item.localId} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                    <div className="flex-1 space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold typography-body-sm text-foreground" style={clampTwoLines}>
+                          {item.product_name}
+                        </p>
+                        <Badge variant="outline" className="border-primary/50 bg-primary/10 text-primary text-xs">
+                          Agregado
+                        </Badge>
+                        {item.marca && (
+                          <Badge variant="secondary" className="border border-border/40 bg-muted text-foreground">
+                            {item.marca}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                        {item.cantidad_comprada && (
+                          <span>
                             {item.cantidad_comprada}
                             {item.unidad_medida ? ` ${item.unidad_medida}` : ''}
-                          </p>
-                        </div>
-                      )}
-                      {item.precio_unitario && (
-                        <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
-                          <p className="text-[11px] uppercase">{t('unitPrice')}</p>
-                          <p className="typography-body-sm font-semibold text-foreground">
-                            {simbolo ?? ''}{item.precio_unitario.toFixed(decimales)}
-                          </p>
-                        </div>
+                          </span>
+                        )}
+                        {item.precio_unitario && (
+                          <span className="inline-flex items-center gap-1">
+                            <Separator orientation="vertical" className="h-4" />
+                            {simbolo ?? ''}
+                            {item.precio_unitario.toFixed(decimales)}
+                            {item.unidad_medida ? ` · ${item.unidad_medida}` : ''}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {item.precio_total ? (
+                        <p className="typography-label-lg text-foreground">
+                          {simbolo ?? ''}
+                          {item.precio_total.toFixed(decimales)}
+                        </p>
+                      ) : (
+                        <p className="typography-body-sm text-muted-foreground">—</p>
                       )}
                     </div>
-                  </Card>
-                ))
-              ) : (
-                <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 typography-body-sm text-muted-foreground text-center">
-                  {t('noPurchasedProducts')}
-                </Card>
-              )}
-            </div>
-          </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {/* Empty state */}
+          {!loadingItems && normalizedItems.length === 0 && (
+            <Card className="rounded-xl border border-dashed border-border bg-muted/30 p-4 typography-body-sm text-muted-foreground text-center">
+              {t('noPurchasedProducts')}
+            </Card>
+          )}
         </SheetBody>
 
         <SheetFooter className="px-4 pb-4 sm:px-8">

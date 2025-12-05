@@ -247,41 +247,85 @@ export async function expireOldInvitations() {
  * Retorna usuarios únicos que son participantes de sobres o listas del usuario
  */
 export async function getMyContacts(userId: string) {
-  // Usuarios en sobres del usuario
-  const sobresContacts = await db
+  // Usuarios en sobres donde el usuario es owner
+  const sobresContactsAsOwner = await db
     .selectFrom('sobres_usuarios as su')
     .innerJoin('users as u', 'su.usuario_id', 'u.id')
     .innerJoin('sobres as s', 'su.sobre_id', 's.id')
-    .select([
-      'u.id',
-      'u.name',
-      'u.email',
-      'u.image',
-    ])
-    .where('s.usuario_id', '=', userId) // Sobres del usuario
-    .where('su.usuario_id', '!=', userId) // Excluir al usuario mismo
+    .select(['u.id', 'u.name', 'u.email', 'u.image'])
+    .where('s.usuario_id', '=', userId)
+    .where('su.usuario_id', '!=', userId)
     .where('s.deleted_at', 'is', null)
     .execute()
 
-  // Usuarios en listas del usuario
-  const listasContacts = await db
+  // Usuarios en sobres donde el usuario es participante (incluye owner y otros participantes)
+  const sobresContactsAsParticipant = await db
+    .selectFrom('sobres_usuarios as suMy')
+    .innerJoin('sobres as s', 'suMy.sobre_id', 's.id')
+    .innerJoin('users as owner', 's.usuario_id', 'owner.id')
+    .select(['owner.id', 'owner.name', 'owner.email', 'owner.image'])
+    .where('suMy.usuario_id', '=', userId)
+    .where('s.usuario_id', '!=', userId)
+    .where('s.deleted_at', 'is', null)
+    .execute()
+
+  const sobresOtherParticipants = await db
+    .selectFrom('sobres_usuarios as suMy')
+    .innerJoin('sobres as s', 'suMy.sobre_id', 's.id')
+    .innerJoin('sobres_usuarios as suOther', 'suOther.sobre_id', 's.id')
+    .innerJoin('users as u', 'suOther.usuario_id', 'u.id')
+    .select(['u.id', 'u.name', 'u.email', 'u.image'])
+    .where('suMy.usuario_id', '=', userId)
+    .where('suOther.usuario_id', '!=', userId)
+    .where('s.deleted_at', 'is', null)
+    .execute()
+
+  // Usuarios en listas donde el usuario es owner
+  const listasContactsAsOwner = await db
     .selectFrom('shopping_list_collaborators as slc')
     .innerJoin('users as u', 'slc.user_id', 'u.id')
     .innerJoin('shopping_lists as sl', 'slc.shopping_list_id', 'sl.id')
-    .select([
-      'u.id',
-      'u.name',
-      'u.email',
-      'u.image',
-    ])
-    .where('sl.user_id', '=', userId) // Listas del usuario
-    .where('slc.user_id', '!=', userId) // Excluir al usuario mismo
+    .select(['u.id', 'u.name', 'u.email', 'u.image'])
+    .where('sl.user_id', '=', userId)
+    .where('slc.user_id', '!=', userId)
     .where('sl.deleted_at', 'is', null)
     .where('slc.deleted_at', 'is', null)
     .execute()
 
+  // Usuarios en listas donde el usuario es colaborador (owner y otros colaboradores)
+  const listasOwnersAsCollaborator = await db
+    .selectFrom('shopping_list_collaborators as slc')
+    .innerJoin('shopping_lists as sl', 'slc.shopping_list_id', 'sl.id')
+    .innerJoin('users as owner', 'sl.user_id', 'owner.id')
+    .select(['owner.id', 'owner.name', 'owner.email', 'owner.image'])
+    .where('slc.user_id', '=', userId)
+    .where('sl.user_id', '!=', userId)
+    .where('sl.deleted_at', 'is', null)
+    .where('slc.deleted_at', 'is', null)
+    .execute()
+
+  const listasOtherCollaborators = await db
+    .selectFrom('shopping_list_collaborators as slcMy')
+    .innerJoin('shopping_lists as sl', 'slcMy.shopping_list_id', 'sl.id')
+    .innerJoin('shopping_list_collaborators as slcOther', 'slcOther.shopping_list_id', 'sl.id')
+    .innerJoin('users as u', 'slcOther.user_id', 'u.id')
+    .select(['u.id', 'u.name', 'u.email', 'u.image'])
+    .where('slcMy.user_id', '=', userId)
+    .where('slcOther.user_id', '!=', userId)
+    .where('sl.deleted_at', 'is', null)
+    .where('slcMy.deleted_at', 'is', null)
+    .where('slcOther.deleted_at', 'is', null)
+    .execute()
+
   // Combinar y eliminar duplicados
-  const allContacts = [...sobresContacts, ...listasContacts]
+  const allContacts = [
+    ...sobresContactsAsOwner,
+    ...sobresContactsAsParticipant,
+    ...sobresOtherParticipants,
+    ...listasContactsAsOwner,
+    ...listasOwnersAsCollaborator,
+    ...listasOtherCollaborators,
+  ]
   const uniqueContacts = Array.from(
     new Map(allContacts.map(contact => [contact.id, contact])).values()
   )

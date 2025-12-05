@@ -333,22 +333,51 @@
     }
   },
   "onboarding": {
-    "title": "Welcome! 👋",
-    "description": "To get started, we need to configure a few basic preferences",
+    "title": "Welcome",
+    "description": "Let’s personalize your experience.",
+    "steps": {
+      "1": {
+        "title": "Welcome",
+        "description": "Let’s personalize your experience.",
+        "body": "Track your purchases, organize your envelopes, and easily share lists and expenses with anyone you choose."
+      },
+      "2": {
+        "title": "A few details to customize everything",
+        "description": "This helps us adapt the app to your country, currency, and monthly cycle."
+      },
+      "3": {
+        "title": "Your initial envelopes",
+        "description": "We prepared everything so you can start right away.",
+        "body": "We created \"My Home\" and \"For Me\" with basic categories ready to use. You can edit them anytime."
+      },
+      "4": {
+        "title": "Organize as a team",
+        "description": "Better together.",
+        "body": "Share envelopes and lists with your partner, family, or anyone you want. Everything syncs in real time."
+      },
+      "5": {
+        "title": "Assisted Shopping",
+        "description": "Your list, step by step.",
+        "body": "Use Assisted Shopping to move through your list, mark items, and keep track of totals in real time."
+      }
+    },
     "fields": {
-      "country": "Country",
+      "country": "Country you live in",
       "countryPlaceholder": "Select your country",
-      "currency": "Main Currency",
+      "currency": "Your main currency",
       "currencyPlaceholder": "Select your currency",
-      "currencyDescription": "This will be the currency you use for your envelopes",
-      "dayOfMonth": "What day of the month do you receive your money?",
-      "dayOfMonthDescription": "On this day, your expenses will start from zero each month. You can change it later",
-      "dayPlaceholder": "Select a day"
+      "currencyDescription": "We use it to display your expenses and totals more clearly.",
+      "dayOfMonth": "When should your balance reset each month?",
+      "dayOfMonthDescription": "Used to calculate your spending periods and reset totals.",
+      "dayPlaceholder": "Choose a day"
     },
     "buttons": {
-      "submit": "Get Started",
+      "submit": "Finish",
+      "next": "Next",
+      "back": "Back",
+      "finish": "Finish",
       "submitting": "Saving...",
-      "disclaimer": "You can change these preferences later"
+      "disclaimer": "These details help the app work better for you."
     },
     "errors": {
       "countryRequired": "Please select your country",
@@ -396,6 +425,8 @@
       "loading": "Loading envelopes...",
       "empty": "You have no envelopes yet",
       "createFirst": "Create your first envelope",
+      "createNew": "Create new envelope",
+      "createNewDescription": "Organize your expenses with a new envelope",
       "loadError": "Failed to load envelopes",
       "returnError": "Error returning budget"
     },
@@ -413,7 +444,7 @@
         "expenseInfo": "Expense information",
         "organizationSection": "Organization",
         "categoriesAndBrands": "Expense types & Merchants",
-        "newCategory": "New category",
+        "newCategory": "New expense type",
         "close": "Close"
       },
       "sections": {
@@ -432,9 +463,10 @@
     },
     "categoryCard": {
       "purchases": "{count} purchases",
+      "purchaseSingular": "1 purchase",
       "percentUsed": "{percent}% of the budget",
       "quickExpense": "Record expense",
-      "editCategory": "Edit category",
+      "editCategory": "Edit expense type",
       "goal": "Goal"
     }
   },
@@ -611,7 +643,7 @@
     "menu": {
       "increaseBudget": "Increase Budget",
       "reduceBudget": "Reduce Budget",
-      "editCategories": "Edit Categories",
+      "editCategories": "Edit Expense Types",
       "shoppingList": "Shopping List"
     },
     "quickActions": {
@@ -625,10 +657,10 @@
       "button": "Add Budget"
     },
     "categories": {
-      "loading": "Loading categories...",
+      "loading": "Loading expense types...",
       "title": "Expense types",
-      "empty": "Add categories for this envelope to track your spending by category",
-      "addButton": "Add Categories"
+      "empty": "Add expense types for this envelope to track your spending by type",
+      "addButton": "New expense type"
     },
     "create": {
       "title": "Create New Envelope",
@@ -648,6 +680,7 @@
         "preview": "Preview",
         "envelopeName": "Envelope name",
         "budget": "Budget",
+        "spendingGoal": "Spending goal",
         "name": "Name",
         "namePlaceholder": "Eg: Food, Transport, Home",
         "color": "Color"
@@ -796,7 +829,7 @@
       "totalCurrentMonth": "Current month total",
       "transactionCount": "transactions",
       "transactionsCount": "{count} transactions",
-      "noCategory": "No category",
+      "noCategory": "No expense type",
       "categoryTitle": "Transactions for {categoriaName}",
       "categoryDescription": "Expenses and adjustments for {categoriaName} in {sobreName}",
       "confirmTitle": "Delete transaction",
@@ -868,7 +901,7 @@
       "action": "Disable"
     },
     "warning": {
-      "exceeds": "Category goals exceed total budget by {amount}"
+      "exceeds": "Expense type goals exceed total budget by {amount}"
     },
     "sugerencia": {
       "button": "Load suggestion from last month",
@@ -897,11 +930,11 @@
     }
   },
   "categorias": {
-    "title": "Categories",
+    "title": "Expense Types",
     "add": {
-      "title": "Add Categories",
-      "description": "Organize {sobreName} with categories.",
-      "categories": "Categories",
+      "title": "Add Expense Types",
+      "description": "Organize {sobreName} with expense types.",
+      "categories": "Expense Types",
       "namePlaceholder": "E.g. Food, Transport",
       "add": "✓",
       "checkmark": "✓",
@@ -910,25 +943,25 @@
       "addBrand": "Add brand",
       "brandSearch": "Search or create a brand...",
       "adding": "Adding...",
-      "addCategory": "Add Category",
+      "addCategory": "Add Expense Type",
       "addBrandLabel": "Adding...",
-      "selectAtLeastOne": "Select a category to continue",
+      "selectAtLeastOne": "Select an expense type to continue",
       "saving": "Saving...",
       "submit": "Save",
       "cancel": "Cancel",
       "notifications": {
-        "categoryCreated": "Category \"{name}\" created",
-        "categoryCreateError": "Error creating category",
+        "categoryCreated": "Expense type \"{name}\" created",
+        "categoryCreateError": "Error creating expense type",
         "brandCreated": "Brand \"{name}\" created",
         "brandCreateError": "Error creating brand",
-        "linkSuccess": "{count} category(ies) added",
-        "linkError": "Error adding categories"
+        "linkSuccess": "{count} expense type(s) added",
+        "linkError": "Error adding expense types"
       }
     },
     "edit": {
-      "title": "Edit Category",
-      "description": "Customize your category's name, emoji, and color.",
-      "drawerTitle": "Categories & Brands",
+      "title": "Edit Expense Type",
+      "description": "Customize your expense type's name, emoji, and color.",
+      "drawerTitle": "Expense Types & Merchants",
       "basicInfo": "Basic Information",
       "colorSection": "Color",
       "colorLabel": "Choose a color",
@@ -957,8 +990,8 @@
         "loadError": "Error loading data",
         "brandCreated": "Brand \"{name}\" created",
         "brandCreateError": "Error creating brand",
-        "updateSuccess": "Category updated successfully",
-        "updateError": "Error updating category"
+        "updateSuccess": "Expense type updated successfully",
+        "updateError": "Error updating expense type"
       }
     }
   },
@@ -1123,6 +1156,9 @@
         "resumeHint": "Resume from Active purchases.",
         "confirm": "Confirm",
         "continue": "Keep shopping"
+      },
+      "item": {
+        "addedDuringPurchase": "Added during purchase"
       }
     }
   },

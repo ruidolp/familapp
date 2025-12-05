@@ -44,10 +44,12 @@ CREATE TABLE product_categories_global (
   emoji VARCHAR(10),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP WITH TIME ZONE
+  deleted_at TIMESTAMP WITH TIME ZONE,
+  UNIQUE(nombre, idioma)
 );
 
 CREATE INDEX idx_product_categories_global_nombre ON product_categories_global(LOWER(nombre)) WHERE deleted_at IS NULL;
+CREATE INDEX idx_product_categories_global_idioma ON product_categories_global(idioma) WHERE deleted_at IS NULL;
 CREATE INDEX idx_product_categories_global_deleted ON product_categories_global(deleted_at);
 
 COMMENT ON TABLE product_categories_global IS 'Categorías globales de productos (independiente, sin FKs desde otras tablas)';

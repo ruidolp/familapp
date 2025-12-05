@@ -876,7 +876,7 @@ export function CrearGastoDrawer({
                         placeholder={formattedPlaceholder || placeholderValue}
                         required
                         autoComplete="off"
-                        className="typography-h2 flex-1 border-0 bg-transparent text-right focus-visible:ring-0"
+                        className="typography-h2 flex-1 border-0 bg-transparent text-left pl-1 focus-visible:ring-0"
                       />
                     </div>
                     <Button

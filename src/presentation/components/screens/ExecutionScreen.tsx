@@ -20,23 +20,26 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { Button } from '@/presentation/components/ui/button'
-import { Loader2, Pause, Settings } from 'lucide-react'
+import { Loader2, Plus, Settings } from 'lucide-react'
 import { useExecutionState } from '@/presentation/hooks/useExecutionState'
 import { useTimer } from '@/presentation/hooks/useTimer'
 import { ExecutionHeader } from '@/presentation/components/execution/ExecutionHeader'
 import { ExecutionItem } from '@/presentation/components/execution/ExecutionItem'
 import { PriceInputDrawer } from '@/presentation/components/execution/PriceInputDrawer'
+import { AddProductOnTheFlyDrawer } from '@/presentation/components/execution/AddProductOnTheFlyDrawer'
 import { CalculatorDrawer } from '@/presentation/components/execution/CalculatorDrawer'
 import { ExecutionSettingsDrawer } from '@/presentation/components/execution/ExecutionSettingsDrawer'
 import { FinalizeExecutionDrawer } from '@/presentation/components/execution/FinalizeExecutionDrawer'
 import { PauseExecutionDrawer } from '@/presentation/components/execution/PauseExecutionDrawer'
-import type { LocalExecutionItem } from '@/domain/types/shopping-execution'
+import type { LocalExecutionItem, LocalShoppingExecution } from '@/domain/types/shopping-execution'
 import { notify } from '@/infrastructure/lib/notifications'
 
 interface ExecutionScreenProps {
   executionId: string
   userId: string
 }
+
+type AvailableProduct = { id: string; nombre: string; is_catalog?: boolean }
 
 export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
   const router = useRouter()
@@ -68,10 +71,55 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
   // UI state
   const [priceDrawerOpen, setPriceDrawerOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<LocalExecutionItem | null>(null)
+  const [addProductDrawerOpen, setAddProductDrawerOpen] = useState(false)
   const [calculatorOpen, setCalculatorOpen] = useState(false)
   const [configOpen, setConfigOpen] = useState(false)
   const [finalizeOpen, setFinalizeOpen] = useState(false)
   const [pauseDrawerOpen, setPauseDrawerOpen] = useState(false)
+  const [availableProducts, setAvailableProducts] = useState<AvailableProduct[]>([])
+
+  // Keep suggestions updated with items already in the execution (user products / on-the-fly)
+  useEffect(() => {
+    if (!execution) {
+      setAvailableProducts([])
+      return
+    }
+
+    const executionProducts = buildAvailableProductsFromExecution(execution)
+    setAvailableProducts((prev) => mergeProducts(prev, executionProducts))
+  }, [execution, execution?.availableProducts, execution?.items])
+
+  // Load global + user catalog the same way as the list editor input
+  useEffect(() => {
+    if (!execution?.shopping_list_id) return
+
+    let cancelled = false
+
+    const loadProducts = async () => {
+      try {
+        const response = await fetch(`/api/shopping-lists/${execution.shopping_list_id}/editor-data`)
+        if (!response.ok) {
+          console.error('Failed to load available products for execution:', response.statusText)
+          return
+        }
+
+        const data = await response.json()
+        const productsFromEditor = buildAvailableProductsFromEditorData(data)
+
+        if (!cancelled && productsFromEditor.length > 0) {
+          setAvailableProducts((prev) => mergeProducts(productsFromEditor, prev))
+        }
+      } catch (err) {
+        console.error('Error loading available products for execution:', err)
+      }
+    }
+
+    loadProducts()
+
+    return () => {
+      cancelled = true
+    }
+  }, [execution?.shopping_list_id])
 
   // Redirect if no execution found
   useEffect(() => {
@@ -158,10 +206,68 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
     router.push(`/${locale}/dashboard`)
   }
 
+  // Handle add product on the fly
+  const handleAddProduct = async (data: {
+    nombre: string
+    cantidad: number
+    unitario?: number
+    total?: number
+  }) => {
+    if (!execution) return
+
+    console.log('🎯 ExecutionScreen: handleAddProduct called with:', data)
+
+    try {
+      // 1. Create product on-the-fly (initially pending)
+      const itemLocalId = await addItemOnTheFly({
+        product_name: data.nombre,
+        cantidad_planeada: data.cantidad,
+        unidad_medida: 'unidad(es)',
+        marca: undefined,
+        is_catalog: false,
+        product_id: undefined,
+        product_custom_id: undefined,
+        categoria_producto_id: undefined,
+        categoria_producto_nombre: undefined,
+        categoria_global_id: undefined,
+      })
+
+      console.log('✅ ExecutionScreen: Item added with localId:', itemLocalId)
+      console.log('📊 Current pending items:', pendingItems.length)
+
+      // 2. If prices provided, update them and mark as purchased
+      if (data.unitario || data.total) {
+        console.log('💰 Updating price for item:', itemLocalId)
+        await updateItemPrice(itemLocalId, {
+          cantidad: data.cantidad,
+          unitario: data.unitario,
+          total: data.total,
+        })
+      }
+
+      notify.success(`${data.nombre} agregado`)
+    } catch (error) {
+      console.error('❌ Error adding product:', error)
+      notify.error('Error al agregar producto')
+    }
+  }
+
   // Group items by category if enabled
   const itemsByCategory = execution?.settings.showCategories
     ? groupByCategory([...pendingItems, ...purchasedItems, ...discardedItems])
     : null
+
+  // Debug log for items
+  useEffect(() => {
+    if (execution) {
+      console.log('🔍 ExecutionScreen render:', {
+        totalItems: execution.items.length,
+        pending: pendingItems.length,
+        purchased: purchasedItems.length,
+        discarded: discardedItems.length,
+      })
+    }
+  }, [execution, pendingItems, purchasedItems, discardedItems])
 
   if (loading) {
     return (
@@ -188,15 +294,8 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         totalSpent={execution.totalSpent}
         budgetPercentage={budgetPercentage}
         onCalculatorClick={() => setCalculatorOpen(true)}
+        onBackClick={() => setPauseDrawerOpen(true)}
       />
-
-      {/* Auto-saving indicator */}
-      {autoSaving && (
-        <div className="px-4 py-2 bg-muted typography-metadata flex items-center gap-2">
-          <Loader2 className="h-3 w-3 animate-spin" />
-          Guardando...
-        </div>
-      )}
 
       {/* Error message */}
       {error && (
@@ -327,10 +426,10 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
             variant="outline"
             size="icon"
             className="h-12 w-12 flex-shrink-0"
-            onClick={() => setPauseDrawerOpen(true)}
-            title="Pausar"
+            onClick={() => setAddProductDrawerOpen(true)}
+            title="Agregar producto"
           >
-            <Pause className="h-5 w-5" />
+            <Plus className="h-5 w-5" />
           </Button>
           <Button
             className="flex-1 h-12 typography-label-lg"
@@ -364,6 +463,13 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         }}
       />
 
+      <AddProductOnTheFlyDrawer
+        open={addProductDrawerOpen}
+        onOpenChange={setAddProductDrawerOpen}
+        onSave={handleAddProduct}
+        availableProducts={availableProducts}
+      />
+
       <CalculatorDrawer
         open={calculatorOpen}
         onOpenChange={setCalculatorOpen}
@@ -392,8 +498,88 @@ export function ExecutionScreen({ executionId, userId }: ExecutionScreenProps) {
         onOpenChange={setPauseDrawerOpen}
         onConfirm={handlePause}
       />
+
+      {/* Auto-saving indicator as overlay so it doesn't shift the list */}
+      {autoSaving && (
+        <div className="fixed right-4 bottom-24 z-30 pointer-events-none">
+          <div className="inline-flex items-center gap-2 rounded-full bg-muted/90 px-3 py-2 shadow-lg backdrop-blur-sm typography-metadata">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Guardando...
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+// Build available products from execution payload and items (keeps on-the-fly additions)
+function buildAvailableProductsFromExecution(
+  execution?: LocalShoppingExecution | null
+): AvailableProduct[] {
+  if (!execution) return []
+
+  const map = new Map<string, AvailableProduct>()
+
+  execution.availableProducts?.forEach((p) => {
+    if (!p.nombre) return
+    const key = p.nombre.toLowerCase()
+    if (!map.has(key)) {
+      map.set(key, { id: p.id, nombre: p.nombre, is_catalog: p.is_catalog })
+    }
+  })
+
+  execution.items.forEach((item) => {
+    const name = item.product_name?.trim()
+    if (!name) return
+    const key = name.toLowerCase()
+    if (!map.has(key)) {
+      map.set(key, {
+        id: item.product_id || item.product_custom_id || item.localId,
+        nombre: name,
+        is_catalog: item.is_catalog,
+      })
+    }
+  })
+
+  return Array.from(map.values())
+}
+
+// Mirror list editor combination: catalog first, then unique custom products
+function buildAvailableProductsFromEditorData(data: any): AvailableProduct[] {
+  if (!data) return []
+
+  const catalogProducts: AvailableProduct[] = (data.catalog || []).map((p: any) => ({
+    id: p.id,
+    nombre: p.nombre,
+    is_catalog: true,
+  }))
+
+  const catalogNames = new Set(catalogProducts.map((p) => p.nombre.toLowerCase()))
+
+  const uniqueCustomProducts: AvailableProduct[] = (data.customProducts || [])
+    .filter((p: any) => p?.nombre && !catalogNames.has(p.nombre.toLowerCase()))
+    .map((p: any) => ({
+      id: p.id,
+      nombre: p.nombre,
+      is_catalog: false,
+    }))
+
+  return [...catalogProducts, ...uniqueCustomProducts]
+}
+
+// Merge without duplicates by product name (preserves order from first array)
+function mergeProducts(primary: AvailableProduct[], secondary: AvailableProduct[]): AvailableProduct[] {
+  const map = new Map<string, AvailableProduct>()
+
+  for (const product of [...primary, ...secondary]) {
+    if (!product?.nombre) continue
+    const key = product.nombre.toLowerCase()
+    if (!map.has(key)) {
+      map.set(key, product)
+    }
+  }
+
+  return Array.from(map.values())
 }
 
 // Helper function to group items by category

@@ -173,6 +173,9 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     if (!menuAction) return
 
     switch (menuAction) {
+      case 'crear-sobre':
+        setCrearSobreOpen(true)
+        break
       case 'nueva-categoria':
         if (sobres.length > 0) {
           handleEditarCategorias(sobres[selectedIndex])
@@ -247,12 +250,17 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
     setVerDetalleOpen(true)
   }
 
-  const handleSobreCreated = (sobre: Sobre) => {
+  const handleSobreCreated = async (sobre: Sobre) => {
     // Actualizar lista de sobres
-    fetchSobres()
-    // Automáticamente abrir AgregarPresupuestoDrawer para asignar presupuesto
-    setSobreSeleccionado(sobre)
-    setAgregarPresupuestoOpen(true)
+    await fetchSobres()
+
+    // Posicionar el carousel en el nuevo sobre (debería estar al final)
+    // Como el nuevo sobre estará al final, necesitamos ir al último índice
+    setTimeout(() => {
+      if (emblaApi) {
+        emblaApi.scrollTo(sobres.length, false) // Ir al último slide (el nuevo sobre)
+      }
+    }, 100)
   }
 
   const handleAgregarPresupuestoSuccess = async () => {
@@ -400,6 +408,28 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
                     />
                   </div>
                 ))}
+
+                {/* Slide para crear nuevo sobre */}
+                <div className="flex-[0_0_100%] min-w-0">
+                  <button
+                    onClick={() => setCrearSobreOpen(true)}
+                    className="h-full w-full rounded-3xl border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 p-8 transition-all hover:border-primary/60 hover:bg-gradient-to-br hover:from-primary/10 hover:via-primary/15 hover:to-primary/10 active:scale-[0.98]"
+                  >
+                    <div className="flex h-full flex-col items-center justify-center gap-4">
+                      <div className="rounded-full bg-primary/10 p-6">
+                        <Plus className="h-12 w-12 text-primary" />
+                      </div>
+                      <div className="space-y-2 text-center">
+                        <p className="typography-h3 font-semibold text-foreground">
+                          {t('list.createNew')}
+                        </p>
+                        <p className="typography-body-sm text-muted-foreground">
+                          {t('list.createNewDescription')}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -457,6 +487,7 @@ export function SobresScreen({ userId, menuAction, onMenuActionHandled, onCarous
         onOpenChange={setVerDetalleOpen}
         sobreId={sobreSeleccionado?.id || ''}
         sobreName={sobreSeleccionado?.nombre || ''}
+        diaInicioPeriodo={diaInicioPeriodo}
         onTransactionsUpdated={handleTransaccionesUpdated}
       />
 

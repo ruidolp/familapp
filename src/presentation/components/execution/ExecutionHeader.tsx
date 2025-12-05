@@ -11,7 +11,7 @@
  * - Calculator button
  */
 
-import { Calculator, Clock3 } from 'lucide-react'
+import { ArrowLeft, Calculator, Clock3 } from 'lucide-react'
 import { Button } from '@/presentation/components/ui/button'
 import { Progress } from '@/presentation/components/ui/progress'
 import { useCurrency } from '@/presentation/providers/currency-provider'
@@ -26,6 +26,7 @@ interface ExecutionHeaderProps {
   totalSpent: number
   budgetPercentage: number
   onCalculatorClick: () => void
+  onBackClick: () => void
 }
 
 export function ExecutionHeader({
@@ -38,6 +39,7 @@ export function ExecutionHeader({
   totalSpent,
   budgetPercentage,
   onCalculatorClick,
+  onBackClick,
 }: ExecutionHeaderProps) {
   const { formatNumber } = useCurrency()
 
@@ -48,17 +50,22 @@ export function ExecutionHeader({
     <div className="sticky top-0 z-10 border-b bg-background">
       <div className="space-y-4 p-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-wide text-muted-foreground">{listName}</p>
-            {storeName && <p className="typography-label text-foreground">{storeName}</p>}
-            {showTimer && (
-              <div className="mt-1 flex items-center gap-1 typography-metadata">
-                <Clock3 className="h-3.5 w-3.5" />
-                <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
-              </div>
-            )}
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0" onClick={onBackClick}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">{listName}</p>
+              {storeName && <p className="typography-label text-foreground">{storeName}</p>}
+              {showTimer && (
+                <div className="mt-1 flex items-center gap-1 typography-metadata">
+                  <Clock3 className="h-3.5 w-3.5" />
+                  <span className="font-mono font-semibold text-foreground">{timerFormatted}</span>
+                </div>
+              )}
+            </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-10 w-10" onClick={onCalculatorClick}>
+          <Button variant="ghost" size="icon" className="h-10 w-10 flex-shrink-0" onClick={onCalculatorClick}>
             <Calculator className="h-5 w-5" />
           </Button>
         </div>

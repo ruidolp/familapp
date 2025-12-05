@@ -51,6 +51,8 @@ export async function findSobreById(sobreId: string) {
  * Buscar sobres por usuario (como owner o participante)
  */
 export async function findSobresByUser(userId: string) {
+  // TODO: Actualizar para usar diaInicioPeriodo en lugar de mes/año calendario
+  // El período actual se define por diaInicioPeriodo, no por mes/año
   // Calcular periodo actual
   const now = new Date()
   const currentYear = now.getFullYear()
@@ -122,7 +124,8 @@ export async function findSobresByUser(userId: string) {
   // IMPORTANTE: is_compartido viene de la DB, NO lo calculamos manualmente
   const allSobres = [...sobresOwnerWithRole, ...sobresParticipante]
 
-  return allSobres.sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
+  // Ordenar por fecha de creación: más antiguo primero, más nuevo al último
+  return allSobres.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
 }
 
 /**
@@ -902,7 +905,8 @@ export async function updateInvitacionRole(
 }
 
 /**
- * Renombrar sobre del usuario si existe conflicto de nombre
+ * Hacer soft delete del sobre si existe conflicto de nombre
+ * El usuario podrá recuperarlo después desde la pantalla de recuperación
  */
 export async function renameSobreIfConflict(userId: string, nombreSobre: string) {
   const sobreExistente = await db
@@ -919,10 +923,11 @@ export async function renameSobreIfConflict(userId: string, nombreSobre: string)
     .executeTakeFirst()
 
   if (sobreExistente) {
+    // Soft delete: el sobre puede recuperarse después
     await db
       .updateTable('sobres')
       .set({
-        nombre: `${sobreExistente.nombre} (old)`,
+        deleted_at: new Date(),
         updated_at: new Date(),
       })
       .where('id', '=', sobreExistente.id)
@@ -932,6 +937,131 @@ export async function renameSobreIfConflict(userId: string, nombreSobre: string)
   }
 
   return null
+}
+
+/**
+ * Crear sobre histórico para usuario removido
+ * Copia el sobre compartido con todas sus transacciones
+ */
+export async function crearSobreHistorico(
+  sobreOriginalId: string,
+  participanteId: string
+): Promise<string | null> {
+  try {
+    // Obtener sobre original
+    const sobreOriginal = await db
+      .selectFrom('sobres')
+      .selectAll()
+      .where('id', '=', sobreOriginalId)
+      .where('deleted_at', 'is', null)
+      .executeTakeFirst()
+
+    if (!sobreOriginal) {
+      return null
+    }
+
+    // Crear nuevo sobre con nombre "(histórico)"
+    const nuevoSobre = await db
+      .insertInto('sobres')
+      .values({
+        usuario_id: participanteId,
+        nombre: `${sobreOriginal.nombre} (histórico)`,
+        tipo: sobreOriginal.tipo,
+        emoji: sobreOriginal.emoji,
+        color: sobreOriginal.color,
+        moneda_principal_id: sobreOriginal.moneda_principal_id,
+        presupuesto_asignado: sobreOriginal.presupuesto_asignado,
+        gastado: sobreOriginal.gastado,
+        ahorrado_actual: sobreOriginal.ahorrado_actual,
+        meta_objetivo: sobreOriginal.meta_objetivo,
+        presupuestos_multimoneda: sobreOriginal.presupuestos_multimoneda,
+        is_compartido: false, // Importante: no es compartido
+        max_participantes: 1,
+      })
+      .returning('id')
+      .executeTakeFirstOrThrow()
+
+    const nuevoSobreId = nuevoSobre.id
+
+    // Copiar todas las transacciones del sobre original
+    const transacciones = await db
+      .selectFrom('transacciones')
+      .selectAll()
+      .where('sobre_id', '=', sobreOriginalId)
+      .where('deleted_at', 'is', null)
+      .execute()
+
+    if (transacciones.length > 0) {
+      await db
+        .insertInto('transacciones')
+        .values(
+          transacciones.map((t) => ({
+            monto: t.monto,
+            moneda_id: t.moneda_id,
+            billetera_id: t.billetera_id,
+            tipo: t.tipo,
+            usuario_id: participanteId, // Asignar al participante removido
+            sobre_id: nuevoSobreId, // Nuevo sobre histórico
+            categoria_id: t.categoria_id,
+            subcategoria_id: t.subcategoria_id,
+            descripcion: t.descripcion,
+            fecha: t.fecha,
+            billetera_destino_id: t.billetera_destino_id,
+            pago_tc: t.pago_tc,
+            conversion_info: t.conversion_info,
+            auto_aumento_sobre: t.auto_aumento_sobre,
+            origen: t.origen,
+          }))
+        )
+        .execute()
+    }
+
+    // Copiar presupuestos si existen
+    const presupuestos = await db
+      .selectFrom('sobres_presupuestos')
+      .selectAll()
+      .where('sobre_id', '=', sobreOriginalId)
+      .execute()
+
+    if (presupuestos.length > 0) {
+      await db
+        .insertInto('sobres_presupuestos')
+        .values(
+          presupuestos.map((p) => ({
+            sobre_id: nuevoSobreId,
+            periodo_year: p.periodo_year,
+            periodo_month: p.periodo_month,
+            presupuesto_enabled: p.presupuesto_enabled,
+            monto_global: p.monto_global,
+          }))
+        )
+        .execute()
+    }
+
+    // Copiar categorías vinculadas si existen
+    const categorias = await db
+      .selectFrom('sobres_categorias')
+      .selectAll()
+      .where('sobre_id', '=', sobreOriginalId)
+      .execute()
+
+    if (categorias.length > 0) {
+      await db
+        .insertInto('sobres_categorias')
+        .values(
+          categorias.map((c) => ({
+            sobre_id: nuevoSobreId,
+            categoria_id: c.categoria_id,
+          }))
+        )
+        .execute()
+    }
+
+    return nuevoSobreId
+  } catch (error) {
+    console.error('Error al crear sobre histórico:', error)
+    return null
+  }
 }
 
 /**

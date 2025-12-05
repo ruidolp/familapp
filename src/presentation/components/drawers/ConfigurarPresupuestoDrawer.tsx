@@ -461,73 +461,86 @@ export function ConfigurarPresupuestoDrawer({
   return (
     <>
       <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="max-h-[95vh]">
-            <DrawerHeader className="border-b">
+        <DrawerContent className="max-h-[95vh]">
+          <DrawerHeader className="border-b">
+            <div className="flex items-start justify-between gap-3">
               <DrawerTitle>
                 {t('title.create')} (<strong>{sobreNombre}</strong>)
               </DrawerTitle>
-            </DrawerHeader>
+              {isEditing && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={handleDesactivarMetas}
+                  disabled={loading}
+                  title={t('deactivate.description')}
+                >
+                  {t('deactivate.action')}
+                </Button>
+              )}
+            </div>
+          </DrawerHeader>
 
-            <DrawerBody className="space-y-4 overflow-y-auto">
+          <DrawerBody className="space-y-4 overflow-y-auto">
+            {/* Introducción */}
+            <p className="text-base font-semibold text-foreground">
+              {t('intro')}
+            </p>
 
-              {/* Introducción */}
-              <p className="text-base font-semibold text-foreground">
-                {t('intro')}
-              </p>
+            {/* Presupuesto Total */}
+            <Card className="p-4 space-y-3 bg-primary/5 border-primary/20">
+              <Label htmlFor="monto-global" className="text-base font-semibold">
+                {t('global.label')}
+              </Label>
 
-                {/* Presupuesto Total */}
-                <Card className="p-4 space-y-3 bg-primary/5 border-primary/20">
-                  <Label htmlFor="monto-global" className="text-base font-semibold">
-                    {t('global.label')}
-                  </Label>
+              {!ajusteManual ? (
+                // Modo automático: mostrar solo texto centrado manteniendo altura
+                <div className="h-12 rounded-xl bg-background/50 border border-primary/20 flex items-center justify-center text-2xl font-semibold text-primary">
+                  {formatNumber(parseInputToNumber(montoGlobal))}
+                </div>
+              ) : (
+                // Modo manual: mostrar input editable
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    {simbolo}
+                  </span>
+                  <Input
+                    id="monto-global"
+                    type="text"
+                    inputMode="decimal"
+                    value={montoGlobal}
+                    onChange={(e) => handleMontoGlobalChange(e.target.value)}
+                    className="pl-8 h-12 text-lg"
+                    placeholder="0"
+                  />
+                </div>
+              )}
 
-                  {!ajusteManual ? (
-                    // Modo automático: mostrar solo texto centrado manteniendo altura
-                    <div className="h-12 rounded-xl bg-background/50 border border-primary/20 flex items-center justify-center text-2xl font-semibold text-primary">
-                      {formatNumber(parseInputToNumber(montoGlobal))}
-                    </div>
-                  ) : (
-                    // Modo manual: mostrar input editable
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                        {simbolo}
-                      </span>
-                      <Input
-                        id="monto-global"
-                        type="text"
-                        inputMode="decimal"
-                        value={montoGlobal}
-                        onChange={(e) => handleMontoGlobalChange(e.target.value)}
-                        className="pl-8 h-12 text-lg"
-                        placeholder="0"
-                      />
-                    </div>
-                  )}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="ajuste-manual"
+                  checked={ajusteManual}
+                  onCheckedChange={(checked) => setAjusteManual(checked as boolean)}
+                />
+                <label
+                  htmlFor="ajuste-manual"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {t('global.manualAdjust')}
+                </label>
+              </div>
+            </Card>
 
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="ajuste-manual"
-                      checked={ajusteManual}
-                      onCheckedChange={(checked) => setAjusteManual(checked as boolean)}
-                    />
-                    <label
-                      htmlFor="ajuste-manual"
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {t('global.manualAdjust')}
-                    </label>
-                  </div>
-                </Card>
-
-                {/* Warning si excede */}
-                {excedePresupuesto > 0 && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      {t('warning.exceeds', { amount: formatNumber(excedePresupuesto) })}
-                    </AlertDescription>
-                  </Alert>
-                )}
+            {/* Warning si excede */}
+            {excedePresupuesto > 0 && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  {t('warning.exceeds', { amount: formatNumber(excedePresupuesto) })}
+                </AlertDescription>
+              </Alert>
+            )}
 
             {/* Metas por Categoría */}
             <div className="space-y-3">
@@ -613,27 +626,6 @@ export function ConfigurarPresupuestoDrawer({
                   {t('categories.empty')}
                 </p>
               )}
-
-              <Card className="border-destructive/40 bg-destructive/5 p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-sm font-semibold text-destructive">
-                      {t('deactivate.title')}
-                    </h4>
-                    <p className="text-xs text-destructive/80">
-                      {t('deactivate.description')}
-                    </p>
-                  </div>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={handleDesactivarMetas}
-                    disabled={loading}
-                  >
-                    {t('deactivate.action')}
-                  </Button>
-                </div>
-              </Card>
             </div>
           </DrawerBody>
 

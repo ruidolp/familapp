@@ -11,7 +11,7 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>
-  searchParams: Promise<{ inviteLista?: string; invite?: string }>
+  searchParams: Promise<{ inviteLista?: string; invite?: string; reason?: string }>
 }) {
   const { locale } = await params
   const search = await searchParams
@@ -36,6 +36,7 @@ export default async function LoginPage({
       <LoginForm
         inviteListaCode={search.inviteLista}
         inviteSobreCode={search.invite}
+        reason={search.reason}
       />
     </div>
   )

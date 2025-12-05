@@ -94,6 +94,7 @@ export interface LocalShoppingExecution {
   localId: string
   shopping_list_id: string
   user_id: string
+  availableProducts?: Array<{ id: string; nombre: string; is_catalog?: boolean }>
 
   // Sync status
   syncStatus: SyncStatus
@@ -140,6 +141,7 @@ export interface LocalShoppingExecution {
 export interface CreateLocalExecutionInput {
   shopping_list_id: string
   user_id: string
+  availableProducts?: Array<{ id: string; nombre: string; is_catalog?: boolean }>
   items: Array<{
     shopping_list_item_id?: string
     product_id?: string
@@ -212,6 +214,7 @@ export interface SyncExecutionItemPayload {
   shopping_list_item_id?: string
   product_id?: string
   product_custom_id?: string
+  product_name?: string // Required for on-the-fly items
   is_catalog: boolean
   cantidad_comprada?: number
   unidad_medida?: string

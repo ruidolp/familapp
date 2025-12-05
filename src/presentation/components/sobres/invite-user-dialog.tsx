@@ -400,27 +400,10 @@ export function InviteUserDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Card className="border border-border bg-card/80 shadow-sm">
-          <CardContent className="flex items-center gap-3 p-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl text-primary">
-              {itemEmoji || (tipo === 'sobre' ? '📦' : '🛒')}
-            </div>
-            <div>
-              <p className="font-semibold leading-tight text-foreground">{itemNombre}</p>
-              <p className="text-xs text-muted-foreground">
-                {tipo === 'sobre'
-                  ? 'Colaboración en un sobre compartido'
-                  : 'Colaboración en una lista compartida'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-
         <div className="space-y-5">
           <div className="space-y-3">
             <Label>Método de invitación</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-border divide-y divide-border md:divide-y-0 md:divide-x">
               {contactOptions.map((option) => {
                 const Icon = option.icon
                 const isSelected = contactMethod === option.key
@@ -440,9 +423,9 @@ export function InviteUserDialog({
                     }}
                     disabled={isDisabled}
                     className={cn(
-                      'flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition',
-                      isSelected ? 'border-primary bg-primary/10 shadow-sm' : 'border-border hover:border-primary/40',
-                      isDisabled && 'opacity-40 cursor-not-allowed'
+                      'flex flex-col items-center justify-center gap-2 bg-background p-3 text-center transition',
+                      isSelected ? 'bg-primary/10 shadow-sm ring-1 ring-primary' : 'hover:bg-muted/60',
+                      isDisabled && 'cursor-not-allowed opacity-40'
                     )}
                   >
                     <Icon className={cn('h-5 w-5', isSelected ? 'text-primary' : 'text-muted-foreground')} />
@@ -465,19 +448,19 @@ export function InviteUserDialog({
                     No tienes contactos disponibles. Primero invita a personas a tus sobres o listas.
                   </p>
                 ) : (
-                  <div className="max-h-[200px] overflow-y-auto space-y-2 rounded-lg border p-2">
-                    {myContacts.map((contact) => (
+                  <div className="max-h-[200px] overflow-y-auto rounded-lg border divide-y divide-border bg-background p-2">
+                    {myContacts.map((contact, index) => (
                       <button
                         key={contact.id}
                         type="button"
                         onClick={() => setSelectedContactId(contact.id)}
                         disabled={loading}
                         className={cn(
-                          'w-full flex items-center gap-3 rounded-lg border p-3 text-left transition',
-                          selectedContactId === contact.id
-                            ? 'border-primary bg-primary/10 shadow-sm'
-                            : 'border-border hover:border-primary/40',
-                          loading && 'opacity-60'
+                          'flex w-full items-center gap-3 px-3 py-3 text-left transition hover:bg-muted/40',
+                          selectedContactId === contact.id && 'bg-primary/10 ring-1 ring-primary',
+                          loading && 'opacity-60',
+                          index === 0 && 'rounded-t-md',
+                          index === myContacts.length - 1 && 'rounded-b-md'
                         )}
                       >
                         {contact.image ? (
@@ -493,16 +476,16 @@ export function InviteUserDialog({
                             <UserCircle className="h-5 w-5 text-muted-foreground" />
                           </div>
                         )}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm truncate">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">
                             {contact.name || contact.email || 'Sin nombre'}
                           </p>
                           {contact.email && (
-                            <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
+                            <p className="truncate text-xs text-muted-foreground">{contact.email}</p>
                           )}
                         </div>
                         {selectedContactId === contact.id && (
-                          <Check className="h-4 w-4 text-primary flex-shrink-0" />
+                          <Check className="h-4 w-4 flex-shrink-0 text-primary" />
                         )}
                       </button>
                     ))}
@@ -544,31 +527,31 @@ export function InviteUserDialog({
           <div className="space-y-3">
             <Label>Selecciona el rol</Label>
             <div className="flex flex-col gap-2">
-              {selectableRoles.map((roleKey) => {
-                const config = roleConfig[roleKey as keyof typeof roleConfig]
-                const Icon = config.icon
-                const isSelected = rol === roleKey
-                return (
-                  <button
-                    key={roleKey}
-                    type="button"
-                    onClick={() => setRol(roleKey)}
-                    disabled={loading}
-                    className={cn(
-                      'w-full rounded-2xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
-                      isSelected ? 'border-primary bg-primary/10 shadow-sm' : 'border-border hover:border-primary/40',
-                      loading && 'opacity-60'
-                    )}
-                  >
-                    <div className="flex flex-col gap-1">
+              <div className="overflow-hidden rounded-2xl border border-border divide-y divide-border">
+                {selectableRoles.map((roleKey) => {
+                  const config = roleConfig[roleKey as keyof typeof roleConfig]
+                  const Icon = config.icon
+                  const isSelected = rol === roleKey
+                  return (
+                    <button
+                      key={roleKey}
+                      type="button"
+                      onClick={() => setRol(roleKey)}
+                      disabled={loading}
+                      className={cn(
+                        'w-full bg-background p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50',
+                        isSelected ? 'bg-primary/10 shadow-sm ring-1 ring-primary' : 'hover:bg-muted/60',
+                        loading && 'opacity-60'
+                      )}
+                    >
                       <div className="flex items-center gap-2">
                         <Icon className={cn('h-4 w-4', isSelected ? 'text-primary' : 'text-muted-foreground')} />
-                        <span className="font-semibold text-sm">{config.name}</span>
+                        <span className="text-sm font-semibold">{config.name}</span>
                       </div>
-                    </div>
-                  </button>
-                )
-              })}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
             <Card className="border border-border bg-muted/40">
               <CardContent className="space-y-3 pt-4">
@@ -601,7 +584,7 @@ export function InviteUserDialog({
 
         <DialogFooter className="pt-4">
           {successInfo ? (
-            <Alert className="w-full border-emerald-200 bg-emerald-50 text-emerald-900">
+            <Alert className="w-full border-emerald-200/60 bg-emerald-50/80 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/50 dark:text-emerald-50">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
                   <AlertTitle>Invitación enviada</AlertTitle>

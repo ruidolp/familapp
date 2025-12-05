@@ -333,22 +333,51 @@
     }
   },
   "onboarding": {
-    "title": "¡Bienvenida! 👋",
-    "description": "Configura algunos datos básicos para adaptar la app a tu realidad.",
+    "title": "Bienvenida",
+    "description": "Comencemos configurando tu experiencia.",
+    "steps": {
+      "1": {
+        "title": "Bienvenida",
+        "description": "Comencemos configurando tu experiencia.",
+        "body": "Registra compras, organiza tus sobres y comparte listas y gastos fácilmente con quien tú quieras."
+      },
+      "2": {
+        "title": "Unos detalles para personalizar tu experiencia",
+        "description": "Así podremos adaptar la app a tu país, tu moneda y la forma en que organizas tus meses."
+      },
+      "3": {
+        "title": "Tus sobres iniciales",
+        "description": "Ya dejamos todo preparado para que empieces al tiro.",
+        "body": "Creamos \"Mi Hogar\" y \"Para Mí\" con categorías básicas listas para usar. Todo es editable cuando tú quieras."
+      },
+      "4": {
+        "title": "Organiza en equipo",
+        "description": "Mejor juntos.",
+        "body": "Comparte sobres y listas con tu pareja, familia o quien tú quieras. Todo se sincroniza en tiempo real."
+      },
+      "5": {
+        "title": "Compra asistida",
+        "description": "Tu compra, paso a paso.",
+        "body": "Usa el modo de Compra Asistida para avanzar por tu lista, marcar lo que falta y ver el total actualizado en tiempo real."
+      }
+    },
     "fields": {
-      "country": "País",
+      "country": "País donde vives",
       "countryPlaceholder": "Selecciona tu país",
-      "currency": "Moneda principal",
+      "currency": "Tu moneda principal",
       "currencyPlaceholder": "Selecciona tu moneda",
-      "currencyDescription": "Usaremos esta moneda para tus presupuestos mensuales.",
-      "dayOfMonth": "¿Qué día del mes recibes dinero?",
-      "dayOfMonthDescription": "Ese día se reinicia tu ciclo de gastos cada mes.",
-      "dayPlaceholder": "Selecciona un día"
+      "currencyDescription": "La usamos para mostrar tus gastos y totales de forma más clara.",
+      "dayOfMonth": "¿Cuándo quieres reiniciar tus saldos cada mes?",
+      "dayOfMonthDescription": "Se usa para calcular tus períodos de gasto y reiniciar tus totales.",
+      "dayPlaceholder": "Elige un día del mes"
     },
     "buttons": {
-      "submit": "Comenzar",
+      "submit": "Finalizar",
+      "next": "Siguiente",
+      "back": "Volver",
+      "finish": "Finalizar",
       "submitting": "Guardando...",
-      "disclaimer": "Podrás cambiar estos datos más adelante."
+      "disclaimer": "Tus datos ayudan a que la app funcione mejor para ti."
     },
     "errors": {
       "countryRequired": "Selecciona tu país",
@@ -396,6 +425,8 @@
       "loading": "Cargando sobres...",
       "empty": "No tienes sobres aún",
       "createFirst": "Crear tu primer sobre",
+      "createNew": "Crear nuevo sobre",
+      "createNewDescription": "Organiza tus gastos con un nuevo sobre",
         "loadError": "Error al cargar sobres",
       "returnError": "Error al devolver presupuesto"
     },
@@ -413,7 +444,7 @@
         "expenseInfo": "Información de gastos",
         "organizationSection": "Organización",
         "categoriesAndBrands": "Tipos de gastos y Comercios",
-        "newCategory": "Nueva categoría",
+        "newCategory": "Nuevo tipo de gasto",
         "close": "Cerrar"
       },
       "sections": {
@@ -432,15 +463,16 @@
     },
     "categoryCard": {
       "purchases": "{count} compras",
+      "purchaseSingular": "1 compra",
       "percentUsed": "{percent}% del presupuesto",
       "quickExpense": "Agregar gasto rápido",
-      "editCategory": "Editar categoría",
+      "editCategory": "Editar tipo de gasto",
       "goal": "Meta"
     },
     "menu": {
       "increaseBudget": "Aumentar presupuesto",
       "reduceBudget": "Reducir presupuesto",
-      "editCategories": "Editar categorías",
+      "editCategories": "Editar tipos de gastos",
       "shoppingList": "Lista de compras"
     },
     "quickActions": {
@@ -454,10 +486,10 @@
       "button": "Agregar presupuesto"
     },
     "categories": {
-      "loading": "Cargando categorías...",
+      "loading": "Cargando tipos de gastos...",
       "title": "Tipos de gastos",
-      "empty": "Agrega categorías para ver en qué se va tu dinero.",
-      "addButton": "Agregar categorías"
+      "empty": "Agrega tipos de gastos para ver en qué se va tu dinero.",
+      "addButton": "Nuevo tipo de gasto"
     },
     "create": {
       "title": "Crear nuevo sobre",
@@ -477,6 +509,7 @@
         "preview": "Vista previa",
         "envelopeName": "Nombre del sobre",
         "budget": "Presupuesto",
+        "spendingGoal": "Meta de gasto",
         "name": "Nombre",
         "namePlaceholder": "Ej: Comida, Transporte, Hogar",
         "color": "Color"
@@ -625,7 +658,33 @@
       "totalCurrentMonth": "Total del mes actual",
       "transactionCount": "movimientos",
       "transactionsCount": "{count} movimientos",
-      "noCategory": "Sin categoría",
+      "noCategory": "Sin tipo de gasto",
+      "currentCycle": "Ciclo actual",
+      "filters": {
+        "title": "Filtrar por tipo de gasto",
+        "all": "Todo"
+      },
+      "actions": {
+        "title": "Acciones del movimiento",
+        "description": "Edita o elimina el movimiento seleccionado.",
+        "edit": "Modificar",
+        "delete": "Eliminar",
+        "editTitle": "Editar movimiento",
+        "editDescription": "Actualiza el monto, fecha o tipo de gasto.",
+        "fields": {
+          "amount": "Monto",
+          "description": "Nota",
+          "date": "Fecha",
+          "category": "Tipo de gasto"
+        },
+        "placeholders": {
+          "description": "Ej: Compra semanal"
+        },
+        "save": "Guardar cambios",
+        "saving": "Guardando...",
+        "updateSuccess": "Movimiento actualizado",
+        "updateError": "Error al actualizar movimiento"
+      },
       "categoryTitle": "Movimientos de {categoriaName}",
       "categoryDescription": "Gastos y ajustes de {categoriaName} en {sobreName}",
       "confirmTitle": "Eliminar movimiento",
@@ -697,7 +756,7 @@
       "action": "Desactivar"
     },
     "warning": {
-      "exceeds": "Las metas de categorías superan el presupuesto total por {amount}"
+      "exceeds": "Las metas de tipos de gastos superan el presupuesto total por {amount}"
     },
     "sugerencia": {
       "button": "Cargar sugerencia del mes anterior",
@@ -886,6 +945,9 @@
         "resumeHint": "Reanuda desde Compras activas.",
         "confirm": "Confirmar",
         "continue": "Continuar comprando"
+      },
+      "item": {
+        "addedDuringPurchase": "Agregado durante la compra"
       }
     }
   },
@@ -1045,11 +1107,11 @@
     }
   },
   "categorias": {
-    "title": "Categorías",
+    "title": "Tipos de gastos",
     "add": {
-      "title": "Agregar categorías",
+      "title": "Agregar tipos de gastos",
       "description": "Organiza los gastos de {sobreName}.",
-      "categories": "Categorías",
+      "categories": "Tipos de gastos",
       "namePlaceholder": "Ej: Comida, Transporte",
       "add": "✓",
       "checkmark": "✓",
@@ -1058,25 +1120,25 @@
       "addBrand": "Agregar empresa",
       "brandSearch": "Busca o crea una marca...",
       "adding": "Agregando...",
-      "addCategory": "Agregar categoría",
+      "addCategory": "Agregar tipo de gasto",
       "addBrandLabel": "Agregando...",
-      "selectAtLeastOne": "Selecciona una categoría",
+      "selectAtLeastOne": "Selecciona un tipo de gasto",
       "saving": "Guardando...",
       "submit": "Guardar",
       "cancel": "Cancelar",
       "notifications": {
-        "categoryCreated": "Categoría \"{name}\" creada",
-        "categoryCreateError": "Error al crear categoría",
+        "categoryCreated": "Tipo de gasto \"{name}\" creado",
+        "categoryCreateError": "Error al crear tipo de gasto",
         "brandCreated": "Marca \"{name}\" creada",
         "brandCreateError": "Error al crear marca",
-        "linkSuccess": "{count} categoría(s) agregada(s)",
-        "linkError": "Error al agregar categorías"
+        "linkSuccess": "{count} tipo(s) de gasto agregado(s)",
+        "linkError": "Error al agregar tipos de gasto"
       }
     },
     "edit": {
-      "title": "Editar categoría",
-      "description": "Personaliza el nombre, emoji y color de tu categoría.",
-      "drawerTitle": "Categorías y Marcas",
+      "title": "Editar tipo de gasto",
+      "description": "Personaliza el nombre, emoji y color de tu tipo de gasto.",
+      "drawerTitle": "Tipos de gastos y Comercios",
       "basicInfo": "Información básica",
       "colorSection": "Color",
       "colorLabel": "Elige un color",
@@ -1104,8 +1166,8 @@
         "loadError": "Error al cargar datos",
         "brandCreated": "Marca \"{name}\" creada",
         "brandCreateError": "Error al crear marca",
-        "updateSuccess": "Categoría actualizada correctamente",
-        "updateError": "Error al actualizar categoría"
+        "updateSuccess": "Tipo de gasto actualizado correctamente",
+        "updateError": "Error al actualizar tipo de gasto"
       }
     }
   },

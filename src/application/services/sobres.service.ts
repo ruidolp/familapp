@@ -422,11 +422,44 @@ export async function eliminarParticipante(
       }
     }
 
+    // Obtener información del sobre antes de remover
+    const sobre = sobreResult.data
+
+    // Crear sobre histórico para el participante antes de removerlo
+    const { crearSobreHistorico } = await import('@/infrastructure/database/queries/sobres.queries')
+    const nuevoSobreId = await crearSobreHistorico(sobreId, participanteId)
+
+    if (!nuevoSobreId) {
+      return {
+        success: false,
+        error: 'Error al crear sobre histórico',
+      }
+    }
+
+    // Remover participante del sobre compartido
     await removeParticipanteFromSobre(sobreId, participanteId)
+
+    // Crear notificación para el participante removido
+    const { createNotificacion } = await import('@/infrastructure/database/queries/notificaciones.queries')
+    await createNotificacion({
+      usuario_id: participanteId,
+      tipo: 'PERDIDA_ACCESO_SOBRE',
+      titulo: 'Acceso removido',
+      mensaje: `Se te removió el acceso al sobre "${sobre.nombre}". Creamos "${sobre.nombre} (histórico)" con toda la información para que no pierdas tu historial.`,
+      metadata: {
+        sobre_id: sobreId,
+        sobre_nombre: sobre.nombre,
+        sobre_historico_id: nuevoSobreId,
+        sobre_emoji: sobre.emoji,
+      },
+    })
 
     return {
       success: true,
-      data: { message: 'Participante eliminado correctamente' },
+      data: {
+        message: 'Participante eliminado correctamente',
+        sobreHistoricoId: nuevoSobreId,
+      },
     }
   } catch (error) {
     console.error('Error al eliminar participante:', error)
