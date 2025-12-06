@@ -40,7 +40,6 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  themeColor: '#000000',
 }
 
 export const viewport = {
@@ -48,6 +47,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: '#000000',
 }
 
 export function generateStaticParams() {
