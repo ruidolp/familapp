@@ -1,6 +1,6 @@
 # WApp - Next.js Full Stack Application
 
-Aplicación fullstack moderna con Next.js 15, Kysely, NextAuth, Tailwind CSS, shadcn/ui y preparada para Capacitor.
+Aplcación fullstack moderna con Next.js 15, Kysely, NextAuth, Tailwind CSS, shadcn/ui y preparada para Capacitor.
 
 ## 📋 Tabla de Contenidos
 
